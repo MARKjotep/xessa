@@ -26,7 +26,7 @@ same file. `.vscodeignore` keeps `src/`, `test/` and `tsconfig.json` out of the 
 carries the runtime payload — `out/`, `dist/`, `syntaxes/`, `media/`, `language-configuration.json`,
 `LICENSE` and `README.md` — at 18 files / 140.6 KB instead of 84 files / 309.78 KB.
 
-Package versions (`0.1.0`), package-level `README.md`/`LICENSE` copies and the unscoped extension name
+Package versions (`0.1.1`), package-level `README.md`/`LICENSE` copies and the unscoped extension name
 (`xessa`) were resolved for v0.1; `bun run release:check` asserts all three.
 
 ## 2a. Source extension

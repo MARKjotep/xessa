@@ -26,6 +26,7 @@ export type {
   LocalSymbolOrigin,
   ModuleGraph,
   ModuleRecord,
+  RuntimeProviders,
   ScopedNamespace,
   ScopedToken,
   ScopedTokenType,

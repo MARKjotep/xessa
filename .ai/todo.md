@@ -6,16 +6,15 @@ Report new bugs and feature requests under the matching section; the lead routes
 
 1. colors for $variable - deepblue? $runtimeVariables or --var in magenta?, and imported variables vis namespace must match - green for example then the variable color. — 🟢 done in CSSX-COLOR-TOKENS (semantic tokens now work zero-config: `contributes.semanticTokenScopes` maps variable→`variable.language`, namespace→`entity.name.type`, runtimeVariable/customProperty→`keyword.control`, keyframe→`entity.name.function`, so colors follow the active theme; compile-time `$token` `#4C8DF8`, runtime tokens and `--var` `#D6409F`, the `$ns` prefix `#4EC9B0`, resolved `$keyframes.<name>` `#D18616` remain the documented literal override in the README settings snippet. See `.ai/reports/CSSX-COLOR-TOKENS.md`)
 
-2. v0.1 implementation is complete. Release: **all npm artifacts are published at 0.1.1** (owner,
-   2026-11-26) — `@xessa/compiler`, `@xessa/cli` and the unscoped root package `xessa` (registry
-   audit in `.ai/reports/CSSX-0.1.1-STAGING.md`), and **PP5a 🟢 for 0.1.1** — clean-environment
-   registry check passed (`.ai/reports/CSSX-PP5A.md`). **PP4b (VS Code Marketplace) stays deferred**
-   by the owner (2026-11-26), so the extension remains at `0.1.0`; PP5b follows it. Owner
-   field-testing continues.
+2. v0.1 implementation is complete. Release: **0.1.1 is release-ready, not yet published**
+   (2026-11-27) — `@xessa/compiler`, `@xessa/cli` and the unscoped root package `xessa` are prepared
+   for publication; the publish order is compiler → CLI → root
+   (`docs/release.md`). **PP4b (VS Code Marketplace) stays deferred**, so the extension remains at
+   `0.1.0`; PP5b follows it. Owner field-testing continues.
 
-3. The root package `xessa` is **live at 0.1.1** as the name reservation (pointer stub only; the
-   unscoped `xessa` name is available; approved and published via staged publishing 2026-11-26; see
-   `docs/release.md` → Root package). — 🟢 published
+3. The root package `xessa` is a `0.1.1` name-reservation stub, **prepared for publication** (pointer
+   stub only; the unscoped `xessa` name is available; see `docs/release.md` → Root package). —
+   ⏳ release-ready
 
 ## Bug reports
 

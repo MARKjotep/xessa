@@ -12,7 +12,7 @@ apart from the ordered Xessa rebrand. No compiler behavior was changed during th
 
 | Record | Type | Verdict | Decision |
 | --- | --- | --- | --- |
-| `bugs/runtime-token-merge-order-first-wins.md` | Bug | Confirmed spec bug (unqualified `styles` imports) | Fix next; add a repo-local regression fixture first; no behavior change in this task |
+| `bugs/runtime-token-merge-order-first-wins.md` | Bug | Confirmed spec bug (unqualified `styles` imports) | **Fixed in 0.1.1** — runtime providers merge by order; regression tests in `tests/compiler/runtime.test.ts` (later wins, no diagnostic; referenced `$name` keeps XESSA2001; token-only rank) |
 | `features/cross-prefix-class-map-union.md` | Feature | Deliberate contract (ADR-0010/ADR-0014) | Reject for v0.1; revisit only with a new ADR |
 | `features/namespaced-runtime-token-emission.md` | Feature | Capability gap, not a spec violation | Defer; add an explicit emit-all opt-in only with consumer demand |
 | `features/portable-runtime-token-prefix.md` | Feature | Spec-mandated behavior (SPEC §6.2) | Won't fix; native `:root`/`@media` palettes remain the portable-token pattern |
@@ -21,8 +21,9 @@ apart from the ordered Xessa rebrand. No compiler behavior was changed during th
 
 ## Recommended order
 
-Only the runtime-token merge-order bug is actionable. Before any compiler change, add a repo-local
-regression fixture and test for two unqualified `styles` imports declaring the same runtime property
-(expect later-in-merge-order wins, one `:root` declaration, no diagnostic), plus the entry-override
-case. Then fix `resolveUnqualified`/runtime emission against that test. The five feature records are
-closed as no-change; no compiler behavior changed during the rename.
+The runtime-token merge-order bug is fixed in 0.1.1. Regression tests in
+`tests/compiler/runtime.test.ts` cover two unqualified `styles` imports declaring the same runtime
+property (later-in-merge-order wins, one `:root` declaration, no diagnostic), the referenced-`$name`
+case (XESSA2001 remains), the existing entry override, a namespaced-reference case, and a token-only
+rank case. The five feature
+records are closed as no-change; no compiler behavior changed during the rename.

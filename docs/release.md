@@ -1,18 +1,14 @@
 # Release checklist (v0.1)
 
-This page records what `bun run release:check` validates, how to release, and the remaining manual
+This page records what `bun run release:check` validates, how to publish, and the remaining manual
 steps for the package owners.
 
-**Current status (2026-11-26):** **`@xessa/compiler@0.1.1`, `@xessa/cli@0.1.1` and the root package
-`xessa@0.1.1` are all published** (owner publishes, 2026-11-26) and live at `latest` on the
-public registry. The compiler was published first (the CLI pins it to the exact version), then the
-CLI, then the root package. **PP5a passed** on 2026-11-26 against the registry: clean install,
-`npx`/`bunx` versions, and the `docs/usage.md` quick start end to end with
-`xessa build`/`check`/`format --check` ([report](../.ai/reports/CSSX-PP5A.md)). **PP4b — the VS Code
-Marketplace extension — remains deferred by the owner**; the extension stays at `0.1.0` and the local
-VSIX is the interim distribution. Publishing anything further needs new explicit owner authorization.
-The root package was approved and published via npm's staged publishing
-([Root package](#root-package)).
+**Current status (2026-11-27):** **`0.1.1` is release-ready, not yet published.** `@xessa/compiler`
+and `@xessa/cli` are `0.1.1`; the unscoped root package `xessa` reserves the name at `0.1.1`. The
+local gate is green; publish in the order **compiler → CLI → root**, then run the registry
+post-checks. The VS Code Marketplace extension (PP4b) remains deferred by the
+owner; the extension stays at `0.1.0` and the local VSIX is the interim distribution. Publishing
+anything needs explicit owner authorization.
 
 Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics stay
 Xessa ([ADR-0013](decisions/ADR-0013-cssx-file-extension.md)).
@@ -46,37 +42,54 @@ Each sub-result is printed. `release:check` does not publish anything and does n
 
 ## Manual pre-release steps
 
-1. **Metadata URLs are final.** On 2026-11-26 the placeholder repository/homepage/bugs URLs were
-   replaced with `https://github.com/MARKjotep/xessa` (repository `.git` URL, `#readme` homepage and
-   `/issues` bugs). `release:check` asserts the extension manifest has a repository URL, homepage and
-   bugs URL; no placeholder remains.
-2. **Tag and publish**:
-   - **2a · npm (PP4a, executed 2026-11-26):**
-     `npm publish --workspace @xessa/compiler --access public`, then
-     `npm publish --workspace @xessa/cli --access public` (compiler first).
-     The CLI pins the compiler to an exact version (currently `"@xessa/compiler": "0.1.1"`): npm does
-     not rewrite the `workspace:` protocol at pack/publish, so **every new compiler release requires
-     bumping the CLI dependency in `packages/cli/package.json` to the same version, rebuilding and
-     re-packing the CLI before its own publish**. Confirm the packed manifest before publishing:
-     `tar -xzOf xessa-cli-0.1.1.tgz package/package.json | grep '@xessa/compiler'`.
-     **0.1.1**: `@xessa/compiler@0.1.1` (tarball byte-identical to the local pack, 398 files) and
-     `@xessa/cli@0.1.1` (89 files, pinned to `0.1.1`) were published by the owner on 2026-11-26;
-     `npm view` reports `0.1.1` for both.
-   - **2b · VS Code Marketplace (PP4b, deferred by owner 2026-11-26):**
-     `cd packages/vscode && vsce publish` (publisher `xessa`; needs a PAT with Marketplace *Manage*
-     scope via `npx @vscode/vsce login xessa` or `VSCE_PAT`). Until then the local VSIX is
-     self-contained and can be distributed by hand.
-3. Install the VSIX locally (or open the folder in an Extension Development Host) and smoke-test
-   activation, diagnostics, completion, preview and Compile File.
+1. **Metadata URLs are final.** The repository/homepage/bugs URLs are
+   `https://github.com/MARKjotep/xessa` (repository `.git` URL, `#readme` homepage and `/issues`
+   bugs). `release:check` asserts the extension manifest has a repository URL, homepage and bugs URL;
+   the root manifest carries the same metadata. No placeholder remains.
+2. **Publish (owner only), in this order:**
+   - **Compiler:** `npm publish --workspace @xessa/compiler --access public`.
+   - **CLI:** the CLI pins the compiler to an exact version (`"@xessa/compiler": "0.1.1"`). npm does
+     not rewrite the `workspace:` protocol at pack/publish, so a new compiler release requires
+     bumping the CLI dependency to the same version, rebuilding and re-packing the CLI before its own
+     publish. Confirm the packed manifest before publishing:
+     `tar -xzOf xessa-cli-0.1.1.tgz package/package.json | grep '@xessa/compiler'`, then
+     `npm publish --workspace @xessa/cli --access public`.
+   - **Root reservation package:** `npm publish --access public` from the repository root.
+   - **VS Code Marketplace (deferred):** `cd packages/vscode && vsce publish` (publisher `xessa`;
+     needs a PAT with Marketplace *Manage* scope via `npx @vscode/vsce login xessa` or `VSCE_PAT`).
+     Until then the local VSIX is self-contained and can be distributed by hand.
+3. Run the post-release checks below against the registry, then update this status and the docs.
+
+## Post-release checks
+
+From a clean environment with no workspace symlinks:
+
+```sh
+npm view @xessa/compiler version     # 0.1.1
+npm view @xessa/cli version          # 0.1.1
+npm view xessa version               # 0.1.1
+mkdir -p /tmp/xessa-release && cd /tmp/xessa-release
+npm init -y && npm i @xessa/cli@0.1.1
+npx xessa --version                  # 0.1.1
+npx -y @xessa/cli@0.1.1 --version    # unambiguous package specifier
+bunx @xessa/cli@0.1.1 --version
+```
+
+- `npx xessa` alone does not run the CLI: it fetches the root reservation stub (root `bin/xessa.js`)
+  that exits 1. Install `@xessa/cli` first (as above) so the local `bin` wins, or use
+  `npx @xessa/cli` / the explicit specifier.
+- Run the [usage guide](usage.md) quick start end to end with `xessa build`/`check`/`format --check`.
+- Record actual outputs in `.ai/reports/`; never claim a publish before it succeeds.
 
 ## Versions, names and identity
 
 | Artifact | Value |
 |---|---|
-| Repository root | unscoped `xessa` pointer stub, `0.1.1` (no code; `bin/xessa.js` only) |
+| Repository root | unscoped `xessa` name-reservation stub, `0.1.1` (no code; `bin/xessa.js` only); repository/homepage/bugs metadata final |
 | `@xessa/compiler` | `0.1.1`, MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE` |
 | `@xessa/cli` | `0.1.1`, MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js` |
 | VS Code extension | marketplace `name: xessa`, `version: 0.1.0`, publisher `xessa`, `icon: media/icon.png`, language `xessa` with `.cssx` |
+| Language service | `@xessa/language-service` `0.1.0`, `private: true` (internal editor service, not an npm artifact) |
 | Diagnostics | `XESSA####` (unchanged) |
 
 ## Root package
@@ -88,13 +101,7 @@ public package (`0.1.1`) that only reserves the name. It ships no code: `files` 
 constrained by `files` (the authoritative allowlist) with a root `.npmignore` as a second guard; npm
 ignores `.npmignore` whenever `files` is present.
 
-The root package was **approved and published by the owner on 2026-11-26 via npm's staged
-publishing** (`npm stage publish`). Published versions are immutable; the tarball is functionally
-correct (4 files, no dependencies, `bin.xessa`). `0.0.0-stage` in the root package (and compiler)
-version list is npm's staged-publishing placeholder: it is expected and must **not** be deprecated or
-unpublished.
-
-To publish a future version (owner, from the repository root):
+To publish (owner, from the repository root):
 
 ```sh
 npm pack --dry-run --json   # must list exactly package.json, README.md, LICENSE, bin/xessa.js
@@ -122,16 +129,11 @@ DONE  Packaged: packages/vscode/xessa-0.1.0.vsix (18 files, 140.6 KB)
 
 The `*.vsix` pattern is gitignored.
 
-## Tarball contents (recorded)
+## Tarball contents
 
-| Package | Files | Root files included |
-|---|---|---|
-| `@xessa/compiler` | 398 | `package.json`, `README.md`, `LICENSE` (+ `dist/**`, `src/**`) |
-| `@xessa/cli` | 89 | `package.json`, `README.md`, `LICENSE` (+ `dist/**`, `src/**`) |
-| `xessa` (root package) | 4 | `package.json`, `README.md`, `LICENSE` (+ `bin/xessa.js`) |
-
-Package-level `README.md` and `LICENSE` copies exist so npm tarballs are self-describing;
-`release:check` fails if either is missing.
+`release:check` asserts each package tarball contains `package.json`, `README.md`, `LICENSE` and
+`dist/**`; package-level `README.md` and `LICENSE` copies exist so npm tarballs are self-describing.
+The root tarball is checked by `npm pack --dry-run` and is limited to four files.
 
 ## Framework note
 
@@ -139,6 +141,17 @@ The extension-host smoke suite depends on `@vscode/test-electron 2.5.2`. On macO
 1.147.0, the package's default launcher resolution looks for `…/MacOS/Electron`, but VS Code 1.147
 ships only `…/MacOS/Code`. The repository test orchestrator resolves the executable itself and
 passes `vscodeExecutablePath`.
+
+## Failure rules
+
+- **Published versions are immutable.** Never `npm unpublish` or withdraw. A bad release is
+  superseded by a new version, never removed.
+- If one package succeeds and the next fails, record exactly what shipped where and retry the
+  remaining package.
+- If the failure is auth/transient, retry the same version. If code must change in an
+  already-published package, bump that package (and the CLI, whose dependency is pinned to the
+  published compiler version).
+- Record the outcome, version and any partial state in `.ai/reports/` immediately.
 
 ## Rollback
 

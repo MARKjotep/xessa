@@ -57,8 +57,29 @@ Keep one module as the owner of each runtime property and have other modules ref
 
 ## Status
 
-**Open upstream** (bug). Not blocking the committed app: its portable palettes are native tokens and no entry declares one runtime property through two style modules. Related feature records: `portable-runtime-token-prefix.md`, `namespaced-runtime-token-emission.md`, `style-import-merge-order.md`. Suite: `tests/features/xessa-compiler.test.ts`; inventory: `tests/TESTING-INVENTORY.md` §3.
+**Fixed in 0.1.1** (2026-11-27). Runtime emission now sees every unqualified runtime provider and
+merge order decides the single emitted value; no XESSA2001 is reported when all conflicting providers
+are runtime and the module never references the bare `$name`. The original evidence above is kept as
+history.
+
+### Fix
+
+- `resolveUnqualified` returns the deterministic first-provider winners plus a per-name
+  `RuntimeProviders` list; `buildScopes` and `ModuleRecord.runtimeProviders` carry it to emission.
+- `emitRuntimeTokens` registers every entry provider before reference-driven registration, so
+  `moduleMergeRanks` picks the later definition (ADR-0016) and the existing property dedupe emits one
+  custom property.
+- The diagnostic is suppressed only when every conflicting provider is `runtime` and the module's
+  authored values contain no unqualified `$name` reference. A referenced name keeps XESSA2001 and
+  first-wins symbol recovery; `$ns.member` references do not count. Compile-time duplicate imports
+  still report XESSA2001 (`tests/fixtures/variables/ambiguous-import`).
+- Regression tests in `tests/compiler/runtime.test.ts`: two unqualified `styles` imports with no
+  reference (zero diagnostics, one `:root`, later value, both rules emitted); the same entry
+  referencing `$x` (XESSA2001); the existing entry-override case; and a token-only variant proving
+  graph merge rank wins over authored `@use` order, and a namespaced `$a.x` reference does not count
+  as a bare reference. The merge-order and token-only cases failed before the fix and pass after; the
+  compile-time resolver fixture is unchanged.
 
 ## Triage decision (2026-11-27)
 
-**Confirmed spec bug (unqualified `styles` imports).** `SPECIFICATION.md` §6.2/§6.3 and ADR-0016 require later-in-merge-order wins with no conflict diagnostic. Current `resolveUnqualified` reports XESSA2001 for any duplicate unqualified provider and keeps the first; existing repo tests cover namespaced imports only. Add a repo-local regression fixture first, then fix. Not a rename blocker. **Decision: fix next; do not change behavior in this task.**
+**Confirmed spec bug (unqualified `styles` imports).** `SPECIFICATION.md` §6.2/§6.3 and ADR-0016 require later-in-merge-order wins with no conflict diagnostic. `resolveUnqualified` had reported XESSA2001 for any duplicate unqualified provider and kept the first. Fixed in 0.1.1 with the tests above; not a rename blocker.

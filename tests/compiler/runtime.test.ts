@@ -370,6 +370,100 @@ describe("runtime tokens: merge-order override (ADR-0016)", () => {
     expect(JSON.stringify(second.result.ir)).toBe(JSON.stringify(first.result.ir));
     expect(second.result.diagnostics).toEqual(first.result.diagnostics);
   });
+
+  test("two unqualified styles imports emit one property with the later module's value", async () => {
+    const a = `${WORKSPACE}/a.cssx`;
+    const b = `${WORKSPACE}/b.cssx`;
+    const files = {
+      [a]: "@runtime { x: red; }\n.a-panel { color: $x; }\n",
+      [b]: "@runtime { x: green; }\n.b-panel { color: $x; }\n",
+      [`${WORKSPACE}/entry.cssx`]:
+        '@setup { prefix: "ui"; }\n@use "./a.cssx" styles;\n@use "./b.cssx" styles;\n' +
+        ".card { color: red; }\n",
+    };
+
+    const result = await compileProject(["entry.cssx"], createHost(files), {
+      projectRoot: WORKSPACE,
+    });
+    const entry = result["entry.cssx"];
+    if (entry === undefined) throw new Error("entry produced no result");
+
+    // ADR-0016: the duplicate property is not a symbol ambiguity when the
+    // entry never references `$x`; merge order decides and emits one value.
+    expect(entry.diagnostics).toEqual([]);
+    expect(entry.css.match(/:root/g) ?? []).toHaveLength(1);
+    expect(entry.css).toContain("--ui-x:green");
+    expect(entry.css).not.toContain("--ui-x:red");
+    expect(entry.css).toContain(".a-panel");
+    expect(entry.css).toContain(".b-panel");
+  });
+
+  test("an unqualified $x reference keeps the ambiguity diagnostic", async () => {
+    const a = `${WORKSPACE}/a.cssx`;
+    const b = `${WORKSPACE}/b.cssx`;
+    const files = {
+      [a]: "@runtime { x: red; }\n.a-panel { color: $x; }\n",
+      [b]: "@runtime { x: green; }\n.b-panel { color: $x; }\n",
+      [`${WORKSPACE}/entry.cssx`]:
+        '@setup { prefix: "ui"; }\n@use "./a.cssx" styles;\n@use "./b.cssx" styles;\n' +
+        ".card { color: $x; }\n",
+    };
+
+    const result = await compileProject(["entry.cssx"], createHost(files), {
+      projectRoot: WORKSPACE,
+    });
+    const entry = result["entry.cssx"];
+    if (entry === undefined) throw new Error("entry produced no result");
+
+    // ADR-0016 item 4: runtime merge order does not silence `$name` symbol
+    // ambiguity, and recovery still keeps the first provider.
+    expect(entry.diagnostics.map((diagnostic) => diagnostic.code)).toEqual(["XESSA2001"]);
+    expect(entry.diagnostics[0]?.message).toContain("Ambiguous unqualified import");
+  });
+
+  test("a namespaced reference does not count as an unqualified $name reference", async () => {
+    const a = `${WORKSPACE}/a.cssx`;
+    const b = `${WORKSPACE}/b.cssx`;
+    const files = {
+      [a]: "@runtime { x: red; }\n",
+      [b]: "@runtime { x: green; }\n",
+      [`${WORKSPACE}/entry.cssx`]:
+        '@setup { prefix: "ui"; }\n@use "./a.cssx" styles;\n@use "./b.cssx" styles;\n' +
+        '@use "./a.cssx" as a;\n.card { color: $a.x; }\n',
+    };
+
+    const result = await compileProject(["entry.cssx"], createHost(files), {
+      projectRoot: WORKSPACE,
+    });
+    const entry = result["entry.cssx"];
+    if (entry === undefined) throw new Error("entry produced no result");
+
+    expect(entry.diagnostics).toEqual([]);
+    expect(entry.css).toContain("--ui-x:green");
+  });
+
+  test("token-only imports use graph merge rank, not authored @use order", async () => {
+    const a = `${WORKSPACE}/a.cssx`;
+    const z = `${WORKSPACE}/z.cssx`;
+    const files = {
+      // Graph order is topological with path ties (a before z), so z has the
+      // higher rank even though it is authored first in the entry.
+      [a]: "@runtime { x: green; }\n",
+      [z]: "@runtime { x: red; }\n",
+      [`${WORKSPACE}/entry.cssx`]:
+        '@setup { prefix: "ui"; }\n@use "./z.cssx";\n@use "./a.cssx";\n.row { color: red; }\n',
+    };
+
+    const result = await compileProject(["entry.cssx"], createHost(files), {
+      projectRoot: WORKSPACE,
+    });
+    const entry = result["entry.cssx"];
+    if (entry === undefined) throw new Error("entry produced no result");
+
+    expect(entry.diagnostics).toEqual([]);
+    expect(entry.css).toContain("--ui-x:red");
+    expect(entry.css).not.toContain("--ui-x:green");
+  });
 });
 
 describe("runtime tokens: values", () => {

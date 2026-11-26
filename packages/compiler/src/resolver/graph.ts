@@ -18,9 +18,16 @@ import type { GroupSource } from "./groups.js";
 import { collectKeyframes, visibleKeyframes } from "./keyframes.js";
 import type { KeyframeSource } from "./keyframes.js";
 import { decodeCssString, isWithinWorkspace, normalizePosixPath } from "./paths.js";
+import { unqualifiedReferenceNames } from "./references.js";
 import { buildScopes, collectLocalSymbols } from "./scopes.js";
 import type { LocalSymbols } from "./scopes.js";
-import type { ModuleGraph, ModuleRecord, ResolvedImport, TokenScope } from "./types.js";
+import type {
+  ModuleGraph,
+  ModuleRecord,
+  ResolvedImport,
+  RuntimeProviders,
+  TokenScope,
+} from "./types.js";
 
 /** One successfully parsed module plus its resolved imports. */
 interface LoadedModule {
@@ -58,7 +65,11 @@ export async function resolveModuleGraph(
 
   const scopes = new Map<
     string,
-    { readonly compileScope: TokenScope; readonly runtimeScope: TokenScope }
+    {
+      readonly compileScope: TokenScope;
+      readonly runtimeScope: TokenScope;
+      readonly runtimeProviders: RuntimeProviders;
+    }
   >();
   for (const [file, module] of loaded) {
     scopes.set(
@@ -68,6 +79,7 @@ export async function resolveModuleGraph(
         localsForFile(file, locals),
         module.imports,
         (target) => locals.get(target),
+        unqualifiedReferenceNames(module.ast),
         report,
       ),
     );
@@ -112,6 +124,7 @@ export async function resolveModuleGraph(
       importedBy,
       compileScope: scope.compileScope,
       runtimeScope: scope.runtimeScope,
+      runtimeProviders: scope.runtimeProviders,
       keyframes: keyframes.get(file) ?? new Map(),
       groups: groups.get(file) ?? new Map(),
       hasRules: hasTopLevelRules(module.ast),

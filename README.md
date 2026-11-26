@@ -7,12 +7,12 @@ runtime**, no framework dependency and no editor requirement: `@xessa/compiler` 
 with zero runtime dependencies, the `xessa` CLI drives it from Node or Bun, and the VS Code extension
 is an interface to the same compiler.
 
-Xessa is at **v0.1** — implementation complete. `@xessa/compiler` and `@xessa/cli` **0.1.1 are
-published on npm** (2026-11-26), alongside the unscoped `xessa` root reservation package, and passed
-clean-environment post-release checks ([PP5a](.ai/reports/CSSX-PP5A.md)). The VS Code extension is **not on the
-Marketplace yet**: it ships
-as the local VSIX produced by `bun run release:check` (PP4b deferred). It is an MVP with a
-deliberately small, honest feature set — read [compatibility](docs/compatibility.md) and
+Xessa is at **v0.1** — implementation complete. **0.1.1 is the first Xessa release (2026-11-27),
+prepared for publication; publish with [docs/release.md](docs/release.md).** The full release gate
+(`bun run release:check`) is green; registry install checks follow publication. The VS Code extension
+is **not on the Marketplace yet**: it ships as the local VSIX
+produced by `bun run release:check` (PP4b deferred). It is an MVP with a deliberately small, honest
+feature set — read [compatibility](docs/compatibility.md) and
 [known limitations](docs/known-limitations.md) before adopting it. The normative language definition
 is [SPECIFICATION.md](SPECIFICATION.md); architecture decisions are recorded in
 [`docs/decisions/`](docs/decisions/).
@@ -85,7 +85,8 @@ tour, CLI/editor reference and theming recipes, read the **[full usage guide](do
 
 ## Install
 
-`@xessa/compiler` and `@xessa/cli` are published at **0.1.1** (2026-11-26):
+`@xessa/compiler` and `@xessa/cli` **0.1.1** are the first Xessa release (2026-11-27), prepared for
+publication — see [docs/release.md](docs/release.md). Once published, install them with:
 
 ```sh
 bun add @xessa/compiler        # programmatic compiler API
@@ -141,7 +142,7 @@ bun run release:check      # also produces packages/vscode/xessa-0.1.0.vsix
    enabled, the `.d.ts` next to it gives literal types such as `"ui-button"`; the runtime value is a
    plain string, so no helper or client runtime is involved.
 
-To build from a source checkout instead of the published packages:
+To build from a source checkout instead of the npm packages:
 
 ```sh
 bun install

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Editor language service for Xessa: completion, hover, diagnostics and formatting.",
   "type": "module",
+  "private": true,
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -9,7 +9,8 @@ configuration file (`xessa.config.json`) and diagnostic codes (`XESSA####`) keep
 
 ## Install
 
-Published on npm as **0.1.1** (2026-11-26):
+**0.1.1** is the first Xessa release (2026-11-27), prepared for publication; publish with
+`docs/release.md`. Once published, install it with:
 
 ```sh
 npm install @xessa/compiler

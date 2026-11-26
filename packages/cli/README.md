@@ -8,7 +8,8 @@ Source files use the `.cssx` extension (ADR-0013). The command, configuration fi
 
 ## Install
 
-Published on npm as **0.1.1** (2026-11-26):
+**0.1.1** is the first Xessa release (2026-11-27), prepared for publication; publish with
+`docs/release.md`. Once published, install it with:
 
 ```sh
 npm install --global @xessa/cli
@@ -16,7 +17,7 @@ npm install --global @xessa/cli
 npx @xessa/cli build
 ```
 
-The published `bin` entry is the built `dist/index.js`, so `npx @xessa/cli` / `bunx xessa` no longer
+The packaged `bin` entry is the built `dist/index.js`, so `npx @xessa/cli` / `bunx xessa` no longer
 need a TypeScript loader. The source and built entry use the `#!/usr/bin/env node` shebang, so the
 CLI runs on a Node-only machine (Bun executes the same file).
 

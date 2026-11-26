@@ -17,6 +17,7 @@ import { KEYFRAMES_NAMESPACE } from "./keyframes.js";
 import type {
   ImportSymbolOrigin,
   ResolvedImport,
+  RuntimeProviders,
   ScopedNamespace,
   ScopedToken,
   ScopedTokenType,
@@ -126,21 +127,30 @@ export function collectLocalSymbols(
  * unresolvable while `$layout.spacing` works. Ambiguous unqualified names are
  * XESSA2001 at the second conflicting `@use`; the first provider is kept in the
  * scope for deterministic downstream behaviour when the caller chooses to
- * continue after errors.
+ * continue after errors. A conflict made only of runtime providers is not
+ * ambiguous when the module never references the bare name, because merge order
+ * decides the emitted property (ADR-0016); {@link RuntimeProviders} still
+ * carries every provider for that decision.
  */
 export function buildScopes(
   file: string,
   locals: LocalSymbols,
   imports: readonly ResolvedImport[],
   localsFor: (module: string) => LocalSymbols | undefined,
+  references: ReadonlySet<string>,
   report: (diagnostic: Diagnostic) => void,
-): { readonly compileScope: TokenScope; readonly runtimeScope: TokenScope } {
+): {
+  readonly compileScope: TokenScope;
+  readonly runtimeScope: TokenScope;
+  readonly runtimeProviders: RuntimeProviders;
+} {
   const bindings = collectNamespaceBindings(file, imports, report);
-  const unqualified = resolveUnqualified(file, locals, imports, localsFor, report);
+  const unqualified = resolveUnqualified(file, locals, imports, localsFor, references, report);
 
   return {
-    compileScope: buildScope(file, "compile", locals, localsFor, bindings, unqualified),
-    runtimeScope: buildScope(file, "runtime", locals, localsFor, bindings, unqualified),
+    compileScope: buildScope(file, "compile", locals, localsFor, bindings, unqualified.winners),
+    runtimeScope: buildScope(file, "runtime", locals, localsFor, bindings, unqualified.winners),
+    runtimeProviders: unqualified.runtimeProviders,
   };
 }
 
@@ -152,14 +162,21 @@ export function buildScopes(
  * shadows every unqualified import of that name, and two distinct providers
  * (same or different symbol spaces) are ambiguous. The first provider wins so
  * repeated runs and post-error recovery stay deterministic.
+ *
+ * Runtime-only conflicts are not reported when the module never references the
+ * bare name: the emitted custom property is then decided by merge order
+ * (ADR-0016), not by symbol resolution. All runtime providers are returned per
+ * name so emission can apply that order; a referenced name keeps the XESSA2001
+ * and its first-wins recovery.
  */
 function resolveUnqualified(
   file: string,
   locals: LocalSymbols,
   imports: readonly ResolvedImport[],
   localsFor: (module: string) => LocalSymbols | undefined,
+  references: ReadonlySet<string>,
   report: (diagnostic: Diagnostic) => void,
-): Map<string, ScopedToken> {
+): { readonly winners: Map<string, ScopedToken>; readonly runtimeProviders: RuntimeProviders } {
   const providers = new Map<string, UnqualifiedProvider[]>();
 
   for (const imported of imports) {
@@ -190,10 +207,13 @@ function resolveUnqualified(
   }
 
   const winners = new Map<string, ScopedToken>();
+  const runtimeProviders = new Map<string, ScopedToken[]>();
   for (const [name, list] of providers) {
     const first = list[0];
     if (first === undefined) continue;
-    if (list.length > 1) {
+
+    const allRuntime = list.every((provider) => provider.tokenType === "runtime");
+    if (list.length > 1 && !(allRuntime && !references.has(name))) {
       const conflicting = list[1];
       const span =
         conflicting === undefined ? first.import.item.span : conflicting.import.item.span;
@@ -208,10 +228,16 @@ function resolveUnqualified(
         ),
       );
     }
+
     winners.set(name, importedToken(first.definition, importOrigin(first.import), true));
+
+    const runtimes = list
+      .filter((provider) => provider.tokenType === "runtime")
+      .map((provider) => importedToken(provider.definition, importOrigin(provider.import), true));
+    if (runtimes.length > 0) runtimeProviders.set(name, runtimes);
   }
 
-  return winners;
+  return { winners, runtimeProviders };
 }
 
 function buildScope(

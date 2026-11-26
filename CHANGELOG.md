@@ -30,17 +30,26 @@ All notable changes to Xessa are documented here. The format follows
   suggestions with a `vendor-prefixed …` detail; typing `web` or `moz` after the colons filters to
   them, and accepting one keeps the correct colon count.
 
-## [0.1.1] - 2026-11-26
+## [0.1.1] - 2026-11-27
 
-Packaging-only release: language, compiler and editor behaviour is unchanged from 0.1.0, and the
-VS Code extension remains at `0.1.0`.
+The first Xessa release, prepared for publication on 2026-11-27 (see
+[docs/release.md](docs/release.md)). It carries the 0.1.0 language surface plus the packaging fixes
+and one compiler correction below. The VS Code extension remains at `0.1.0`.
+
+### Compiler
+
+- Runtime-token merge order now matches `SPECIFICATION.md` §6.2 and
+  [ADR-0016](docs/decisions/ADR-0016-runtime-token-override.md) when two unqualified `styles`
+  imports declare the same `@runtime` property: the later module in merge order supplies the single
+  emitted custom property, and no `XESSA2001` is reported while the entry never references `$name`.
+  A referenced unqualified name keeps the existing ambiguity diagnostic and first-provider recovery.
 
 ### Packaging
 
 - Both package builds remove `dist` before compiling, so stale renamed outputs no longer ship
   (`@xessa/cli@0.1.0` carried obsolete `dist/output/importPath.*`).
 - `@xessa/compiler` and `@xessa/cli` now ship `src/` alongside `dist/`, so every `.js`/`.d.ts`
-  source-map `sources` entry resolves inside the installed package (compiler tarball 398 files, CLI
+  source-map `sources` entry resolves inside the installed package (compiler tarball 403 files, CLI
   89).
 - The compiler README example now `await`s the async `compile()`.
 - The `docs/usage.md` quick start is formatter-clean and notes that generated maps are ESM

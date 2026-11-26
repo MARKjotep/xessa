@@ -152,6 +152,15 @@ export interface ScopedToken {
   readonly unqualified: boolean;
 }
 
+/**
+ * Every unqualified runtime definition visible under one `$name`.
+ *
+ * Symbol resolution keeps a deterministic first provider, but runtime emission
+ * needs the whole list so merge order (ADR-0016) can choose the later value.
+ * Definitions are in authored `@use` order.
+ */
+export type RuntimeProviders = ReadonlyMap<string, readonly ScopedToken[]>;
+
 /** The members one `@use "... as namespace"` statement exposes. */
 export interface ScopedNamespace {
   /** Authored alias without the `$` sigil. */
@@ -213,6 +222,14 @@ export interface ModuleRecord {
   readonly compileScope: TokenScope;
   /** Runtime (`@runtime`) scope, including namespace member maps. */
   readonly runtimeScope: TokenScope;
+  /**
+   * All unqualified runtime imports visible to this module, grouped by `$name`
+   * in authored `@use` order. Runtime emission registers every provider so the
+   * later definition in merge order wins even when symbol resolution kept a
+   * single first provider (SPECIFICATION.md §6.2, ADR-0016). Local definitions
+   * shadow imports and appear only in {@link runtimeScope}.
+   */
+  readonly runtimeProviders: RuntimeProviders;
   /**
    * `@keyframes` names visible to this module as `$keyframes.<name>` (ADR-0015):
    * its own top-level blocks plus those of every module reached through a

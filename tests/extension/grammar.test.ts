@@ -48,7 +48,7 @@ describe("grammar structure", () => {
   test("parses as a standalone source.xessa grammar", () => {
     expect(grammar.name).toBe("Xessa");
     expect(grammar.scopeName).toBe("source.xessa");
-    expect(grammar.fileTypes).toContain("xessa");
+    expect(grammar.fileTypes).toContain("cssx");
     expect(Object.keys(grammar.repository).length).toBeGreaterThan(30);
   });
 

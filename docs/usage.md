@@ -20,14 +20,15 @@ specification disagree, the specification wins. Related references:
 ### 1.1 Install
 
 Xessa requires Node.js ≥ 20 or Bun. The compiler is pure ESM with no runtime dependencies.
-`@xessa/compiler` and `@xessa/cli` are published at **0.1.1** (2026-11-26).
+`@xessa/compiler` and `@xessa/cli` **0.1.1** are the first Xessa release (2026-11-27), prepared for
+publication; publish with [release.md](release.md). Once published, install them with:
 
 ```sh
 bun add @xessa/compiler        # programmatic compiler API
 bun add -d @xessa/cli          # xessa build/check/watch/clean/format
 ```
 
-The published `bin` points at the built `dist/index.js`, so with Bun `bunx xessa` runs directly. With
+The packaged `bin` points at the built `dist/index.js`, so with Bun `bunx xessa` runs directly. With
 Node, use the same built entry: `node node_modules/@xessa/cli/dist/index.js` (or `npx @xessa/cli` in
 an installed project). A bare `npx xessa` does not run the CLI: it fetches the root reservation stub.
 Install `@xessa/cli` first so the local `xessa` bin wins, or use `npx @xessa/cli`. The source entry
@@ -967,7 +968,7 @@ the CLI for the active document. In workspace settings:
   shell and the file is not found.
 - `npx @xessa/cli …` always resolves the CLI package. A bare `npx xessa` does not: it fetches the
   root reservation stub. Install `@xessa/cli` first so the local `xessa` bin wins. Without a
-  published install, use a global link (`cd packages/cli && bun link` or `npm link`, then
+  registry install, use a global link (`cd packages/cli && bun link` or `npm link`, then
   `"xessa": "xessa build \"$fullFileName\""`) or the absolute built entry:
 
   ```json

@@ -207,8 +207,14 @@ export function emitRuntimeTokens(
   };
 
   // 1. Unqualified runtime surface of the entry itself: locals in authored
-  //    order, then unqualified imports (the A07 scope shape).
+  //    order, then unqualified imports (the A07 scope shape). The scope keeps
+  //    one deterministic winner per name, so register every runtime provider
+  //    separately: merge order, not first-provider recovery, decides the value
+  //    (ADR-0016).
   for (const token of entry.runtimeScope.tokens.values()) register(token, token.span);
+  for (const providers of entry.runtimeProviders.values()) {
+    for (const token of providers) register(token, token.span);
+  }
 
   // 2. Runtime tokens actually consumed through a reference, either by the
   //    entry's rules or by any reachable token module.
