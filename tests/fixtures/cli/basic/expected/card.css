@@ -1,0 +1,14 @@
+.ui-card {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+@media (min-width: 1280px) {
+  .ui-card {
+    border-radius: 12px;
+  }
+}
+
+.ui-card .ui-title {
+  font-weight: 600;
+}

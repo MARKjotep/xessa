@@ -1,0 +1,7 @@
+@setup {
+  prefix: "app";
+}
+@use "./module.cssx" styles;
+.page {
+  display: block;
+}

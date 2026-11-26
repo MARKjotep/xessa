@@ -1,0 +1,38 @@
+@setup {
+  prefix: "ui";
+}
+@use "./theme.cssx" as theme;
+@variables {
+  brand: #2563eb;
+  gap: 4px;
+}
+@runtime {
+  theme: light;
+}
+@group.card-base {
+  padding: 4px;
+}
+@keyframes spin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.card {
+  color: $brand;
+  background: $theme;
+  border-color: navy;
+  width: calc(100% - 20px);
+  padding: $gap;
+  animation: spin 1s;
+  @md {
+    color: red;
+  }
+  &:hover {
+    color: #fff;
+  }
+  & .title {
+    color: #2563eb80;
+  }
+  @group.card-base {
+    display: block;
+  }
+}

@@ -1,0 +1,7 @@
+@setup {
+  prefix: "app";
+}
+@use "./b.cssx" styles;
+.root {
+  color: black;
+}

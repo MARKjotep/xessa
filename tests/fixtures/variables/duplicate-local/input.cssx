@@ -1,0 +1,6 @@
+@setup { prefix: "ui"; }
+.card { gap: $gap; }
+@variables {
+  gap: 8px;
+  gap: 12px;
+}

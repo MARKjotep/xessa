@@ -1,0 +1,7 @@
+@group.card {
+  border-radius: 8px;
+}
+
+.b-panel {
+  color: blue;
+}

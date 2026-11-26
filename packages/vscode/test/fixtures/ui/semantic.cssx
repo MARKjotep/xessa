@@ -1,0 +1,26 @@
+@use "./theme.cssx" as ui;
+@variables {
+  spacing: 4px;
+}
+@runtime {
+  accent: #2563eb;
+}
+@keyframes spin {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.semantic {
+  padding: $spacing;
+  color: $accent;
+  background: $ui.primary;
+  border-color: var(--accent);
+  animation: $keyframes.spin 1s;
+  outline-color: $keyframes.nope;
+  margin: $ui.missing;
+  inset: $ghost;
+  width: 100%;
+}

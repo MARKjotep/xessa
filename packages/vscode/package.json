@@ -1,0 +1,125 @@
+{
+  "name": "xessa",
+  "displayName": "Xessa",
+  "description": "Xessa language support for VS Code: syntax highlighting, diagnostics, completions, hover, navigation and project commands.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "xessa",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MARKjotep/xessa.git"
+  },
+  "homepage": "https://github.com/MARKjotep/xessa#readme",
+  "bugs": {
+    "url": "https://github.com/MARKjotep/xessa/issues"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Programming Languages"],
+  "keywords": ["xessa", "cssx", "css", "stylesheet", "syntax highlighting", "completions"],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:xessa",
+    "onCommand:xessa.compileFile",
+    "onCommand:xessa.buildProject",
+    "onCommand:xessa.previewCompiledCss",
+    "onCommand:xessa.openGeneratedCss",
+    "onCommand:xessa.openClassMap",
+    "onCommand:xessa.checkProject"
+  ],
+  "contributes": {
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": ["keyword.control.media.xessa"],
+            "settings": { "foreground": "#C586C0" }
+          }
+        ]
+      }
+    },
+    "languages": [
+      {
+        "id": "xessa",
+        "aliases": ["Xessa", "xessa"],
+        "extensions": [".cssx"],
+        "icon": {
+          "light": "./media/file-icon.svg",
+          "dark": "./media/file-icon-dark.svg"
+        },
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "xessa",
+        "scopeName": "source.xessa",
+        "path": "./syntaxes/xessa.tmLanguage.json"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "xessa",
+        "scopes": {
+          "variable": ["variable.language"],
+          "namespace": ["entity.name.type"],
+          "runtimeVariable": ["keyword.control"],
+          "customProperty": ["keyword.control"],
+          "keyframe": ["entity.name.function"]
+        }
+      }
+    ],
+    "commands": [
+      { "command": "xessa.compileFile", "title": "Compile File", "category": "Xessa" },
+      { "command": "xessa.buildProject", "title": "Build Project", "category": "Xessa" },
+      {
+        "command": "xessa.previewCompiledCss",
+        "title": "Preview Compiled CSS",
+        "category": "Xessa"
+      },
+      { "command": "xessa.openGeneratedCss", "title": "Open Generated CSS", "category": "Xessa" },
+      { "command": "xessa.openClassMap", "title": "Open Class Map", "category": "Xessa" },
+      { "command": "xessa.checkProject", "title": "Check Project", "category": "Xessa" }
+    ],
+    "configuration": {
+      "title": "Xessa",
+      "properties": {
+        "xessa.compileOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Compile the saved Xessa file and write its outputs. Off by default; requires a trusted workspace."
+        },
+        "xessa.editor.formatOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Format the whole Xessa document with the canonical compiler formatter before saving. Off by default; Format Document (⌥⇧F) and editor.formatOnSave work independently."
+        },
+        "xessa.editor.completePropertyWithSemicolon": {
+          "type": "boolean",
+          "default": true,
+          "description": "Insert the semicolon when accepting a CSS property completion (color becomes color: ;) and place the cursor after the colon, before the semicolon. Turning this off inserts only `property: `."
+        },
+        "xessa.previewSplitEditor": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open Preview Compiled CSS beside the current editor instead of replacing it."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "bun build src/extension.ts --outdir dist --external vscode --format cjs --target node && node scripts/write-entry.mjs",
+    "watch": "node scripts/write-entry.mjs && bun build src/extension.ts --outdir dist --external vscode --format cjs --target node --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.4.1",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

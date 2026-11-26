@@ -1,0 +1,3 @@
+@setup { prefix: "ui"; }
+.card {
+  color: red;

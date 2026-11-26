@@ -1,0 +1,8 @@
+@variables {
+  pad: 12px;
+}
+
+@group.card {
+  padding: $pad;
+  border: 1px solid #ddd;
+}

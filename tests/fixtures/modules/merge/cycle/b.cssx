@@ -1,0 +1,7 @@
+@setup {
+  prefix: "b";
+}
+@use "./a.cssx" styles;
+.beta {
+  color: blue;
+}

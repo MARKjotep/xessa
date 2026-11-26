@@ -1,0 +1,15 @@
+.ui-grid {
+  columns: 1;
+}
+
+@media (min-width: 700px) {
+  .ui-grid {
+    columns: 2;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 900px) {
+  .ui-grid {
+    columns: 3;
+  }
+}

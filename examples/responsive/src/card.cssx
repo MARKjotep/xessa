@@ -1,0 +1,25 @@
+@setup {
+  prefix: "ui";
+  css-dir: "../generated/styles";
+  css-name: "card.css";
+  map-dir: "../generated/maps";
+  map-name: "card.map.js";
+}
+@media-types {
+  compact: (max-width: 500px);
+}
+.card {
+  padding: 12px @md 20px @xl 32px;
+  gap: 8px @md 16px;
+  background: white @dark #181818 @xl+dark #101010;
+  @md {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    & > .icon { width: 20px; }
+  }
+  @compact {
+    display: block;
+    padding: 8px;
+  }
+  & > .icon { width: 16px @lg 20px; }
+}

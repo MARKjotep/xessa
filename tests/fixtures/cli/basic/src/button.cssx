@@ -1,0 +1,16 @@
+@setup {
+  prefix: "ui";
+  css-dir: "../generated/styles";
+  css-name: "button.css";
+  map-dir: "../generated/maps";
+  map-name: "button.map.js";
+}
+@use "./tokens/theme.cssx" as theme;
+@variables { gap: $theme.spacing; }
+.button {
+  display: flex;
+  padding: $gap @md $theme.spacing;
+  border-radius: $theme.radius;
+  &:hover { opacity: 0.85; }
+  & > .icon { width: 16px; }
+}

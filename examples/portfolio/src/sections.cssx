@@ -1,0 +1,735 @@
+/*
+* Page sections. This file combines all three headline features: compile-time
+* tokens through namespaced `@use`, runtime tokens through `$theme.*`, and
+* card/button/badge groups with per-use-site overrides. `styles` is required on
+* the components import so the group definitions and `$keyframes.rise` are
+* visible here (ADR-0015, ADR-0017).
+*/
+@setup {
+  prefix: "pf";
+  module: true;
+}
+
+@use "./tokens.cssx" as space;
+
+@use "./tokens.cssx" as font;
+
+@use "./theme.cssx" as theme;
+
+@use "./components.cssx" styles;
+
+/* ---------------------------------------------------------------- hero --- */
+.hero {
+  position: relative;
+  padding-block: 48px 40px;
+  background: radial-gradient(circle at 84% 4%, $theme.accent-soft, transparent 36%);
+
+  @md {
+    padding-block: 88px 64px;
+  }
+
+  @lg {
+    padding-block: 104px 80px;
+  }
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) @lg 3;
+  gap: $space.loose @lg 3;
+  align-items: center;
+
+  @lg {
+    grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+    gap: 72px;
+  }
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  animation-name: $keyframes.rise;
+  animation-duration: 760ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+
+  @reduced {
+    animation: none;
+  }
+}
+
+.hero-title {
+  max-width: 18ch;
+  margin: 0;
+  font-family: $font.display;
+  font-size: clamp(2.7rem, 8.5vw, 5.4rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 0.96;
+  text-wrap: balance;
+}
+
+.hero-emphasis {
+  color: $theme.accent;
+  font-style: italic;
+}
+
+.hero-lede {
+  max-width: 54ch;
+  margin: 0;
+  color: $theme.muted;
+  font-size: 1.02rem;
+
+  @md {
+    font-size: 1.14rem;
+  }
+}
+
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: $theme.muted;
+  font-size: $font.size-sm;
+}
+
+.availability-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgb(34 197 94 / 0.16);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 22px;
+  border-top: 1px solid $theme.border;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-stat-value {
+  font-family: $font.display;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.hero-stat-label {
+  color: $theme.faint;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-visual {
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+}
+
+.portrait-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(100%, 380px);
+  aspect-ratio: 4 / 5;
+  padding: 28px;
+  overflow: hidden;
+  border: 1px solid $theme.border;
+  border-radius: 28px;
+  background: linear-gradient(155deg, $theme.raised, $theme.accent-soft);
+  box-shadow: $theme.shadow;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 16px;
+    border: 1px solid currentColor;
+    border-radius: 18px;
+    opacity: 0.12;
+    pointer-events: none;
+  }
+}
+
+.portrait-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  color: $theme.muted;
+  font-family: $font.mono;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.portrait-monogram {
+  position: relative;
+  z-index: 1;
+  margin: auto 0;
+  font-family: $font.display;
+  font-size: clamp(4.6rem, 10vw, 6.6rem);
+  font-weight: 600;
+  letter-spacing: -0.07em;
+  line-height: 0.8;
+}
+
+.portrait-bottom {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.portrait-role {
+  max-width: 18ch;
+  margin: 0;
+  color: $theme.muted;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.portrait-stamp {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 84px;
+  height: 84px;
+  border: 1px dashed $theme.accent;
+  border-radius: 50%;
+  color: $theme.accent;
+  font-family: $font.mono;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(8deg);
+}
+
+/* A quiet skills ticker closes the hero. */
+.marquee {
+  margin-top: 52px;
+  padding-block: 14px;
+  overflow: hidden;
+  border-block: 1px solid $theme.border;
+}
+
+.marquee-track {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: $theme.faint;
+  font-family: $font.mono;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* -------------------------------------------------------------- skills --- */
+.skill-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+
+  @sm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @lg {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Use site: override padding, radius and surface of @group.card. */
+.skill-card {
+  @group.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    padding: 22px;
+    border-radius: 18px;
+    background: $theme.surface;
+  }
+
+  transition: transform 200ms ease, border-color 200ms ease;
+
+  &:hover {
+    border-color: $theme.accent;
+    transform: translateY(-3px);
+  }
+}
+
+.skill-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: $theme.accent-soft;
+  color: $theme.accent;
+  font-family: $font.mono;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.skill-name {
+  margin: 4px 0 0;
+  font-family: $font.display;
+  font-size: 1.16rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.skill-desc {
+  margin: 0;
+  color: $theme.muted;
+  font-size: $font.size-sm;
+}
+
+.skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: auto 0 0;
+  padding: 8px 0 0;
+  list-style: none;
+}
+
+.skill-pill {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: $theme.canvas;
+  color: $theme.muted;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------ projects --- */
+.projects {
+  background: $theme.surface;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+
+  @sm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @lg {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Use site: a complete card with its own surface and spacing. */
+.project {
+  @group.card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 300px;
+    padding: 24px;
+    background: $theme.raised;
+  }
+
+  transition: transform 200ms ease, border-color 200ms ease;
+
+  &:hover {
+    border-color: $theme.accent;
+    transform: translateY(-4px);
+  }
+}
+
+/* Use site: the featured card replaces the surface, colour and padding. */
+.project-featured {
+  @group.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(26px, 4vw, 46px);
+    overflow: hidden;
+    border-color: $theme.accent;
+    background: $theme.accent;
+    color: $theme.accent-ink;
+    box-shadow: none;
+  }
+
+  @md {
+    grid-column: span 2;
+  }
+
+  @lg {
+    grid-column: 1 / -1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -90px;
+    right: -70px;
+    width: 260px;
+    height: 260px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  & .project-desc {
+    color: $theme.accent-ink;
+    opacity: 0.82;
+  }
+
+  & .project-index {
+    color: $theme.accent-ink;
+    opacity: 0.82;
+  }
+
+  & .project-metric-label {
+    color: $theme.accent-ink;
+    opacity: 0.82;
+  }
+}
+
+.project-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.project-index {
+  color: $theme.faint;
+  font-family: $font.mono;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.project-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: $font.display;
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.project-desc {
+  position: relative;
+  z-index: 1;
+  max-width: 56ch;
+  margin: 0;
+  color: $theme.muted;
+  font-size: $font.size-sm;
+}
+
+.project-tags {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-family: $font.mono;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}
+
+.project-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.project-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-metric-value {
+  font-family: $font.display;
+  font-size: 1.7rem;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.project-metric-label {
+  color: $theme.faint;
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font-size: $font.size-sm;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &::after {
+    content: "↗";
+    font-size: 0.9em;
+    transition: transform 160ms ease;
+  }
+
+  &:hover::after {
+    transform: translate(2px, -2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+}
+
+/* ---------------------------------------------------------- experience --- */
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-left: 8px;
+  padding: 0 0 36px 28px;
+  border-left: 1px solid $theme.border;
+
+  @md {
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 36px;
+    padding-left: 36px;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: -5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: $theme.accent;
+    box-shadow: 0 0 0 4px $theme.canvas;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+    border-left-color: transparent;
+  }
+}
+
+.timeline-date {
+  padding-top: 4px;
+  color: $theme.faint;
+  font-family: $font.mono;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timeline-role {
+  margin: 0;
+  font-family: $font.display;
+  font-size: 1.26rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.timeline-company {
+  color: $theme.accent;
+  font-size: $font.size-sm;
+  font-weight: 600;
+}
+
+.timeline-desc {
+  max-width: 66ch;
+  margin: 0;
+  color: $theme.muted;
+  font-size: $font.size-sm;
+}
+
+.timeline-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ------------------------------------------------------------- contact --- */
+.contact {
+  padding-block: 24px 88px;
+
+  @md {
+    padding-block: 40px 120px;
+  }
+}
+
+/* Use site: @group.card with a full accent treatment. */
+.contact-panel {
+  @group.card {
+    padding: clamp(28px, 6vw, 64px);
+    overflow: hidden;
+    border-color: $theme.accent;
+    border-radius: 30px;
+    background: $theme.accent;
+    color: $theme.accent-ink;
+    box-shadow: none;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: -120px;
+    bottom: -160px;
+    width: 380px;
+    height: 380px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.16;
+    pointer-events: none;
+  }
+}
+
+.contact-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 28px;
+
+  @lg {
+    grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+    align-items: center;
+    gap: 48px;
+  }
+}
+
+.contact-title {
+  max-width: 16ch;
+  margin: 0;
+  font-family: $font.display;
+  font-size: clamp(2rem, 4.6vw, 3.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.contact-lede {
+  max-width: 48ch;
+  margin: 12px 0 0;
+  font-size: $font.size-md;
+  opacity: 0.82;
+}
+
+.contact-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+  color: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.75;
+  }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+}
+
+.contact-note {
+  margin: 0;
+  font-family: $font.mono;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+  text-transform: uppercase;
+}

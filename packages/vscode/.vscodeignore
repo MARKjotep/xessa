@@ -1,0 +1,5 @@
+# Extension sources and build-time config are not needed at runtime:
+# the manifest entry is out/extension.js and modules live in dist/.
+src/**
+test/**
+tsconfig.json

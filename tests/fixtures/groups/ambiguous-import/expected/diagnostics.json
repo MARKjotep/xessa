@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA2001",
+    "severity": "error",
+    "messageContains": "Ambiguous group \"@group.card\"",
+    "span": { "line": 5, "col": 3 }
+  }
+]

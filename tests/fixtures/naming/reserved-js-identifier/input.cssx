@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.default { color: red; }
+.delete { color: blue; }
+.button { color: green; }

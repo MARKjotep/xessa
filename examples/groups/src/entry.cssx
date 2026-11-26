@@ -1,0 +1,94 @@
+@setup {
+  css-dir: "../generated/styles";
+  css-name: "app.css";
+  map-dir: "../generated/maps";
+  map-name: "app.map.js";
+  map-types: true;
+}
+
+/* `styles` is the only import form that exposes group definitions (ADR-0017 decision (a)). */
+@use "./chrome.cssx" styles;
+
+@use "./theme.cssx" as theme styles;
+
+/*
+* This local token deliberately repeats chrome.cssx's name. Group defaults
+* resolve in the module that authored them, so the defaults still emit 12px;
+* only declarations written in this entry see this 40px value.
+*/
+@variables {
+  chrome-padding: 40px;
+}
+
+/*
+* Same-property override: the group's padding default is spliced first and this
+* use-site padding later at equal specificity, so 20px wins by cascade. Both
+* declarations stay in the output — nothing is filtered or deduplicated.
+*/
+.card {
+  @group.chrome {
+    padding: 20px;
+  }
+
+  font-family: arial, sans-serif;
+  background-color: indigo;
+  color: orange;
+  padding: 1rem;
+  margin: 2rem;
+
+  &::hover {
+  }
+}
+
+/*
+* A different override on the same group: only border-radius repeats. Padding
+* and border keep the module's defaults.
+*/
+.tile {
+  @group.chrome {
+    border-radius: 0;
+  }
+}
+
+/*
+* `!important` consequence (ADR-0003): the group authored box-sizing
+* `!important`, so this plain declaration is emitted later but cannot win.
+* border-box persists.
+*/
+.framed {
+  @group.chrome {
+    box-sizing: content-box;
+  }
+}
+
+/*
+* Inline variant default: `elevated` declares `padding: 12px @md 20px` and this
+* use site does not touch padding, so the default survives — 12px below 768px
+* and 20px from 768px up.
+*
+* Runtime customization is authored here (decision (b)): the group default is
+* the compile-time `#ffffff`, while this use site binds the imported runtime
+* tokens, emitted as var(--ui-surface) and var(--ui-accent).
+*/
+.raised {
+  @group.elevated {
+    background: $theme.surface;
+    color: $theme.accent;
+  }
+}
+
+/*
+* A use-site base declaration beats the inline @md default at every width by
+* design: after expansion this later 4px declaration wins, including at 768px
+* and above (ADR-0017 / §5.2).
+*/
+.flush {
+  @group.elevated {
+    padding: 4px;
+  }
+}
+
+/* The entry's 40px token is real; it just never reaches the group defaults. */
+.local-token {
+  margin-top: $chrome-padding;
+}

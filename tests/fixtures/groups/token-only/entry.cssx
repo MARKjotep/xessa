@@ -1,0 +1,7 @@
+@use "./chrome.cssx";
+
+.panel {
+  @group.card {
+    padding: 20px;
+  }
+}

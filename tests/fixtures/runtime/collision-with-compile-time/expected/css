@@ -1,0 +1,7 @@
+:root {
+  --ui-primary: #0ea5e9;
+}
+
+.ui-card {
+  color: #2563eb;
+}

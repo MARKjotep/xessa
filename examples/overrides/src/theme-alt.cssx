@@ -1,0 +1,11 @@
+/*
+ * Alternative theme module: redeclares `primary` with a clashing value.
+ * Imported after theme-base.cssx, so it is the later module in merge order.
+ */
+@setup { prefix: "ui"; module: true; }
+
+@runtime { primary: #dc2626; }
+
+.alt-card {
+  color: $primary;
+}

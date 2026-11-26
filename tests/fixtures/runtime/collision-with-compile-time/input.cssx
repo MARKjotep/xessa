@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+@variables { primary: #2563eb; }
+@runtime { primary: #0ea5e9; }
+.card { color: $primary; }

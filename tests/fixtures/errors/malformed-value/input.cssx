@@ -1,0 +1,5 @@
+@setup { prefix: "ui"; }
+.box {
+  width: calc(100% - 20px;
+  height: 10px;
+}

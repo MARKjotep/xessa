@@ -1,0 +1,12 @@
+@use "./theme.cssx" styles;
+
+@group.card {
+  gap: $gap;
+  padding: 12px;
+}
+
+.panel {
+  @group.card {
+    color: navy;
+  }
+}

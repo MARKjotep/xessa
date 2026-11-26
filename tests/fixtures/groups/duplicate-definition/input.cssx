@@ -1,0 +1,13 @@
+@group.card {
+  padding: 12px;
+}
+
+@group.card {
+  padding: 40px;
+}
+
+.panel {
+  @group.card {
+    color: navy;
+  }
+}

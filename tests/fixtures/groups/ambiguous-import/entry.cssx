@@ -1,0 +1,8 @@
+@use "./a.cssx" styles;
+@use "./b.cssx" styles;
+
+.panel {
+  @group.card {
+    padding: 20px;
+  }
+}

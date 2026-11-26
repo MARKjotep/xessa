@@ -1,0 +1,19 @@
+@setup {
+  prefix: "ui";
+}
+@variables {
+  red: #ff0000;
+}
+.swatches {
+  color: Red;
+  background: #fff;
+  border-color: navy;
+  outline-color: #2563eb80;
+  --brand: #2563eb;
+  box-shadow: 0 0 4px #000;
+  color: $red;
+  border: 1px solid teal;
+  content: "black";
+  background-image: url(red.svg);
+  width: 100%;
+}

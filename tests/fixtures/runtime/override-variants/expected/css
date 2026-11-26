@@ -1,0 +1,1 @@
+:root{--ui-surface:#f8fafc;}@media (prefers-color-scheme: dark){:root{--ui-surface:#0f172a;}}.theme-surface{background:var(--ui-surface);}.ui-app-surface{background:var(--ui-surface);}

@@ -1,0 +1,7 @@
+@runtime {
+  gap: 4px;
+}
+
+.theme-note {
+  color: gray;
+}

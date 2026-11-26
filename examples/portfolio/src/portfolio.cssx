@@ -1,0 +1,27 @@
+@setup {
+  prefix: "pf";
+  css-dir: "../generated/styles";
+  css-name: "portfolio.css";
+  map-dir: "../generated/maps";
+  map-name: "portfolio.map.js";
+}
+
+/*
+* Single entry, one stylesheet. Import order is the emission order
+* (SPECIFICATION.md §6.3): imported modules first in authored order, then the
+* entry's own rules (there are none). Each module is canonicalised by path, so
+* the shared components import from sections.cssx is one module, emitted once.
+*
+* tokens.cssx is imported token-only; it emits no CSS of its own and its
+* compile-time values are still available to every module that imports it.
+*/
+@use "./tokens.cssx" as tokens;
+
+/* `styles` merges rules (and the runtime `:root` block) into this build. */
+@use "./theme.cssx" as theme styles;
+
+@use "./layout.cssx" styles;
+
+@use "./components.cssx" styles;
+
+@use "./sections.cssx" styles;

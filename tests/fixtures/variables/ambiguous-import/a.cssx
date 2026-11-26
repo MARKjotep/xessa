@@ -1,0 +1,3 @@
+@variables {
+  spacing: 8px;
+}

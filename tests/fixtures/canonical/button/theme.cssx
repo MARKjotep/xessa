@@ -1,0 +1,4 @@
+/* Token-only module imported (namespaced) by canonical/button. */
+@variables {
+  primary: #2563eb;
+}

@@ -1,0 +1,5 @@
+@setup { prefix: "app"; }
+@use "./motion.cssx";
+.page {
+  animation-name: $keyframes.spin;
+}

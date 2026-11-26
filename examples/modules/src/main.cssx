@@ -1,0 +1,26 @@
+@setup {
+  css-dir: "../client", "../generated/styles";
+  css-name: "app.css";
+  map-dir: "../generated/maps";
+  map-name: "app.map.js";
+}
+
+/*
+* Cascade order is depth-first in authored `@use` order, then this file's own
+* rules (ADR-0014): tokens (values only) -> card -> ribbon -> page. Each module
+* is canonicalised by path and emitted once.
+*/
+@use "./tokens.cssx";
+
+@use "./components/card.cssx" styles;
+
+@use "./components/ribbon.cssx" styles;
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: $gap;
+  background: $surface;
+  color: $ink;
+  font-family: system-ui, sans-serif;
+}

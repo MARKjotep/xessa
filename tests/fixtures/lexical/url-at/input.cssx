@@ -1,0 +1,5 @@
+.hero {
+  background-image: url("image@2x.png");
+  mask-image: url(image@2x.png);
+  cursor: url("icons/cursor@32.png") 0 0, auto;
+}

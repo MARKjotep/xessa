@@ -1,0 +1,6 @@
+@setup { prefix: "ui"; }
+.button {
+  color: navy;
+  .icon { width: 16px; }
+  .label .text { font-weight: 600; }
+}

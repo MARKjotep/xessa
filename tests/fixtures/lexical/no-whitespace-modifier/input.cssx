@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.button {
+  padding: 12px@md 20px;
+}

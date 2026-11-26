@@ -1,0 +1,6 @@
+@setup { prefix: "ui"; }
+@use "./tokens.cssx";
+@variables {
+  gap: 24px;
+}
+.card { gap: $gap; }

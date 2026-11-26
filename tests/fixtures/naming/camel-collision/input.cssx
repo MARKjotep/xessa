@@ -1,0 +1,3 @@
+@setup { prefix: "ui"; }
+.foo-bar { color: red; }
+.fooBar { color: blue; }

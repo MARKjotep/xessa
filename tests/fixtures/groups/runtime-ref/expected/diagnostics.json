@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA2001",
+    "severity": "error",
+    "messageContains": "@runtime token is not allowed in a group default",
+    "span": { "line": 4, "col": 3 }
+  }
+]

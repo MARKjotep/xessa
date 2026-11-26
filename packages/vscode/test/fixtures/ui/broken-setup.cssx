@@ -1,0 +1,7 @@
+@setup {
+  prefix: "ui";
+  nonsense: 1;
+}
+.card {
+  color: red;
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA2001",
+    "severity": "error",
+    "messageContains": "Duplicate group definition \"@group.card\"",
+    "span": { "line": 5, "col": 1 }
+  }
+]

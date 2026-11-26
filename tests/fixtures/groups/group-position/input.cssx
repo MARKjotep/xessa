@@ -1,0 +1,14 @@
+@group.card {
+  padding: 12px;
+}
+
+.panel {
+  @group.card {
+    border-color: red;
+  }
+  &:hover {
+    @group.card {
+      padding: 16px;
+    }
+  }
+}

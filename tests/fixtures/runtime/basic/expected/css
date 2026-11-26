@@ -1,0 +1,13 @@
+:root {
+  --ui-primary: #2563eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ui-primary: #60a5fa;
+  }
+}
+
+.ui-card {
+  color: var(--ui-primary);
+}

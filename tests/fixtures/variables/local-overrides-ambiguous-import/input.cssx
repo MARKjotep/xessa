@@ -1,0 +1,5 @@
+@setup { prefix: "ui"; }
+@use "./a.cssx";
+@use "./b.cssx";
+@variables { spacing: 24px; }
+.card { padding: $spacing; }

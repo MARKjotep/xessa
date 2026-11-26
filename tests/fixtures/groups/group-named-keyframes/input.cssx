@@ -1,0 +1,15 @@
+@group.keyframes {
+  animation-duration: 0.5s;
+}
+
+@keyframes spin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.spinner {
+  animation: $keyframes.spin 1s;
+  @group.keyframes {
+    animation-name: spin;
+  }
+}

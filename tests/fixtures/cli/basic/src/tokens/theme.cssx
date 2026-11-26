@@ -1,0 +1,4 @@
+@variables {
+  spacing: 12px;
+  radius: 8px;
+}

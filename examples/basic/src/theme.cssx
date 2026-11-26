@@ -1,0 +1,11 @@
+@setup {
+  module: true;
+}
+
+@variables {
+  primary: #2563eb;
+}
+
+.tester {
+  background-color: purple;
+}

@@ -1,0 +1,10 @@
+@group.card {
+  padding: 12px;
+}
+
+.panel {
+  @group.card @md {
+    padding: 20px;
+  }
+  color: red;
+}

@@ -1,0 +1,1 @@
+:root{--ui-accent:#aaaaaa;}@media (min-width: 768px){:root{--ui-accent:#bbbbbb;}}.a-panel{border-color:var(--ui-accent);}.b-panel{border-color:var(--ui-accent);}.ui-app{color:var(--ui-accent);background:var(--ui-accent);}

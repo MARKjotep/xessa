@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.box {
+  padding: 4px @md+md 8px @xl+dark+dark 16px;
+}

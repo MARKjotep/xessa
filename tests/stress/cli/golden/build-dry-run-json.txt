@@ -1,0 +1,67 @@
+{
+  "command": "build",
+  "success": true,
+  "exitCode": 0,
+  "dryRun": true,
+  "workspaceRoot": "<ROOT>",
+  "configFile": "<ROOT>/xessa.config.json",
+  "entries": [
+    {
+      "file": "src/button.cssx",
+      "dependencies": [
+        "src/tokens/theme.cssx"
+      ],
+      "outputs": [
+        {
+          "kind": "css",
+          "path": "generated/styles/button.css",
+          "written": false,
+          "reason": "dry-run"
+        },
+        {
+          "kind": "js",
+          "path": "generated/maps/button.map.js",
+          "written": false,
+          "reason": "dry-run"
+        },
+        {
+          "kind": "types",
+          "path": "generated/maps/button.map.d.ts",
+          "written": false,
+          "reason": "dry-run"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "file": "src/card.cssx",
+      "dependencies": [
+        "src/tokens/theme.cssx"
+      ],
+      "outputs": [
+        {
+          "kind": "css",
+          "path": "generated/styles/card.css",
+          "written": false,
+          "reason": "dry-run"
+        },
+        {
+          "kind": "js",
+          "path": "generated/maps/card.map.js",
+          "written": false,
+          "reason": "dry-run"
+        },
+        {
+          "kind": "types",
+          "path": "generated/maps/card.map.d.ts",
+          "written": false,
+          "reason": "dry-run"
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "diagnostics": [],
+  "warnings": [],
+  "errors": []
+}

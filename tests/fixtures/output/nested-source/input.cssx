@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.dashboard {
+  padding: 8px @md 16px;
+}

@@ -1,0 +1,4 @@
+@variables {
+  primary: #2563eb;
+  spacing: 12px;
+}

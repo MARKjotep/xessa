@@ -1,0 +1,4 @@
+.broken {
+  color: $missing;
+  padding: 4px;
+}

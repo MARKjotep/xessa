@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA3001",
+    "severity": "error",
+    "messageContains": "unknown",
+    "span": { "line": 3, "col": 14 }
+  }
+]

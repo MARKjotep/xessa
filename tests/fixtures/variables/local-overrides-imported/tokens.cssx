@@ -1,0 +1,5 @@
+/* Unqualified module: both `gap` and `radius` are imported. */
+@variables {
+  gap: 8px;
+  radius: 4px;
+}

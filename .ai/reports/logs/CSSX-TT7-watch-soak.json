@@ -1,0 +1,1438 @@
+{
+  "case": "TT7 watch soak",
+  "ok": true,
+  "failures": [],
+  "machine": {
+    "cpu": "Apple M1 Pro",
+    "cores": 8,
+    "memoryGb": 16,
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.3.0",
+    "bun": "1.4.5",
+    "node": "26.3.0"
+  },
+  "config": {
+    "files": 100,
+    "edits": 60,
+    "editIntervalMs": 30000,
+    "sampleIntervalMs": 10000,
+    "buildTimeoutMs": 90000,
+    "seed": 1,
+    "expectedMinutes": 30,
+    "rssCeilingMb": 512,
+    "rssGrowthBoundMb": 128
+  },
+  "wallClockMs": 1811294,
+  "readySources": 100,
+  "debounceMs": 40,
+  "readyRssMb": 85.3,
+  "builds": 61,
+  "buildsHealthy": true,
+  "buildDiagnostics": [],
+  "staleDiscards": 0,
+  "rss": {
+    "count": 181,
+    "firstMb": 85.3,
+    "lastMb": 79.8,
+    "minMb": 42.7,
+    "maxMb": 99.4,
+    "growthMb": -5.5,
+    "peakToTroughMb": 56.7,
+    "spanMs": 1800859
+  },
+  "manifest": {
+    "records": 400,
+    "artifacts": 400,
+    "problems": []
+  },
+  "watchExitCode": 0,
+  "edits": [
+    {
+      "revision": 1,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(1, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:2a555f403dce11b5d34e147597861e6f38f08ad4c2b63af3b63a48d49f2057d3",
+      "latencyMs": 110,
+      "atMs": 30112,
+      "builds": 1,
+      "rssMb": 85.8
+    },
+    {
+      "revision": 2,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(2, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:3a0cdb7cb0b66f10f60b644f6a902504637c99a28a91f62bace533c6cd965961",
+      "latencyMs": 485,
+      "atMs": 60486,
+      "builds": 2,
+      "rssMb": 92.5
+    },
+    {
+      "revision": 3,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(3, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:21e3ec3c02f9b36b3cc0ccda438579fc4946d1db6e18af7d551c3ee6d92ab8ca",
+      "latencyMs": 222,
+      "atMs": 90223,
+      "builds": 3,
+      "rssMb": 96.6
+    },
+    {
+      "revision": 4,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(4, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:f0e26a1ef92621731af11f1a4f06144d4b3f3d3737f33fa5a7cef15ebc3d1a09",
+      "latencyMs": 476,
+      "atMs": 120478,
+      "builds": 4,
+      "rssMb": 87.2
+    },
+    {
+      "revision": 5,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(5, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:0d2e4ed122dde401377548b3d930359f06a9e62d84c91bc023f4c29f2ef95a35",
+      "latencyMs": 1564,
+      "atMs": 151566,
+      "builds": 6,
+      "rssMb": 73
+    },
+    {
+      "revision": 6,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(6, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:dfd88faf6772bde40aa1a865efc50f4872e911ab2d71a29943aa5a0f32454ead",
+      "latencyMs": 631,
+      "atMs": 180632,
+      "builds": 6,
+      "rssMb": 75.5
+    },
+    {
+      "revision": 7,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(7, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:b05dc4b6ead82d24d05fc437d9156c07366521f86a9dfeec3767d775d297ed48",
+      "latencyMs": 121,
+      "atMs": 210123,
+      "builds": 8,
+      "rssMb": 71.8
+    },
+    {
+      "revision": 8,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(8, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:6be3b64af25e7b05ceff5461a6bcb74e7e6697883d78ea6e6110e0dbc4b23653",
+      "latencyMs": 505,
+      "atMs": 240506,
+      "builds": 8,
+      "rssMb": 81.1
+    },
+    {
+      "revision": 9,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(9, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:c37583c84d353a29eb833cb99679833532939eabb8fb0ba45bd642eceeb8367c",
+      "latencyMs": 172,
+      "atMs": 270174,
+      "builds": 9,
+      "rssMb": 70.2
+    },
+    {
+      "revision": 10,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(10, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:ba1925b4fa2348cffdce03df7348d44a9e4c3bcb7c84e8980bb3c66b22f45ed5",
+      "latencyMs": 319,
+      "atMs": 300319,
+      "builds": 10,
+      "rssMb": 82
+    },
+    {
+      "revision": 11,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(11, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:0e88af9f64c1ac513dbc227dfc98b9a43674778d47a54d8f88787ddcdc7a768e",
+      "latencyMs": 357,
+      "atMs": 330358,
+      "builds": 12,
+      "rssMb": 71.6
+    },
+    {
+      "revision": 12,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(12, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:dc1ed811357c62052a6a139aba2f3cab90ecca116536c46357af22d69a0e2b20",
+      "latencyMs": 507,
+      "atMs": 360507,
+      "builds": 12,
+      "rssMb": 83.1
+    },
+    {
+      "revision": 13,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(13, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:ad9ea42348d4802aacdc035d2fb5e731590258eb926b1f20faa07bcdc93d5890",
+      "latencyMs": 1059,
+      "atMs": 391060,
+      "builds": 14,
+      "rssMb": 83.4
+    },
+    {
+      "revision": 14,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(14, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:6d8b93ef2c383360bbfbed85120fe7c77718c6410ad6b93c00aedb4a6117541d",
+      "latencyMs": 333,
+      "atMs": 420334,
+      "builds": 14,
+      "rssMb": 87.3
+    },
+    {
+      "revision": 15,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(15, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:246de67c933222d087c565e186027190f576cd7bc4e3a44c7b18c35577a092c5",
+      "latencyMs": 110,
+      "atMs": 450111,
+      "builds": 15,
+      "rssMb": 67.9
+    },
+    {
+      "revision": 16,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(16, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:104f4db2c5efe08cb441405603f1729690be4a41455156655e050231c5672343",
+      "latencyMs": 421,
+      "atMs": 480422,
+      "builds": 16,
+      "rssMb": 74.4
+    },
+    {
+      "revision": 17,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(17, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:bca1f0d364ab3fe507970c55731e8d17cedb09612868b11342b07da8e219860e",
+      "latencyMs": 110,
+      "atMs": 510110,
+      "builds": 18,
+      "rssMb": 76.7
+    },
+    {
+      "revision": 18,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(18, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:0c09fe664dff3f336360316e5572600029f39944d62bf0e6f998061aad31eef6",
+      "latencyMs": 550,
+      "atMs": 540550,
+      "builds": 18,
+      "rssMb": 87.5
+    },
+    {
+      "revision": 19,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(19, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:97b08fb9688c8da763d49e2913e56a64e839fbeab6ec958ea3725063072349da",
+      "latencyMs": 155,
+      "atMs": 570155,
+      "builds": 20,
+      "rssMb": 88
+    },
+    {
+      "revision": 20,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(20, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:2a5a0a607d8278f369fbf8a8319c4d8a70f4a015de3f63dea36cc4a19565aecf",
+      "latencyMs": 342,
+      "atMs": 600343,
+      "builds": 20,
+      "rssMb": 90.1
+    },
+    {
+      "revision": 21,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(21, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:8e2660d533583d9278049b28573ee2bca4df74772f570047f9d1be5d9692fd21",
+      "latencyMs": 110,
+      "atMs": 630111,
+      "builds": 22,
+      "rssMb": 90.3
+    },
+    {
+      "revision": 22,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(22, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:a589e59ed18c1da07b9e557af11e6c904cf9f4218d2e310f9f28db481815e68f",
+      "latencyMs": 363,
+      "atMs": 660364,
+      "builds": 22,
+      "rssMb": 83.1
+    },
+    {
+      "revision": 23,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(23, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:8da25b3b0277b460e25bcc6c7176d9d6125852763a23ad82563a16f2db5ee0e7",
+      "latencyMs": 163,
+      "atMs": 690163,
+      "builds": 24,
+      "rssMb": 83.6
+    },
+    {
+      "revision": 24,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(24, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:80371fd1dfde98f42c590093f7cfe4c32a27f69dbf51c86fbb034308e1611f2f",
+      "latencyMs": 319,
+      "atMs": 720320,
+      "builds": 24,
+      "rssMb": 88.5
+    },
+    {
+      "revision": 25,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(25, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:04d10958cc3a994496a9800e9763e90a74c13198cb5192ad7946a62d493ec5d4",
+      "latencyMs": 1061,
+      "atMs": 751062,
+      "builds": 26,
+      "rssMb": 76
+    },
+    {
+      "revision": 26,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(26, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:8c72f9d6d6321ca99f5964020bfa57c8c8d8c8342e82147e31cb94fad6fff65f",
+      "latencyMs": 374,
+      "atMs": 780375,
+      "builds": 26,
+      "rssMb": 85.7
+    },
+    {
+      "revision": 27,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(27, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:fd00fa1aa07ae8c77cbc0627e1515f27fb763bc22b8828ac3d9937dcb1f4bc2e",
+      "latencyMs": 121,
+      "atMs": 810122,
+      "builds": 28,
+      "rssMb": 65.1
+    },
+    {
+      "revision": 28,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(28, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:6045a17b3e0929511711ce2b6c22a45c837bc4a5b3a184b99366fd3b93e8d6c6",
+      "latencyMs": 298,
+      "atMs": 840298,
+      "builds": 28,
+      "rssMb": 88.6
+    },
+    {
+      "revision": 29,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(29, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:66fe191595a1d4c80179e4baebfc72c82da9484b78c366b8d907d5d6cf1c87ce",
+      "latencyMs": 1063,
+      "atMs": 871065,
+      "builds": 30,
+      "rssMb": 89
+    },
+    {
+      "revision": 30,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(30, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:d9b97207ca3fda8243f80dd2839f5e449d049b21097d2145b7e15498025d3fdf",
+      "latencyMs": 1094,
+      "atMs": 901095,
+      "builds": 30,
+      "rssMb": 93
+    },
+    {
+      "revision": 31,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(31, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:29a6a24764ec9afd5a3619856798ba8d5838c10321292ce90ad673297239c1aa",
+      "latencyMs": 1066,
+      "atMs": 931067,
+      "builds": 32,
+      "rssMb": 93.6
+    },
+    {
+      "revision": 32,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(32, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:aa87578aa7445971025cb5ed85b150f04b46d8d23a84b2f1897f486cfd326266",
+      "latencyMs": 452,
+      "atMs": 960452,
+      "builds": 32,
+      "rssMb": 95.2
+    },
+    {
+      "revision": 33,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(33, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:b595ae28267d2e5420c68ddb08da379936383c5d28997a197e2c4d809cbd41b8",
+      "latencyMs": 373,
+      "atMs": 990374,
+      "builds": 34,
+      "rssMb": 84.8
+    },
+    {
+      "revision": 34,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(34, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:052a73d2d622061e3043ee3a5e18ff47744706809ff4b127e93ed9ad004b3d7b",
+      "latencyMs": 505,
+      "atMs": 1020506,
+      "builds": 34,
+      "rssMb": 89.6
+    },
+    {
+      "revision": 35,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(35, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:81ac15fb92ef56d37e2515471353582f6b66dd3a0cf4c3fbfe038d1effd2aec3",
+      "latencyMs": 189,
+      "atMs": 1050190,
+      "builds": 36,
+      "rssMb": 90.3
+    },
+    {
+      "revision": 36,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(36, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:d017e9f364063a1e847ce35e1a0f93ff469f6ceae7369272998061415f85d025",
+      "latencyMs": 483,
+      "atMs": 1080483,
+      "builds": 36,
+      "rssMb": 87.6
+    },
+    {
+      "revision": 37,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(37, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:d5af3b756754c42468d2dd8a76cadfba1c0888c67e6400293ee3c05789653b2a",
+      "latencyMs": 698,
+      "atMs": 1110699,
+      "builds": 38,
+      "rssMb": 88.4
+    },
+    {
+      "revision": 38,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(38, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:252278cfa3fcd52277640dd7a056c3008c4d4f9748fd3cdfd6bfee262adbc098",
+      "latencyMs": 296,
+      "atMs": 1140296,
+      "builds": 38,
+      "rssMb": 89.9
+    },
+    {
+      "revision": 39,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(39, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:e23a7c06ea32f7dad1b8aa23ca6df5a6d3e7fb49c8c2ccfd1855b9c106733e5e",
+      "latencyMs": 1209,
+      "atMs": 1171211,
+      "builds": 39,
+      "rssMb": 86.8
+    },
+    {
+      "revision": 40,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(40, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:795115f4278fbb799f1e6dfe0fbc60c46f0c70a4a2e31c6bb2b371de83b87b23",
+      "latencyMs": 330,
+      "atMs": 1200330,
+      "builds": 40,
+      "rssMb": 91.5
+    },
+    {
+      "revision": 41,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(41, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:47610053be67442ad184c9e39f5e95bb04839c8da97997f004b4526f5fd7e268",
+      "latencyMs": 388,
+      "atMs": 1230389,
+      "builds": 41,
+      "rssMb": 91.7
+    },
+    {
+      "revision": 42,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(42, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:94805ac82fab0442e449f101128d39fd8a25ac2ba79c1326ee9cf95ffc7c0a71",
+      "latencyMs": 398,
+      "atMs": 1260399,
+      "builds": 42,
+      "rssMb": 98.6
+    },
+    {
+      "revision": 43,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(43, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:1b9872cf2518a27ee94254d567c5d77d965c11f3f65f96a818a069122771b550",
+      "latencyMs": 523,
+      "atMs": 1290524,
+      "builds": 44,
+      "rssMb": 98.1
+    },
+    {
+      "revision": 44,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(44, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:48d771a3ab83b14603575815c6e5c813424b15ebead4a626b45938d57e53d429",
+      "latencyMs": 1241,
+      "atMs": 1321242,
+      "builds": 44,
+      "rssMb": 99.4
+    },
+    {
+      "revision": 45,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(45, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:af58776ac3fe0696601c36381a87047ead71e0d4b314b17a6f03a9100255b910",
+      "latencyMs": 1062,
+      "atMs": 1351062,
+      "builds": 46,
+      "rssMb": 86.9
+    },
+    {
+      "revision": 46,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(46, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:264137f1e25d35347d6960dd910b76baa82eee33fdfbb4bc608f9ac8eca8e9e8",
+      "latencyMs": 648,
+      "atMs": 1380649,
+      "builds": 46,
+      "rssMb": 91.8
+    },
+    {
+      "revision": 47,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(47, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:dc60a5c5cbe3f58360a6af9a64c7c9e15abe5e5b023dfa8534604606c3d8bed9",
+      "latencyMs": 220,
+      "atMs": 1410222,
+      "builds": 48,
+      "rssMb": 92.2
+    },
+    {
+      "revision": 48,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(48, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:0723d27998286333145c15eb391aba2b6ec13aabb3a9e34422a2adc575bcf401",
+      "latencyMs": 710,
+      "atMs": 1440710,
+      "builds": 48,
+      "rssMb": 85.3
+    },
+    {
+      "revision": 49,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(49, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:7126d29467c568d25c03575c684eb461f5e1ef643feb017f1bb1501fc72e32cc",
+      "latencyMs": 497,
+      "atMs": 1470498,
+      "builds": 50,
+      "rssMb": 86.4
+    },
+    {
+      "revision": 50,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(50, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:ac06a665db080f8e8811d382cb9ccd9ec06d9f1b96c1cf1bda0ab6784bae7134",
+      "latencyMs": 343,
+      "atMs": 1500344,
+      "builds": 50,
+      "rssMb": 87.8
+    },
+    {
+      "revision": 51,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(51, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:fde4a143969d3c02393d8e75de44d6fd0c4e3808998263a53404ea07fb03d587",
+      "latencyMs": 1267,
+      "atMs": 1531268,
+      "builds": 52,
+      "rssMb": 88.9
+    },
+    {
+      "revision": 52,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(52, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:3e968f7e84573026feea36c9154f6e7d92c484c2b07ebcf5a9b16182ac605f14",
+      "latencyMs": 1253,
+      "atMs": 1561255,
+      "builds": 52,
+      "rssMb": 88.9
+    },
+    {
+      "revision": 53,
+      "source": "src/file-004.cssx",
+      "marker": "rgb(53, 0, 17)",
+      "artifact": "dist/styles/src/file-004.css",
+      "artifactHash": "sha256:62d5fecf649054c7ef77c105429a96ba07bddbf7559583028d608869f0137d58",
+      "latencyMs": 233,
+      "atMs": 1590234,
+      "builds": 54,
+      "rssMb": 89
+    },
+    {
+      "revision": 54,
+      "source": "src/file-005.cssx",
+      "marker": "rgb(54, 0, 17)",
+      "artifact": "dist/styles/src/file-005.css",
+      "artifactHash": "sha256:80c8dc0f5c1412c1738b3633652c4d82511fed8282d5a277b5a6d8f918a98e9b",
+      "latencyMs": 553,
+      "atMs": 1620553,
+      "builds": 54,
+      "rssMb": 93.8
+    },
+    {
+      "revision": 55,
+      "source": "src/file-006.cssx",
+      "marker": "rgb(55, 0, 17)",
+      "artifact": "dist/styles/src/file-006.css",
+      "artifactHash": "sha256:025d2b325e9720d1832ab792a0e9f78dc01b99c2b157241cded019a49524aea1",
+      "latencyMs": 462,
+      "atMs": 1650463,
+      "builds": 56,
+      "rssMb": 75.5
+    },
+    {
+      "revision": 56,
+      "source": "src/file-007.cssx",
+      "marker": "rgb(56, 0, 17)",
+      "artifact": "dist/styles/src/file-007.css",
+      "artifactHash": "sha256:aa00802541928a96246cdc2d7cab374531f70c3cf84b33e1473edb0048914338",
+      "latencyMs": 441,
+      "atMs": 1680442,
+      "builds": 56,
+      "rssMb": 87
+    },
+    {
+      "revision": 57,
+      "source": "src/file-000.cssx",
+      "marker": "rgb(57, 0, 17)",
+      "artifact": "dist/styles/src/file-000.css",
+      "artifactHash": "sha256:5da5cfa1ed8c424f0dc21f09602c63e1e886e44625f99e74c0923639615bcd5b",
+      "latencyMs": 1114,
+      "atMs": 1711115,
+      "builds": 57,
+      "rssMb": 87.3
+    },
+    {
+      "revision": 58,
+      "source": "src/file-001.cssx",
+      "marker": "rgb(58, 0, 17)",
+      "artifact": "dist/styles/src/file-001.css",
+      "artifactHash": "sha256:6665bebf49145204ee45b3b9aad30fe7992bb7fee0c4b044231bb37529dcab33",
+      "latencyMs": 741,
+      "atMs": 1740742,
+      "builds": 58,
+      "rssMb": 89.7
+    },
+    {
+      "revision": 59,
+      "source": "src/file-002.cssx",
+      "marker": "rgb(59, 0, 17)",
+      "artifact": "dist/styles/src/file-002.css",
+      "artifactHash": "sha256:9007d9a699db76dbc36af5ee7613d3694d05dd3c91b27d6ca84da402874901d9",
+      "latencyMs": 1062,
+      "atMs": 1771063,
+      "builds": 60,
+      "rssMb": 79.4
+    },
+    {
+      "revision": 60,
+      "source": "src/file-003.cssx",
+      "marker": "rgb(60, 0, 17)",
+      "artifact": "dist/styles/src/file-003.css",
+      "artifactHash": "sha256:19acb8f51bef93ad0c19573b520f22c88ab2217b60aa4111e9e9d319f0c09239",
+      "latencyMs": 1254,
+      "atMs": 1801254,
+      "builds": 60,
+      "rssMb": 90.8
+    }
+  ],
+  "samples": [
+    {
+      "atMs": 0,
+      "rssMb": 85.3
+    },
+    {
+      "atMs": 10009,
+      "rssMb": 85.2
+    },
+    {
+      "atMs": 20014,
+      "rssMb": 85.2
+    },
+    {
+      "atMs": 30018,
+      "rssMb": 85.2
+    },
+    {
+      "atMs": 40023,
+      "rssMb": 85.8
+    },
+    {
+      "atMs": 50027,
+      "rssMb": 85.6
+    },
+    {
+      "atMs": 60031,
+      "rssMb": 85.6
+    },
+    {
+      "atMs": 70036,
+      "rssMb": 96.8
+    },
+    {
+      "atMs": 80041,
+      "rssMb": 96.6
+    },
+    {
+      "atMs": 90045,
+      "rssMb": 96.6
+    },
+    {
+      "atMs": 100050,
+      "rssMb": 84.8
+    },
+    {
+      "atMs": 110054,
+      "rssMb": 84.7
+    },
+    {
+      "atMs": 120059,
+      "rssMb": 83.3
+    },
+    {
+      "atMs": 130063,
+      "rssMb": 87.4
+    },
+    {
+      "atMs": 140070,
+      "rssMb": 87.2
+    },
+    {
+      "atMs": 150074,
+      "rssMb": 77.1
+    },
+    {
+      "atMs": 160078,
+      "rssMb": 73
+    },
+    {
+      "atMs": 170083,
+      "rssMb": 69.6
+    },
+    {
+      "atMs": 180086,
+      "rssMb": 69.5
+    },
+    {
+      "atMs": 190091,
+      "rssMb": 75.9
+    },
+    {
+      "atMs": 200095,
+      "rssMb": 70.9
+    },
+    {
+      "atMs": 210099,
+      "rssMb": 70.9
+    },
+    {
+      "atMs": 220105,
+      "rssMb": 71.9
+    },
+    {
+      "atMs": 230110,
+      "rssMb": 71.8
+    },
+    {
+      "atMs": 240114,
+      "rssMb": 54.1
+    },
+    {
+      "atMs": 250118,
+      "rssMb": 80.5
+    },
+    {
+      "atMs": 260122,
+      "rssMb": 69.3
+    },
+    {
+      "atMs": 270130,
+      "rssMb": 69.3
+    },
+    {
+      "atMs": 280135,
+      "rssMb": 69.5
+    },
+    {
+      "atMs": 290139,
+      "rssMb": 67.8
+    },
+    {
+      "atMs": 300144,
+      "rssMb": 71.2
+    },
+    {
+      "atMs": 310151,
+      "rssMb": 65.4
+    },
+    {
+      "atMs": 320155,
+      "rssMb": 68.8
+    },
+    {
+      "atMs": 330160,
+      "rssMb": 69.1
+    },
+    {
+      "atMs": 340165,
+      "rssMb": 73.3
+    },
+    {
+      "atMs": 350170,
+      "rssMb": 73.2
+    },
+    {
+      "atMs": 360174,
+      "rssMb": 73.2
+    },
+    {
+      "atMs": 370178,
+      "rssMb": 83.4
+    },
+    {
+      "atMs": 380183,
+      "rssMb": 83.3
+    },
+    {
+      "atMs": 390187,
+      "rssMb": 83.3
+    },
+    {
+      "atMs": 400192,
+      "rssMb": 83.5
+    },
+    {
+      "atMs": 410196,
+      "rssMb": 83.4
+    },
+    {
+      "atMs": 420201,
+      "rssMb": 84.4
+    },
+    {
+      "atMs": 430207,
+      "rssMb": 65.3
+    },
+    {
+      "atMs": 440212,
+      "rssMb": 55.3
+    },
+    {
+      "atMs": 450217,
+      "rssMb": 67.9
+    },
+    {
+      "atMs": 460223,
+      "rssMb": 66
+    },
+    {
+      "atMs": 470227,
+      "rssMb": 65.9
+    },
+    {
+      "atMs": 480231,
+      "rssMb": 63.9
+    },
+    {
+      "atMs": 490236,
+      "rssMb": 75.3
+    },
+    {
+      "atMs": 500243,
+      "rssMb": 75.2
+    },
+    {
+      "atMs": 510247,
+      "rssMb": 76.7
+    },
+    {
+      "atMs": 520253,
+      "rssMb": 76.8
+    },
+    {
+      "atMs": 530257,
+      "rssMb": 75.6
+    },
+    {
+      "atMs": 540261,
+      "rssMb": 75.6
+    },
+    {
+      "atMs": 550265,
+      "rssMb": 87.9
+    },
+    {
+      "atMs": 560270,
+      "rssMb": 87.7
+    },
+    {
+      "atMs": 570274,
+      "rssMb": 88
+    },
+    {
+      "atMs": 580279,
+      "rssMb": 88.1
+    },
+    {
+      "atMs": 590284,
+      "rssMb": 88
+    },
+    {
+      "atMs": 600289,
+      "rssMb": 90
+    },
+    {
+      "atMs": 610294,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 620298,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 630302,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 640308,
+      "rssMb": 75.5
+    },
+    {
+      "atMs": 650312,
+      "rssMb": 75.2
+    },
+    {
+      "atMs": 660315,
+      "rssMb": 82.8
+    },
+    {
+      "atMs": 670321,
+      "rssMb": 83.6
+    },
+    {
+      "atMs": 680325,
+      "rssMb": 83.5
+    },
+    {
+      "atMs": 690330,
+      "rssMb": 83.6
+    },
+    {
+      "atMs": 700335,
+      "rssMb": 83.4
+    },
+    {
+      "atMs": 710341,
+      "rssMb": 83.4
+    },
+    {
+      "atMs": 720345,
+      "rssMb": 88.5
+    },
+    {
+      "atMs": 730350,
+      "rssMb": 89
+    },
+    {
+      "atMs": 740355,
+      "rssMb": 88.9
+    },
+    {
+      "atMs": 750359,
+      "rssMb": 65.2
+    },
+    {
+      "atMs": 760364,
+      "rssMb": 42.7
+    },
+    {
+      "atMs": 770368,
+      "rssMb": 45.5
+    },
+    {
+      "atMs": 780371,
+      "rssMb": 85.7
+    },
+    {
+      "atMs": 790377,
+      "rssMb": 88.8
+    },
+    {
+      "atMs": 800382,
+      "rssMb": 88.6
+    },
+    {
+      "atMs": 810385,
+      "rssMb": 73.8
+    },
+    {
+      "atMs": 820391,
+      "rssMb": 73.8
+    },
+    {
+      "atMs": 830396,
+      "rssMb": 74.4
+    },
+    {
+      "atMs": 840400,
+      "rssMb": 88.8
+    },
+    {
+      "atMs": 850405,
+      "rssMb": 88.9
+    },
+    {
+      "atMs": 860409,
+      "rssMb": 88.8
+    },
+    {
+      "atMs": 870413,
+      "rssMb": 88.8
+    },
+    {
+      "atMs": 880418,
+      "rssMb": 89
+    },
+    {
+      "atMs": 890421,
+      "rssMb": 89
+    },
+    {
+      "atMs": 900426,
+      "rssMb": 89
+    },
+    {
+      "atMs": 910430,
+      "rssMb": 93.4
+    },
+    {
+      "atMs": 920435,
+      "rssMb": 93.4
+    },
+    {
+      "atMs": 930438,
+      "rssMb": 93.4
+    },
+    {
+      "atMs": 940443,
+      "rssMb": 93.6
+    },
+    {
+      "atMs": 950447,
+      "rssMb": 93.5
+    },
+    {
+      "atMs": 960452,
+      "rssMb": 95.2
+    },
+    {
+      "atMs": 970457,
+      "rssMb": 84
+    },
+    {
+      "atMs": 980461,
+      "rssMb": 83.8
+    },
+    {
+      "atMs": 990466,
+      "rssMb": 84.8
+    },
+    {
+      "atMs": 1000471,
+      "rssMb": 84.8
+    },
+    {
+      "atMs": 1010476,
+      "rssMb": 84.6
+    },
+    {
+      "atMs": 1020479,
+      "rssMb": 89.1
+    },
+    {
+      "atMs": 1030484,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 1040489,
+      "rssMb": 90.1
+    },
+    {
+      "atMs": 1050494,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 1060499,
+      "rssMb": 90.4
+    },
+    {
+      "atMs": 1070503,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 1080507,
+      "rssMb": 87.6
+    },
+    {
+      "atMs": 1090513,
+      "rssMb": 88.3
+    },
+    {
+      "atMs": 1100517,
+      "rssMb": 88.2
+    },
+    {
+      "atMs": 1110522,
+      "rssMb": 88.2
+    },
+    {
+      "atMs": 1120526,
+      "rssMb": 88.5
+    },
+    {
+      "atMs": 1130531,
+      "rssMb": 88.3
+    },
+    {
+      "atMs": 1140535,
+      "rssMb": 90.1
+    },
+    {
+      "atMs": 1150540,
+      "rssMb": 90.3
+    },
+    {
+      "atMs": 1160545,
+      "rssMb": 87.3
+    },
+    {
+      "atMs": 1170550,
+      "rssMb": 86.2
+    },
+    {
+      "atMs": 1180554,
+      "rssMb": 86.6
+    },
+    {
+      "atMs": 1190557,
+      "rssMb": 86.6
+    },
+    {
+      "atMs": 1200562,
+      "rssMb": 91.4
+    },
+    {
+      "atMs": 1210566,
+      "rssMb": 91.3
+    },
+    {
+      "atMs": 1220571,
+      "rssMb": 91.3
+    },
+    {
+      "atMs": 1230576,
+      "rssMb": 91.7
+    },
+    {
+      "atMs": 1240581,
+      "rssMb": 91.8
+    },
+    {
+      "atMs": 1250584,
+      "rssMb": 91.7
+    },
+    {
+      "atMs": 1260589,
+      "rssMb": 99.4
+    },
+    {
+      "atMs": 1270594,
+      "rssMb": 98.2
+    },
+    {
+      "atMs": 1280599,
+      "rssMb": 98.1
+    },
+    {
+      "atMs": 1290607,
+      "rssMb": 98.1
+    },
+    {
+      "atMs": 1300612,
+      "rssMb": 98.8
+    },
+    {
+      "atMs": 1310616,
+      "rssMb": 98.8
+    },
+    {
+      "atMs": 1320621,
+      "rssMb": 98.8
+    },
+    {
+      "atMs": 1330626,
+      "rssMb": 94.8
+    },
+    {
+      "atMs": 1340631,
+      "rssMb": 94.7
+    },
+    {
+      "atMs": 1350634,
+      "rssMb": 86.4
+    },
+    {
+      "atMs": 1360639,
+      "rssMb": 86.9
+    },
+    {
+      "atMs": 1370644,
+      "rssMb": 86.8
+    },
+    {
+      "atMs": 1380648,
+      "rssMb": 91.8
+    },
+    {
+      "atMs": 1390652,
+      "rssMb": 92.2
+    },
+    {
+      "atMs": 1400657,
+      "rssMb": 92.1
+    },
+    {
+      "atMs": 1410662,
+      "rssMb": 92.4
+    },
+    {
+      "atMs": 1420668,
+      "rssMb": 90.5
+    },
+    {
+      "atMs": 1430673,
+      "rssMb": 76.2
+    },
+    {
+      "atMs": 1440677,
+      "rssMb": 84.7
+    },
+    {
+      "atMs": 1450682,
+      "rssMb": 86.2
+    },
+    {
+      "atMs": 1460687,
+      "rssMb": 86
+    },
+    {
+      "atMs": 1470691,
+      "rssMb": 86.4
+    },
+    {
+      "atMs": 1480696,
+      "rssMb": 86.8
+    },
+    {
+      "atMs": 1490700,
+      "rssMb": 86.7
+    },
+    {
+      "atMs": 1500706,
+      "rssMb": 88.1
+    },
+    {
+      "atMs": 1510710,
+      "rssMb": 88.2
+    },
+    {
+      "atMs": 1520715,
+      "rssMb": 88.1
+    },
+    {
+      "atMs": 1530719,
+      "rssMb": 88.1
+    },
+    {
+      "atMs": 1540723,
+      "rssMb": 88.9
+    },
+    {
+      "atMs": 1550727,
+      "rssMb": 86.6
+    },
+    {
+      "atMs": 1560731,
+      "rssMb": 86.6
+    },
+    {
+      "atMs": 1570735,
+      "rssMb": 89.1
+    },
+    {
+      "atMs": 1580739,
+      "rssMb": 89
+    },
+    {
+      "atMs": 1590744,
+      "rssMb": 89.3
+    },
+    {
+      "atMs": 1600748,
+      "rssMb": 88.1
+    },
+    {
+      "atMs": 1610753,
+      "rssMb": 71.7
+    },
+    {
+      "atMs": 1620757,
+      "rssMb": 94.3
+    },
+    {
+      "atMs": 1630762,
+      "rssMb": 93.6
+    },
+    {
+      "atMs": 1640782,
+      "rssMb": 93.5
+    },
+    {
+      "atMs": 1650788,
+      "rssMb": 75.9
+    },
+    {
+      "atMs": 1660792,
+      "rssMb": 74
+    },
+    {
+      "atMs": 1670796,
+      "rssMb": 77.7
+    },
+    {
+      "atMs": 1680802,
+      "rssMb": 87.3
+    },
+    {
+      "atMs": 1690807,
+      "rssMb": 86.8
+    },
+    {
+      "atMs": 1700811,
+      "rssMb": 86.8
+    },
+    {
+      "atMs": 1710815,
+      "rssMb": 86.8
+    },
+    {
+      "atMs": 1720820,
+      "rssMb": 87.2
+    },
+    {
+      "atMs": 1730826,
+      "rssMb": 87.2
+    },
+    {
+      "atMs": 1740830,
+      "rssMb": 89.7
+    },
+    {
+      "atMs": 1750834,
+      "rssMb": 90.2
+    },
+    {
+      "atMs": 1760838,
+      "rssMb": 83.6
+    },
+    {
+      "atMs": 1770843,
+      "rssMb": 78.2
+    },
+    {
+      "atMs": 1780850,
+      "rssMb": 78.8
+    },
+    {
+      "atMs": 1790854,
+      "rssMb": 79.3
+    },
+    {
+      "atMs": 1800859,
+      "rssMb": 79.8
+    }
+  ]
+}

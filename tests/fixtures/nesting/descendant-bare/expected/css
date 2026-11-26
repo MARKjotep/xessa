@@ -1,0 +1,11 @@
+.ui-button {
+  color: navy;
+}
+
+.ui-button .ui-icon {
+  width: 16px;
+}
+
+.ui-button .ui-label .ui-text {
+  font-weight: 600;
+}

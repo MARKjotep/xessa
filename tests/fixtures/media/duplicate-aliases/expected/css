@@ -1,0 +1,15 @@
+.ui-box {
+  padding: 4px;
+}
+
+@media (min-width: 768px) {
+  .ui-box {
+    padding: 8px;
+  }
+}
+
+@media (min-width: 1280px) and (prefers-color-scheme: dark) {
+  .ui-box {
+    padding: 16px;
+  }
+}

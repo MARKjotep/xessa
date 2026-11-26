@@ -1,0 +1,1 @@
+:root{--ui-primary:#2563eb;}.theme-card{color:var(--ui-primary);}.ui-app-page{color:var(--ui-primary);}

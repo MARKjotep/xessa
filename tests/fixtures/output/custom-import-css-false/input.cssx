@@ -1,0 +1,2 @@
+@setup { emit-css: false;   }
+.button { color: red; }

@@ -1,0 +1,7 @@
+@setup {
+  prefix: "a";
+}
+@use "./b.cssx" styles;
+.alpha {
+  color: red;
+}

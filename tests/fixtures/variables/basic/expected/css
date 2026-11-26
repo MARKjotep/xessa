@@ -1,0 +1,5 @@
+.ui-card {
+  border-radius: 16px;
+  padding: 8px;
+  border: 1px solid 16px;
+}

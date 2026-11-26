@@ -1,0 +1,7 @@
+@setup { prefix: "ui"; }
+@use "./a.cssx" as a styles;
+@use "./b.cssx" as b styles;
+.app {
+  color: $a.accent;
+  background: $b.accent;
+}

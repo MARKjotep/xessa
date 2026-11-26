@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA2001",
+    "severity": "error",
+    "messageContains": "reserved directive name",
+    "span": { "line": 1, "col": 1 }
+  }
+]

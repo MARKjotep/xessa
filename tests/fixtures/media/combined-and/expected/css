@@ -1,0 +1,35 @@
+.ui-panel {
+  background: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ui-panel {
+    background: #181818;
+  }
+}
+
+@media (min-width: 1280px) and (prefers-color-scheme: dark) {
+  .ui-panel {
+    background: #101010;
+  }
+}
+
+.ui-panel {
+  color: black;
+}
+
+@media (min-width: 768px) and (orientation: landscape) {
+  .ui-panel {
+    color: white;
+  }
+}
+
+.ui-panel {
+  padding: 4px;
+}
+
+@media (min-width: 1536px) {
+  .ui-panel {
+    padding: 8px;
+  }
+}

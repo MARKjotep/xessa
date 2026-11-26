@@ -1,0 +1,5 @@
+@setup {
+  prefix: "ui";
+  prefix: "admin";
+}
+.button { color: red; }

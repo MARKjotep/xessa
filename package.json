@@ -1,0 +1,35 @@
+{
+  "name": "xessa",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Xessa — a CSS-first, property-centric stylesheet language and compiler.",
+  "license": "MIT",
+  "files": ["README.md", "LICENSE", "bin"],
+  "bin": {
+    "xessa": "./bin/xessa.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "workspaces": ["packages/*"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc -p packages/compiler/tsconfig.json --noEmit && tsc -p packages/cli/tsconfig.json --noEmit && tsc -p packages/language-service/tsconfig.json --noEmit && tsc -p packages/vscode/tsconfig.json --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "bun test",
+    "test:browser": "playwright test",
+    "benchmark": "bun scripts/benchmark.ts",
+    "stress": "bun tests/stress/fuzz/runner.ts",
+    "stress:fuzz": "XESSA_STRESS_BUDGET=10000 bun tests/stress/fuzz/runner.ts",
+    "release:check": "bun run verify && bun run test:browser && bun run --cwd packages/compiler build && bun run --cwd packages/cli build && node --input-type=module -e 'import { readFileSync } from \"node:fs\";const manifest=(path)=>JSON.parse(readFileSync(path,\"utf8\"));const compiler=manifest(\"packages/compiler/package.json\");if(compiler.name!==\"@xessa/compiler\"||compiler.version!==\"0.1.1\"||compiler.license!==\"MIT\"||!compiler.main||!compiler.types||!compiler.exports?.[\".\"]||!compiler.files?.includes(\"dist\"))throw new Error(\"compiler package metadata invalid\");const cli=manifest(\"packages/cli/package.json\");if(cli.name!==\"@xessa/cli\"||cli.version!==\"0.1.1\"||cli.license!==\"MIT\"||!cli.main||!cli.bin||!Object.hasOwn(cli.bin,\"xessa\")||!cli.exports?.[\".\"])throw new Error(\"cli package metadata invalid\");const vscode=manifest(\"packages/vscode/package.json\");if(vscode.name!==\"xessa\"||vscode.version!==\"0.1.0\"||vscode.publisher!==\"xessa\"||vscode.license!==\"MIT\"||!vscode.main||!vscode.icon||!vscode.engines?.vscode||!vscode.repository?.url||!vscode.homepage||!vscode.bugs?.url)throw new Error(\"vscode package metadata invalid\");const language=vscode.contributes?.languages?.[0];if(language?.id!==\"xessa\"||!language.extensions?.includes(\".cssx\")||!language.icon?.light||!language.icon?.dark)throw new Error(\"vscode language contribution invalid\");console.log(\"package metadata: compiler, cli and vscode valid\")' && npm pack --dry-run --json --workspace @xessa/compiler | node --input-type=module -e 'let s=\"\";for await(const c of process.stdin)s+=c;const files=JSON.parse(s)[0].files.map(f=>f.path);for(const name of [\"package.json\",\"README.md\",\"LICENSE\"])if(!files.includes(name)){console.error(\"compiler tarball missing \"+name);process.exit(1)}if(!files.some(p=>p.startsWith(\"dist/\"))){console.error(\"compiler tarball missing dist/**\");process.exit(1)}console.log(`compiler tarball: ${files.length} files (package.json, README.md, LICENSE, dist/**)`)' && npm pack --dry-run --json --workspace @xessa/cli | node --input-type=module -e 'let s=\"\";for await(const c of process.stdin)s+=c;const files=JSON.parse(s)[0].files.map(f=>f.path);for(const name of [\"package.json\",\"README.md\",\"LICENSE\"])if(!files.includes(name)){console.error(\"cli tarball missing \"+name);process.exit(1)}if(!files.some(p=>p.startsWith(\"dist/\"))){console.error(\"cli tarball missing dist/**\");process.exit(1)}console.log(`cli tarball: ${files.length} files (package.json, README.md, LICENSE, dist/**)`)' && for example in basic responsive variables jsx custom-output overrides groups portfolio modules; do config=\"examples/$example/xessa.config.json\"; if [ -f \"$config\" ]; then bun packages/cli/src/index.ts build --config \"$config\" || exit 1; else (cd \"examples/$example\" && bun ../../packages/cli/src/index.ts build) || exit 1; fi; done && bun run --cwd packages/vscode build && (cd packages/vscode && bunx @vscode/vsce package --no-dependencies)",
+    "verify": "bun run typecheck && bun run lint && bun run test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@playwright/test": "^1.65.1",
+    "typescript": "^5.7.2"
+  }
+}

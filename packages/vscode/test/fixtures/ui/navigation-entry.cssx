@@ -1,0 +1,23 @@
+@setup {
+  prefix: "ui";
+}
+@use "./navigation-theme.cssx" as theme;
+@use "./navigation-groups.cssx" styles;
+@variables {
+  accent: #2563eb;
+  gap: 4px;
+}
+.card {
+  color: $accent;
+  padding: $gap;
+  background: $theme.primary;
+  @group.card-base {
+    display: block;
+  }
+}
+.badge {
+  color: $accent;
+  @group.card-base {
+    padding: 2px;
+  }
+}

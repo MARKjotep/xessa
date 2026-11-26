@@ -1,0 +1,7 @@
+.ui-field + .ui-field {
+  margin-top: 8px;
+}
+
+.ui-row .ui-field {
+  color: red;
+}

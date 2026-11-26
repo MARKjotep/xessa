@@ -1,0 +1,13 @@
+@setup { prefix: "ui"; }
+.card {
+  border-radius: $radius;
+  padding: $gap;
+  border: $border;
+}
+@variables {
+  radius: 16px;
+  gap: 8px;
+  border: 1px solid $radius;
+  shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  elevation: $shadow;
+}

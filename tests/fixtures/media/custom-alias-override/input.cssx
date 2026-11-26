@@ -1,0 +1,8 @@
+@setup { prefix: "ui"; }
+@media-types {
+  md: (min-width: 700px);
+  tablet: (min-width: 600px) and (max-width: 900px);
+}
+.grid {
+  columns: 1 @md 2 @tablet 3;
+}

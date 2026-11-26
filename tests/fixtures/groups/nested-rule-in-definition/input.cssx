@@ -1,0 +1,13 @@
+@group.card {
+  padding: 12px;
+  .title {
+    font-weight: bold;
+  }
+  color: black;
+}
+
+.panel {
+  @group.card {
+    color: navy;
+  }
+}

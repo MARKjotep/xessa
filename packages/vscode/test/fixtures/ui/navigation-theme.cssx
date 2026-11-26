@@ -1,0 +1,6 @@
+@variables {
+  primary: #2563eb;
+}
+@group.card-base {
+  padding: 4px;
+}

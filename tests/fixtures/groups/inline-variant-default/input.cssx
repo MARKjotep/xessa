@@ -1,0 +1,10 @@
+@group.card {
+  padding: 8px @md 12px;
+  color: black;
+}
+
+.panel {
+  @group.card {
+    gap: 4px;
+  }
+}

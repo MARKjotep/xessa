@@ -1,0 +1,11 @@
+@group.card {
+  display: flex !important;
+  color: black;
+}
+
+.panel {
+  @group.card {
+    display: block;
+    color: navy;
+  }
+}

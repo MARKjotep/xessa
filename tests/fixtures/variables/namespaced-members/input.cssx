@@ -1,0 +1,9 @@
+@setup { prefix: "ui"; }
+@use "./layout.cssx" as layout;
+@variables {
+  gap: $layout.spacing;
+}
+.card {
+  padding: $gap;
+  margin: $layout.margin;
+}

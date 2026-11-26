@@ -1,0 +1,7 @@
+@group.card {
+  padding: 12px;
+}
+
+.c-note {
+  color: silver;
+}

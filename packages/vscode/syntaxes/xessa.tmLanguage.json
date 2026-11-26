@@ -1,0 +1,1293 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Xessa",
+  "scopeName": "source.xessa",
+  "fileTypes": ["xessa"],
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "#group-definition"
+    },
+    {
+      "include": "#group-keyword"
+    },
+    {
+      "include": "#native-at-rule"
+    },
+    {
+      "include": "#alias-block-start"
+    },
+    {
+      "include": "#at-rule-generic"
+    },
+    {
+      "include": "#block"
+    },
+    {
+      "include": "#selector"
+    },
+    {
+      "include": "#error-recovery"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "match": "(?<![^\\s])//.*$",
+          "name": "comment.line.double-slash.xessa"
+        },
+        {
+          "name": "comment.block.xessa",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.begin.xessa"
+            }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.end.xessa"
+            }
+          }
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.css",
+          "begin": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.css"
+            }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.css"
+            }
+          },
+          "patterns": [
+            {
+              "match": "\\\\[\\s\\S]",
+              "name": "constant.character.escape.css"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.css",
+          "begin": "'",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.css"
+            }
+          },
+          "end": "'",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.css"
+            }
+          },
+          "patterns": [
+            {
+              "match": "\\\\[\\s\\S]",
+              "name": "constant.character.escape.css"
+            }
+          ]
+        }
+      ]
+    },
+    "numeric": {
+      "match": "(-?(?:\\d+(?:\\.\\d+)?|\\.\\d+))(vmin|vmax|svh|svw|lvh|lvw|dvh|dvw|cqmin|cqmax|cqi|cqb|cqw|cqh|rlh|lh|rem|r?em|ex|ch|px|cm|mm|q|in|pt|pc|deg|grad|rad|turn|ms|s|hz|khz|dpi|dpcm|dppx|fr|cap|ic|%)?(?![A-Za-z0-9_-])",
+      "captures": {
+        "1": {
+          "name": "constant.numeric.css"
+        },
+        "2": {
+          "name": "keyword.other.unit.css"
+        }
+      }
+    },
+    "variable": {
+      "patterns": [
+        {
+          "include": "#variable-keyframes"
+        },
+        {
+          "include": "#variable-namespaced"
+        },
+        {
+          "include": "#variable-simple"
+        }
+      ]
+    },
+    "variable-keyframes": {
+      "match": "(\\$keyframes)(\\.)([A-Za-z_][\\w-]*)",
+      "name": "variable.other.xessa",
+      "captures": {
+        "1": {
+          "name": "variable.other.namespace.xessa"
+        },
+        "2": {
+          "name": "punctuation.accessor.xessa"
+        },
+        "3": {
+          "name": "variable.other.member.xessa variable.other.keyframe.xessa"
+        }
+      }
+    },
+    "variable-namespaced": {
+      "match": "(\\$[A-Za-z_][\\w-]*)(\\.)([A-Za-z_][\\w-]*)",
+      "name": "variable.other.xessa",
+      "captures": {
+        "1": {
+          "name": "variable.other.namespace.xessa"
+        },
+        "2": {
+          "name": "punctuation.accessor.xessa"
+        },
+        "3": {
+          "name": "variable.other.member.xessa"
+        }
+      }
+    },
+    "variable-simple": {
+      "match": "\\$[A-Za-z_][\\w-]*",
+      "name": "variable.other.xessa"
+    },
+    "custom-property": {
+      "match": "--[A-Za-z_][\\w-]*",
+      "name": "variable.other.custom-property.xessa"
+    },
+    "important": {
+      "match": "![ \\t]*[iI][mM][pP][oO][rR][tT][aA][nN][tT]\\b",
+      "name": "keyword.other.important.css"
+    },
+    "function-call": {
+      "patterns": [
+        {
+          "match": "\\bcalc(?=\\s*\\()",
+          "name": "support.function.calc.css"
+        },
+        {
+          "match": "\\bvar(?=\\s*\\()",
+          "name": "support.function.var.css"
+        },
+        {
+          "match": "\\b(?:min|max|clamp|env|url|rgb|rgba|hsl|hsla|color-mix|linear-gradient|radial-gradient|conic-gradient|cubic-bezier|steps|translate|rotate|scale|repeat|attr|counter|counters)(?=\\s*\\()",
+          "name": "support.function.css"
+        },
+        {
+          "match": "[A-Za-z_][\\w-]*(?=\\s*\\()",
+          "name": "support.function.css"
+        }
+      ]
+    },
+    "hex-color": {
+      "match": "#[0-9a-fA-F]{3,8}(?![0-9A-Za-z_-])",
+      "name": "constant.other.color.rgb-value.hex.css"
+    },
+    "alias": {
+      "match": "@(?!setup\\b|use\\b|variables\\b|runtime\\b|media-types\\b|media\\b|supports\\b|layer\\b|container\\b|keyframes\\b|font-face\\b|property\\b|page\\b|charset\\b|import\\b|namespace\\b|scope\\b|starting-style\\b|counter-style\\b|group\\b)([A-Za-z0-9][\\w-]*(?:\\+[A-Za-z0-9][\\w-]*)*)",
+      "name": "meta.variant.xessa keyword.control.media.xessa"
+    },
+    "punctuation-value": {
+      "patterns": [
+        {
+          "match": "[()]",
+          "name": "punctuation.definition.group.css"
+        },
+        {
+          "match": "[{}]",
+          "name": "punctuation.section.block.css"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.list.comma.css"
+        }
+      ]
+    },
+    "value-keyword": {
+      "match": "[A-Za-z_][\\w-]*",
+      "name": "support.constant.property-value.css"
+    },
+    "fallback": {
+      "patterns": [
+        {
+          "match": "[{}]",
+          "name": "punctuation.section.block.css"
+        },
+        {
+          "match": "[^\\s]",
+          "name": "meta.fallback.xessa"
+        }
+      ]
+    },
+    "value": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#variable"
+        },
+        {
+          "include": "#custom-property"
+        },
+        {
+          "include": "#important"
+        },
+        {
+          "include": "#function-call"
+        },
+        {
+          "include": "#numeric"
+        },
+        {
+          "include": "#hex-color"
+        },
+        {
+          "include": "#alias"
+        },
+        {
+          "match": "\\\\[0-9a-fA-F]{1,6}[ \\t]?|\\\\[^\\n]",
+          "name": "constant.character.escape.css"
+        },
+        {
+          "include": "#punctuation-value"
+        },
+        {
+          "include": "#value-keyword"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "declaration": {
+      "name": "meta.declaration.xessa",
+      "begin": "(?:^|(?<=\\{)|(?<=\\})|(?<=;))\\s*(--[A-Za-z_][\\w-]*|-?[A-Za-z_][\\w-]*)(\\s*)(:)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.css"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.css"
+        }
+      },
+      "end": "(;)|(?=\\})",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#value"
+        }
+      ]
+    },
+    "selector-base": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#selector-global"
+        },
+        {
+          "include": "#selector-pseudo-element-function"
+        },
+        {
+          "include": "#selector-pseudo-element"
+        },
+        {
+          "include": "#selector-pseudo-class-function"
+        },
+        {
+          "include": "#selector-pseudo-class"
+        },
+        {
+          "include": "#attribute-selector"
+        },
+        {
+          "include": "#selector-class"
+        },
+        {
+          "include": "#selector-id"
+        },
+        {
+          "include": "#selector-parent"
+        },
+        {
+          "include": "#selector-combinator"
+        },
+        {
+          "include": "#selector-universal"
+        },
+        {
+          "include": "#selector-escape"
+        },
+        {
+          "include": "#selector-type"
+        },
+        {
+          "include": "#selector-comma"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "selector-global": {
+      "name": "meta.group.xessa",
+      "begin": "(:global)(\\s*)(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.pseudo-class.xessa"
+        },
+        "3": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#selector-base"
+        }
+      ]
+    },
+    "selector-pseudo-class-function": {
+      "name": "meta.group.xessa",
+      "begin": "(:(?:not|is|where|has|matches|nth-child|nth-last-child|nth-of-type|nth-last-of-type|lang|dir|host|host-context|state))(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.pseudo-class.css"
+        },
+        "2": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "match": "([+-]?\\d*n(?:\\s*[+-]\\s*\\d+)?)(?![A-Za-z0-9_-])",
+          "name": "constant.numeric.css"
+        },
+        {
+          "match": "\\b(?:even|odd)\\b",
+          "name": "support.constant.property-value.css"
+        },
+        {
+          "include": "#numeric"
+        },
+        {
+          "include": "#selector-base"
+        }
+      ]
+    },
+    "selector-pseudo-element-function": {
+      "name": "meta.group.xessa",
+      "begin": "(::[A-Za-z][\\w-]*)(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.other.attribute-name.pseudo-element.css"
+        },
+        "2": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#selector-base"
+        },
+        {
+          "include": "#string"
+        }
+      ]
+    },
+    "selector-pseudo-element": {
+      "match": "::[A-Za-z][\\w-]*",
+      "name": "entity.other.attribute-name.pseudo-element.css"
+    },
+    "selector-pseudo-class": {
+      "match": "(?<!:):(?!:)[A-Za-z][\\w-]*",
+      "name": "entity.other.attribute-name.pseudo-class.css"
+    },
+    "attribute-selector": {
+      "name": "meta.attribute-selector.xessa",
+      "begin": "\\[",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "end": "\\]",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.group.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "match": "([-A-Za-z_][\\w-]*)(\\s*)([~|^$*]?=)",
+          "captures": {
+            "1": {
+              "name": "entity.other.attribute-name.css"
+            },
+            "3": {
+              "name": "keyword.operator.css"
+            }
+          }
+        },
+        {
+          "match": "[-A-Za-z_][\\w-]*",
+          "name": "entity.other.attribute-name.css"
+        },
+        {
+          "match": "[~|^$*]?=",
+          "name": "keyword.operator.css"
+        },
+        {
+          "match": "\\b[isIS]\\b",
+          "name": "keyword.other.attribute-flag.css"
+        }
+      ]
+    },
+    "selector-class": {
+      "match": "\\.-?(?:[A-Za-z_]|\\\\[^\\n])(?:[\\w-]|\\\\[^\\n])*",
+      "name": "entity.other.attribute-name.class.css"
+    },
+    "selector-id": {
+      "match": "#-?(?:[A-Za-z_]|\\\\[^\\n])(?:[\\w-]|\\\\[^\\n])*",
+      "name": "entity.other.attribute-name.id.css"
+    },
+    "selector-parent": {
+      "match": "&",
+      "name": "entity.other.attribute-name.parent-selector.css"
+    },
+    "selector-combinator": {
+      "match": "[>+~]",
+      "name": "keyword.operator.combinator.css"
+    },
+    "selector-universal": {
+      "match": "\\*",
+      "name": "entity.name.tag.css"
+    },
+    "selector-escape": {
+      "match": "\\\\[0-9a-fA-F]{1,6}[ \\t]?|\\\\[^\\n]",
+      "name": "constant.character.escape.css"
+    },
+    "selector-type": {
+      "match": "[A-Za-z][\\w-]*",
+      "name": "entity.name.tag.css"
+    },
+    "selector-comma": {
+      "match": ",",
+      "name": "punctuation.separator.selector.css"
+    },
+    "selector": {
+      "begin": "(?=(?:[^;{}@\"']|\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*')*\\{)",
+      "end": "(?=\\{)",
+      "contentName": "meta.selector.xessa",
+      "patterns": [
+        {
+          "include": "#selector-base"
+        }
+      ]
+    },
+    "nested-rule": {
+      "patterns": [
+        {
+          "include": "#selector"
+        }
+      ]
+    },
+    "block": {
+      "name": "meta.block.xessa",
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#block-body"
+        }
+      ]
+    },
+    "conditional-block": {
+      "begin": "(@(?!setup\\b|use\\b|variables\\b|runtime\\b|media-types\\b|media\\b|supports\\b|layer\\b|container\\b|keyframes\\b|font-face\\b|property\\b|page\\b|charset\\b|import\\b|namespace\\b|scope\\b|starting-style\\b|counter-style\\b|group\\b)([A-Za-z0-9][\\w-]*(?:\\+[A-Za-z0-9][\\w-]*)*))(\\s*)(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "meta.variant.xessa keyword.control.media.xessa"
+        },
+        "4": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "contentName": "meta.variant.xessa",
+      "patterns": [
+        {
+          "include": "#block-body"
+        }
+      ]
+    },
+    "alias-block-start": {
+      "begin": "(@(?!setup\\b|use\\b|variables\\b|runtime\\b|media-types\\b|media\\b|supports\\b|layer\\b|container\\b|keyframes\\b|font-face\\b|property\\b|page\\b|charset\\b|import\\b|namespace\\b|scope\\b|starting-style\\b|counter-style\\b|group\\b)([A-Za-z0-9][\\w-]*(?:\\+[A-Za-z0-9][\\w-]*)*))(\\s*)(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "meta.variant.xessa keyword.control.media.xessa"
+        },
+        "4": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "contentName": "meta.variant.xessa",
+      "patterns": [
+        {
+          "include": "#block-body"
+        }
+      ]
+    },
+    "keyframe-step": {
+      "begin": "^\\s*(?=(?:from|to|\\d+(?:\\.\\d+)?%)\\s*\\{)",
+      "end": "(?=\\{)",
+      "contentName": "meta.keyframe.xessa",
+      "patterns": [
+        {
+          "match": "\\b(?:from|to)\\b",
+          "name": "keyword.other.keyframe.xessa"
+        },
+        {
+          "match": "\\d+(?:\\.\\d+)?%",
+          "name": "constant.numeric.css"
+        }
+      ]
+    },
+    "media-prelude": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "match": "\\b(?:and|or|not|only)\\b",
+          "name": "keyword.operator.logical.css"
+        },
+        {
+          "match": "[A-Za-z-][\\w-]*(?=\\s*:)",
+          "name": "support.type.property-name.css"
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.key-value.css"
+        },
+        {
+          "include": "#numeric"
+        },
+        {
+          "include": "#hex-color"
+        },
+        {
+          "match": "[()]",
+          "name": "punctuation.definition.group.css"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.list.comma.css"
+        },
+        {
+          "match": "[A-Za-z_][\\w-]*(?=\\()",
+          "name": "support.function.css"
+        },
+        {
+          "match": "[A-Za-z0-9][\\w-]*",
+          "name": "support.constant.property-value.css"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "media-type-declaration": {
+      "name": "meta.declaration.media.xessa",
+      "begin": "(?:^|(?<=\\{)|(?<=\\})|(?<=;))\\s*([A-Za-z0-9][\\w-]*)(\\s*)(:)",
+      "beginCaptures": {
+        "1": {
+          "name": "meta.variant.xessa keyword.control.media.xessa"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.css"
+        }
+      },
+      "end": "(;)|(?=\\})",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "include": "#directive-setup"
+        },
+        {
+          "include": "#directive-use"
+        },
+        {
+          "include": "#directive-variables"
+        },
+        {
+          "include": "#directive-runtime"
+        },
+        {
+          "include": "#directive-media-types"
+        }
+      ]
+    },
+    "directive-setup": {
+      "name": "meta.directive.setup.xessa",
+      "begin": "(@setup)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "directive-use": {
+      "name": "meta.directive.use.xessa",
+      "begin": "(@use)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        }
+      },
+      "end": ";",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "match": "\\bas\\b",
+          "name": "keyword.other.xessa"
+        },
+        {
+          "match": "[A-Za-z_][\\w-]*",
+          "name": "entity.name.namespace.xessa"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "directive-variables": {
+      "name": "meta.directive.variables.xessa",
+      "begin": "(@variables)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "directive-runtime": {
+      "name": "meta.directive.runtime.xessa",
+      "begin": "(@runtime)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#runtime-declaration"
+        },
+        {
+          "include": "#declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "runtime-declaration": {
+      "name": "meta.declaration.xessa",
+      "begin": "(?:^|(?<=\\{)|(?<=\\})|(?<=;))\\s*(--[A-Za-z_][\\w-]*|-?[A-Za-z_][\\w-]*)(\\s*)(:)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.css variable.other.declared.runtime.xessa"
+        },
+        "3": {
+          "name": "punctuation.separator.key-value.css"
+        }
+      },
+      "end": "(;)|(?=\\})",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#value"
+        }
+      ]
+    },
+    "directive-media-types": {
+      "name": "meta.directive.media-types.xessa",
+      "begin": "(@media-types)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#media-type-declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "group-definition": {
+      "name": "meta.directive.group.xessa",
+      "begin": "(@group)(\\.)([A-Za-z_][\\w-]*)(\\s*)(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        },
+        "2": {
+          "name": "punctuation.accessor.xessa"
+        },
+        "3": {
+          "name": "entity.name.type.group.xessa"
+        },
+        "5": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#block"
+        },
+        {
+          "include": "#declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "group-use": {
+      "name": "meta.group.use.xessa",
+      "begin": "(@group)(\\.)([A-Za-z_][\\w-]*)(\\s*)(\\{)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        },
+        "2": {
+          "name": "punctuation.accessor.xessa"
+        },
+        "3": {
+          "name": "entity.name.type.group.xessa"
+        },
+        "5": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.block.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#block"
+        },
+        {
+          "include": "#declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "group-keyword": {
+      "match": "(@group)\\b",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.xessa"
+        }
+      }
+    },
+    "native-at-rule": {
+      "patterns": [
+        {
+          "include": "#at-rule-media"
+        },
+        {
+          "include": "#at-rule-supports"
+        },
+        {
+          "include": "#at-rule-keyframes"
+        },
+        {
+          "include": "#at-rule-font-face"
+        },
+        {
+          "include": "#at-rule-property"
+        },
+        {
+          "include": "#at-rule-layer"
+        },
+        {
+          "include": "#at-rule-container"
+        },
+        {
+          "include": "#at-rule-page"
+        },
+        {
+          "include": "#at-rule-charset"
+        },
+        {
+          "include": "#at-rule-import"
+        },
+        {
+          "include": "#at-rule-namespace"
+        }
+      ]
+    },
+    "at-rule-media": {
+      "name": "meta.at-rule.media.css",
+      "begin": "(@media)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "at-rule-supports": {
+      "name": "meta.at-rule.supports.css",
+      "begin": "(@supports)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "at-rule-keyframes": {
+      "name": "meta.at-rule.keyframes.css",
+      "begin": "(@(?:-[A-Za-z]+-)?keyframes)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "match": "[-A-Za-z_][\\w-]*",
+          "name": "entity.name.function.css"
+        }
+      ]
+    },
+    "at-rule-font-face": {
+      "name": "meta.at-rule.font-face.css",
+      "begin": "(@font-face)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "at-rule-property": {
+      "name": "meta.at-rule.property.css",
+      "begin": "(@property)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "match": "--[A-Za-z_][\\w-]*",
+          "name": "variable.other.custom-property.xessa"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "at-rule-layer": {
+      "name": "meta.at-rule.layer.css",
+      "begin": "(@layer)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "at-rule-container": {
+      "name": "meta.at-rule.container.css",
+      "begin": "(@container)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "at-rule-page": {
+      "name": "meta.at-rule.page.css",
+      "begin": "(@page)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#selector-base"
+        }
+      ]
+    },
+    "at-rule-charset": {
+      "name": "meta.at-rule.charset.css",
+      "begin": "(@charset)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": ";",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "at-rule-import": {
+      "name": "meta.at-rule.import.css",
+      "begin": "(@import)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": ";",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "at-rule-namespace": {
+      "name": "meta.at-rule.namespace.css",
+      "begin": "(@namespace)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": ";",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "at-rule-generic": {
+      "name": "meta.at-rule.css",
+      "begin": "(@[A-Za-z][\\w-]*)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.at-rule.css"
+        }
+      },
+      "end": "(?=\\{)|(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.rule.css"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#media-prelude"
+        }
+      ]
+    },
+    "block-body": {
+      "patterns": [
+        {
+          "include": "#comment"
+        },
+        {
+          "include": "#group-use"
+        },
+        {
+          "include": "#group-keyword"
+        },
+        {
+          "include": "#block"
+        },
+        {
+          "include": "#keyframe-step"
+        },
+        {
+          "include": "#nested-rule"
+        },
+        {
+          "include": "#conditional-block"
+        },
+        {
+          "include": "#native-at-rule"
+        },
+        {
+          "include": "#declaration"
+        },
+        {
+          "include": "#fallback"
+        }
+      ]
+    },
+    "error-recovery": {
+      "patterns": [
+        {
+          "include": "#fallback"
+        }
+      ]
+    }
+  }
+}

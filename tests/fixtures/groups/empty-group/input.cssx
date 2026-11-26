@@ -1,0 +1,17 @@
+@group.empty {
+}
+
+@group.used {
+  color: red;
+}
+
+.card {
+  @group.empty {
+  }
+  padding: 4px;
+}
+
+.note {
+  @group.used {
+  }
+}

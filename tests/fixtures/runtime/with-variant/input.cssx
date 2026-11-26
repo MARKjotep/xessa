@@ -1,0 +1,9 @@
+@setup { prefix: "ui"; }
+@runtime {
+  surface: #ffffff @dark #111111;
+  accent: #ec4899 @md #db2777 @dark+md #be185d;
+}
+.card {
+  background: $surface;
+  color: $accent;
+}

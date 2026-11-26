@@ -1,0 +1,18 @@
+@setup {
+  prefix: "app";
+  css-dir: "../generated/styles";
+  css-name: "theme.css";
+  map-dir: "../generated/maps";
+  map-name: "classes.js";
+  map-types: true;
+  source-map: true;
+}
+@variables {
+  gap: 8px;
+}
+.panel {
+  display: grid;
+  gap: $gap;
+  &:hover { opacity: 0.9; }
+  & > .title { font-weight: 600; }
+}

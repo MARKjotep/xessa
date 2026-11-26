@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.card {
+  padding: 10px @md 20px
+}

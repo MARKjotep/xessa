@@ -1,0 +1,9 @@
+.ui-dashboard {
+  padding: 8px;
+}
+
+@media (min-width: 768px) {
+  .ui-dashboard {
+    padding: 16px;
+  }
+}

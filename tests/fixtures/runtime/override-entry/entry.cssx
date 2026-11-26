@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+@use "./theme.cssx" styles;
+@runtime { primary: #2563eb; }
+.app-page { color: $primary; }

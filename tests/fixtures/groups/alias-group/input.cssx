@@ -1,0 +1,5 @@
+@use "./tokens.cssx" as group;
+
+.card {
+  padding: 12px;
+}

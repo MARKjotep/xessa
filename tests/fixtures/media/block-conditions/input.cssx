@@ -1,0 +1,10 @@
+@setup { prefix: "ui"; }
+.card {
+  display: block;
+  @md {
+    display: grid;
+    gap: 16px;
+    @dark { background: #111111; }
+  }
+  @print { display: none; }
+}

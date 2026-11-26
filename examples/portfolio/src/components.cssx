@@ -1,0 +1,202 @@
+/*
+* Reusable declaration groups (ADR-0017, SPECIFICATION.md §3.7) plus the
+* button, badge and keyframe primitives built from them.
+*
+* A `@group.*` definition emits nothing. Each use site below splices the
+* defaults at the authored position and then appends its own declarations, so
+* the override is visible in portfolio.css and wins by the ordinary cascade.
+* Group defaults are compile-time only: runtime custom properties are authored
+* at the use site, exactly as the groups example documents.
+*/
+@setup {
+  prefix: "pf";
+  module: true;
+}
+
+@use "./tokens.cssx" as color;
+
+@use "./tokens.cssx" as space;
+
+@use "./tokens.cssx" as font;
+
+@use "./theme.cssx" as theme;
+
+@variables {
+  card-radius: 22px;
+  button-radius: 999px;
+  badge-radius: 999px;
+  fast: 160ms;
+  ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Card chrome shared by skills, projects and the contact panel. */
+@group.card {
+  position: relative;
+  padding: $space.card;
+  border: 1px solid $color.border;
+  border-radius: $card-radius;
+  background: $color.raised;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6);
+}
+
+/* Pill button: layout and type only, colour comes from the use site. */
+@group.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: $button-radius;
+  font-family: $font.sans;
+  font-size: $font.size-sm;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform $fast $ease;
+}
+
+/* Small uppercase metadata pill. */
+@group.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid $color.border;
+  border-radius: $badge-radius;
+  background: $color.surface;
+  color: $color.muted;
+  font-family: $font.mono;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/*
+* Declared here, consumed by sections.cssx through a `styles` import
+* (ADR-0015 visibility): `$keyframes.rise` resolves because this module's
+* rules and blocks are merged into the build.
+*/
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    color: #00ff5e;
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+/* Use site 1: filled primary action. */
+.button-primary {
+  @group.button {
+    background: $theme.accent;
+    border-color: $theme.accent;
+    color: $theme.accent-ink;
+  }
+
+  &:hover {
+    background: $theme.ink;
+    border-color: $theme.ink;
+    color: $theme.canvas;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $theme.accent;
+    outline-offset: 3px;
+  }
+}
+
+/* Use site 2: outline action; only colours differ. */
+.button-ghost {
+  @group.button {
+    background: transparent;
+    border-color: $theme.border;
+    color: $theme.ink;
+  }
+
+  &:hover {
+    border-color: $theme.accent;
+    color: $theme.accent;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $theme.accent;
+    outline-offset: 3px;
+  }
+}
+
+/* Use site 3: compact header action — overrides padding, size, fill and
+* visibility (hidden on small screens where the hero CTAs do the job). */
+.button-small {
+  @group.button {
+    display: none;
+    padding: 9px 14px;
+    border-color: $theme.ink;
+    background: $theme.ink;
+    color: $theme.canvas;
+    font-size: $font.size-xs;
+  }
+
+  @lg {
+    display: inline-flex;
+  }
+
+  &:hover {
+    border-color: $theme.accent;
+    background: $theme.accent;
+    color: $theme.accent-ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $theme.accent;
+    outline-offset: 3px;
+  }
+}
+
+/* Use site 4: on the accent contact panel, invert the palette. */
+.button-invert {
+  @group.button {
+    background: $theme.canvas;
+    border-color: $theme.canvas;
+    color: $theme.ink;
+  }
+
+  &:hover {
+    background: transparent;
+    color: $theme.accent-ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $theme.accent-ink;
+    outline-offset: 3px;
+  }
+}
+
+/* Use site 5: accent badge, reusing the same badge defaults. */
+.badge-accent {
+  @group.badge {
+    background: $theme.accent-soft;
+    border-color: transparent;
+    color: $theme.accent;
+  }
+}
+
+/* Use site 6: muted badge for secondary metadata. */
+.badge-muted {
+  @group.badge {
+    background: $theme.canvas;
+    border-color: $theme.border;
+    color: $theme.muted;
+  }
+}

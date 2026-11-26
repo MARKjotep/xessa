@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA1001",
+    "severity": "error",
+    "messageContains": "block",
+    "span": { "line": 4, "col": 1 }
+  }
+]

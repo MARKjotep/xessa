@@ -1,0 +1,9 @@
+@setup {
+  prefix: "ui";
+}
+.panel {
+  border-radius: 8px;
+}
+.tile {
+  color: red;
+}

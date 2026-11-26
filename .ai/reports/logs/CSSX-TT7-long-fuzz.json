@@ -1,0 +1,118 @@
+{
+  "case": "TT7 long fuzz",
+  "ok": false,
+  "machine": {
+    "cpu": "Apple M1 Pro",
+    "cores": 8,
+    "memoryGb": 16,
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.3.0",
+    "bun": "1.4.5",
+    "node": "26.3.0"
+  },
+  "config": {
+    "budget": 100000,
+    "seed": 1,
+    "areas": [
+      "lexer",
+      "parser",
+      "compile",
+      "roundtrip",
+      "determinism"
+    ],
+    "timeoutMs": 1800000
+  },
+  "wallClockMs": 123372,
+  "command": "XESSA_STRESS_BUDGET=100000 bun tests/stress/fuzz/runner.ts --area <area> --seed 1",
+  "cleanAreas": [
+    "lexer",
+    "parser",
+    "compile",
+    "determinism"
+  ],
+  "expectedFailures": [],
+  "unexpectedFailures": [
+    "roundtrip"
+  ],
+  "totals": {
+    "cases": 500042,
+    "violations": 1,
+    "pinned": 260,
+    "outOfBoundsSpans": 0
+  },
+  "areas": [
+    {
+      "area": "lexer",
+      "expectedFailure": false,
+      "exitCode": 0,
+      "cases": 100010,
+      "timeMs": 549,
+      "violations": 0,
+      "pinned": 0,
+      "outOfBoundsSpans": 0,
+      "violationLines": [],
+      "reproducer": null,
+      "durationMs": 576,
+      "logPath": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/CSSX-TT7-fuzz-lexer.log"
+    },
+    {
+      "area": "parser",
+      "expectedFailure": false,
+      "exitCode": 0,
+      "cases": 100010,
+      "timeMs": 1008,
+      "violations": 0,
+      "pinned": 0,
+      "outOfBoundsSpans": 0,
+      "violationLines": [],
+      "reproducer": null,
+      "durationMs": 1033,
+      "logPath": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/CSSX-TT7-fuzz-parser.log"
+    },
+    {
+      "area": "compile",
+      "expectedFailure": false,
+      "exitCode": 0,
+      "cases": 100000,
+      "timeMs": 30528,
+      "violations": 0,
+      "pinned": 0,
+      "outOfBoundsSpans": 0,
+      "violationLines": [],
+      "reproducer": null,
+      "durationMs": 30554,
+      "logPath": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/CSSX-TT7-fuzz-compile.log"
+    },
+    {
+      "area": "roundtrip",
+      "expectedFailure": false,
+      "exitCode": 1,
+      "cases": 100010,
+      "timeMs": 4525,
+      "violations": 1,
+      "pinned": 260,
+      "outOfBoundsSpans": 0,
+      "violationLines": [
+        "✗ roundtrip · variables/namespaced-members [token-splice] swap tokens 25 and 47 |     parse(format(x)) IR differs from parse(x) IR |     seed=1 budget=100000 inputHash=1ba6fbd33e7b10f7"
+      ],
+      "reproducer": "XESSA_STRESS_SEED=1 bun tests/stress/fuzz/runner.ts --area roundtrip --budget 100000 --seed 1",
+      "durationMs": 4552,
+      "logPath": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/CSSX-TT7-fuzz-roundtrip.log"
+    },
+    {
+      "area": "determinism",
+      "expectedFailure": false,
+      "exitCode": 0,
+      "cases": 100012,
+      "timeMs": 86625,
+      "violations": 0,
+      "pinned": 0,
+      "outOfBoundsSpans": 0,
+      "violationLines": [],
+      "reproducer": null,
+      "durationMs": 86652,
+      "logPath": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/CSSX-TT7-fuzz-determinism.log"
+    }
+  ]
+}

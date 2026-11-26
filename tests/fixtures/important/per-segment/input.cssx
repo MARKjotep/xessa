@@ -1,0 +1,7 @@
+@setup { prefix: "ui"; }
+.button {
+  border: 1px solid red !important;
+  padding: 10px @md 20px !important;
+  margin: 10px !important @md 20px;
+  gap: 4px @md 8px !important @lg 12px !important;
+}

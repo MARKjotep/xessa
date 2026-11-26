@@ -1,0 +1,4 @@
+@setup { prefix: "dashboard"; }
+.widget {
+  padding: 8px @md 16px;
+}

@@ -1,0 +1,6 @@
+@setup { prefix: "ui"; }
+.panel {
+  background: white @dark #181818 @xl+dark #101010;
+  color: black @md+landscape white;
+  padding: 4px @2xl 8px;
+}

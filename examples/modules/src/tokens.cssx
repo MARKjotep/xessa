@@ -1,0 +1,22 @@
+/*
+* Compile-time design tokens. Every file that reads a `$token` imports this
+* module; token-only imports never merge rules, so this file only contributes
+* values. `module: true` keeps the build from writing a stylesheet or class map
+* for it even though the include glob discovers it.
+*/
+@setup {
+  module: true;
+}
+
+@variables {
+  surface: #f8fafc;
+  raised: #ffffff;
+  ink: #0f172a;
+  muted: #475569;
+  border: #cbd5e1;
+  accent: #4f46e5;
+  gap: 24px;
+  card-padding: 16px;
+  card-radius: 12px;
+  ribbon-padding: 4px 12px;
+}

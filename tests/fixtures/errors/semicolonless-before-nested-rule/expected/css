@@ -1,0 +1,7 @@
+.ui-button {
+  color: red;
+}
+
+.ui-button:hover {
+  color: blue;
+}

@@ -1,0 +1,10 @@
+@setup { prefix: "ui"; }
+.icon {
+  color: red;
+}
+:global(.external-icon) {
+  color: blue;
+}
+.card {
+  :global(.external-icon) { margin: 0; }
+}

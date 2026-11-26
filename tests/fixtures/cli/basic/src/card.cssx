@@ -1,0 +1,13 @@
+@setup {
+  prefix: "ui";
+  css-dir: "../generated/styles";
+  css-name: "card.css";
+  map-dir: "../generated/maps";
+  map-name: "card.map.js";
+}
+@use "./tokens/theme.cssx" as theme;
+.card {
+  padding: $theme.spacing;
+  border-radius: $theme.radius @xl 12px;
+  .title { font-weight: 600; }
+}

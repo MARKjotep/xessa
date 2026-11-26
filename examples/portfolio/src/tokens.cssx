@@ -1,0 +1,46 @@
+/*
+* Compile-time design tokens for the portfolio.
+*
+* The module is token-only: it emits no CSS of its own and is imported with a
+* namespace that names the token family being used. A consumer writes
+*
+*   @use "./tokens.cssx" as color;
+*   @use "./tokens.cssx" as space;
+*   @use "./tokens.cssx" as font;
+*
+* and then reads `$color.ink`, `$space.section` and `$font.display`. The graph
+* caches the module by canonical path, so those three aliases load one file
+* once and every value below is available under each alias. The authored
+* families are still kept visually separate for readability.
+*
+* Theme-dependent colours live in theme.cssx as `@runtime` custom properties;
+* this file only holds values that never change between light and dark.
+*/
+@setup {
+  module: true;
+}
+
+@variables {
+  /* color.* — static accents and neutral fallbacks */
+  surface: #fbfaf5;
+  raised: #ffffff;
+  canvas: #f2efe6;
+  ink: #191d1a;
+  muted: #5e675f;
+  faint: #656d66;
+  border: #ddd8c9;
+  /* space.* — layout rhythm */
+  gutters: 20px;
+  section: 104px;
+  card: 26px;
+  tight: 12px;
+  loose: 40px;
+  /* font.* — families and the type scale */
+  sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  mono: "SFMono-Regular", Menlo, Consolas, monospace;
+  size-xs: 0.75rem;
+  size-sm: 0.875rem;
+  size-md: 1rem;
+  size-lg: 1.25rem;
+}

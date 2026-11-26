@@ -1,0 +1,8 @@
+@setup { prefix: "ui"; }
+@keyframes spin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.spinner {
+  animation-name: $keyframes;
+}

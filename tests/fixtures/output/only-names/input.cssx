@@ -1,0 +1,5 @@
+@setup {
+  css-name: "theme.css";
+  map-name: "classes.js";
+}
+.button { color: red; }

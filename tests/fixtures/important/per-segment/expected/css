@@ -1,0 +1,36 @@
+.ui-button {
+  border: 1px solid red !important;
+  padding: 10px;
+}
+
+@media (min-width: 768px) {
+  .ui-button {
+    padding: 20px !important;
+  }
+}
+
+.ui-button {
+  margin: 10px !important;
+}
+
+@media (min-width: 768px) {
+  .ui-button {
+    margin: 20px;
+  }
+}
+
+.ui-button {
+  gap: 4px;
+}
+
+@media (min-width: 768px) {
+  .ui-button {
+    gap: 8px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ui-button {
+    gap: 12px !important;
+  }
+}

@@ -1,0 +1,42 @@
+# Defence-in-depth guard for the root `xessa` name-reservation tarball.
+# `package.json` `files` is the authoritative allowlist; npm ignores this file
+# while `files` exists. Keep this list current so a tarball stays minimal if
+# `files` is ever removed by mistake. Never ignore README.md, LICENSE, bin/ or
+# package.json.
+
+# Dependencies and workspace packages
+node_modules/
+packages/
+
+# Source, tests and examples
+tests/
+examples/
+scripts/
+coverage/
+playwright-report/
+test-results/
+
+# Documentation and tooling
+docs/
+.ai/
+.github/
+.vscode-test/
+
+# Build, release and archive artifacts
+*.vsix
+*.tgz
+package-lock.json
+bun.lock
+*.log
+
+# Editor, OS and local configuration
+.DS_Store
+.vscode/
+.idea/
+AGENTS.md
+opencode.jsonc
+biome.json
+tsconfig*.json
+SPECIFICATION.md
+CHANGELOG.md
+.git*

@@ -1,0 +1,9 @@
+@group.card {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.tile {
+  @group.card {
+  }
+}

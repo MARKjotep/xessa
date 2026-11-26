@@ -1,0 +1,7 @@
+@setup {
+  prefix: "b";
+}
+@use "./c.cssx" styles;
+.bravo {
+  color: green;
+}

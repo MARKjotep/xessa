@@ -1,0 +1,489 @@
+{
+  "capturedAt": "2026-11-25T18:00:44.071Z",
+  "vscode": "1.147.0",
+  "executable": "/Users/Marky/Desktop/$/xessa/node_modules/.vscode-test-xessa/vscode-darwin-arm64-1.147.0/Visual Studio Code.app/Contents/MacOS/Code",
+  "launchArgs": [
+    "/private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/workspace",
+    "--extensionDevelopmentPath=/Users/Marky/Desktop/$/xessa/packages/vscode",
+    "--user-data-dir=/private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/user-data",
+    "--extensions-dir=/private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/extensions",
+    "--disable-extensions",
+    "--disable-workspace-trust",
+    "--skip-welcome",
+    "--skip-release-notes",
+    "--disable-telemetry",
+    "--disable-updates",
+    "--new-window",
+    "--remote-debugging-port=0",
+    "--remote-allow-origins=*"
+  ],
+  "screens": [
+    {
+      "name": "suggest-at",
+      "ok": true,
+      "elapsedMs": 931,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-at.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "`@` at the top level: directives + media aliases",
+      "dom": {
+        "rows": 12,
+        "labels": [
+          "@group",
+          "@media-types",
+          "@runtime",
+          "@setup",
+          "@use",
+          "@variables",
+          "@charset",
+          "@container"
+        ],
+        "details": [
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword",
+          "suggest-icon symbol-keyword"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "suggest-token",
+      "ok": true,
+      "elapsedMs": 816,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-token.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 1,
+        "remaining": 0
+      },
+      "note": "`$` in a value: compile/runtime tokens",
+      "dom": {
+        "rows": 3,
+        "labels": [
+          "$brand",
+          "$gap",
+          "$keyframes."
+        ],
+        "details": [
+          "suggest-icon symbol-variable",
+          "suggest-icon symbol-variable",
+          "suggest-icon symbol-variable"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "suggest-paren",
+      "ok": true,
+      "elapsedMs": 507,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-paren.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "`(` call opener: the 25 curated CSS functions only",
+      "dom": {
+        "rows": 12,
+        "labels": [
+          "attr(",
+          "blur(",
+          "brightness(",
+          "calc(",
+          "clamp(",
+          "color-mix(",
+          "conic-gradient(",
+          "counter("
+        ],
+        "details": [
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value",
+          "suggest-icon symbol-value"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "suggest-hash",
+      "ok": true,
+      "elapsedMs": 597,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-hash.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "`#` colour literal: narrowed palette",
+      "dom": {
+        "rows": 5,
+        "labels": [
+          "aliceblue",
+          "azure",
+          "honeydew",
+          "khaki",
+          "lightcoral"
+        ],
+        "details": [
+          "suggest-icon symbol-color",
+          "suggest-icon symbol-color",
+          "suggest-icon symbol-color",
+          "suggest-icon symbol-color",
+          "suggest-icon symbol-color"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "suggest-color-values",
+      "ok": true,
+      "elapsedMs": 702,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-color-values.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "`color: ` value list: 148 named + 35 hex colours as kind Color",
+      "dom": {
+        "rows": 12,
+        "labels": [
+          "#000000",
+          "#0891b2",
+          "#0ea5e9",
+          "#10b981",
+          "#111827",
+          "#15803d",
+          "#16a34a",
+          "#1d4ed8"
+        ],
+        "details": [
+          "readMore suggest-more-info",
+          "readMore suggest-more-info",
+          "readMore suggest-more-info",
+          "readMore suggest-more-info",
+          "readMore suggest-more-info",
+          "readMore suggest-more-info",
+          "readMore suggest-more-info",
+          "readMore suggest-more-info"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "suggest-amp-colon",
+      "ok": true,
+      "elapsedMs": 516,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-amp-colon.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "`&:` pseudo-class starters",
+      "dom": {
+        "rows": 12,
+        "labels": [
+          "::after",
+          "::before",
+          "::placeholder",
+          "::selection",
+          ":active",
+          ":checked",
+          ":disabled",
+          ":enabled"
+        ],
+        "details": [
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method",
+          "suggest-icon symbol-method"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "suggest-amp-dot",
+      "ok": true,
+      "elapsedMs": 513,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/suggest-amp-dot.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "`&.` nested class starters",
+      "dom": {
+        "rows": 7,
+        "labels": [
+          "&",
+          "& +",
+          "& >",
+          "&:disabled",
+          "&:focus-visible",
+          "&:hover",
+          ".badge"
+        ],
+        "details": [
+          "suggest-icon symbol-class",
+          "suggest-icon symbol-class",
+          "suggest-icon symbol-class",
+          "suggest-icon symbol-class",
+          "suggest-icon symbol-class",
+          "suggest-icon symbol-class",
+          "suggest-icon symbol-class"
+        ],
+        "detailsPanel": null,
+        "documentationsReadable": false
+      }
+    },
+    {
+      "name": "hover",
+      "ok": true,
+      "elapsedMs": 881,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/hover-calc.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "hover card on `calc` (Markdown + code span)",
+      "dom": {
+        "text": "calc() — CSS functionMath expression mixing units, e.g. percentages and pixels.Example: calc(100% - 20px)",
+        "length": 105,
+        "hasCodeSpan": true
+      }
+    },
+    {
+      "name": "hover-token",
+      "ok": true,
+      "elapsedMs": 836,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/hover-token.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "hover card on the `$brand` token",
+      "dom": {
+        "text": "$brand — compile-time tokenValue: #2563eb",
+        "length": 41,
+        "hasCodeSpan": true
+      }
+    },
+    {
+      "name": "diagnostics",
+      "ok": true,
+      "elapsedMs": 811,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/diagnostics-squiggle.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "XESSA1002 squiggle in the editor + the Problems panel entry",
+      "dom": {
+        "editor": {
+          "squiggles": 1,
+          "classes": [
+            "cdr squiggly-error"
+          ],
+          "text": "@setup {  prefix: \"ui\";}.card {  color: red  padding: 4px;}"
+        },
+        "problems": {
+          "rows": 2,
+          "texts": [
+            "broken-semicolon.cssx1",
+            "missing semicolon after a declaration; v0.1 requires a semicolon for Xessa declarations (ADR-0011)xessaXESSA1002[Ln 5, Col 3]"
+          ]
+        }
+      },
+      "extra": [
+        {
+          "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/problems-panel.png",
+          "width": 2880,
+          "height": 1800,
+          "toasts": {
+            "dismissed": 0,
+            "remaining": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "status-bar",
+      "ok": true,
+      "elapsedMs": 5122,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/status-bar.png",
+      "width": 262,
+      "height": 76,
+      "clip": {
+        "x": 1281,
+        "y": 862,
+        "width": 131,
+        "height": 38,
+        "scale": 1
+      },
+      "note": "status bar item after Build Project (stale/warning) and after a clean Compile File (success)",
+      "dom": {
+        "afterBuild": {
+          "text": "Xessa (stale)",
+          "ariaLabel": "warning  Xessa (stale), 5 entries failed.",
+          "title": null,
+          "icon": "codicon codicon-warning",
+          "box": {
+            "x": 1293.5625,
+            "y": 874,
+            "width": 106.4375,
+            "height": 24
+          }
+        },
+        "afterCompile": {
+          "text": "Xessa",
+          "ariaLabel": "check  Xessa, Compiled /private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/workspace/clean.cssx → 3 artifact(s).",
+          "tooltip": null,
+          "icon": "codicon codicon-check",
+          "box": {
+            "x": 1333.1953125,
+            "y": 874,
+            "width": 66.8046875,
+            "height": 24
+          }
+        }
+      },
+      "extra": [
+        {
+          "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/status-bar-full.png",
+          "width": 2880,
+          "height": 1800,
+          "toasts": {
+            "dismissed": 0,
+            "remaining": 0
+          }
+        },
+        {
+          "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/status-bar-success.png",
+          "width": 182,
+          "height": 76,
+          "clip": {
+            "x": 1321,
+            "y": 862,
+            "width": 91,
+            "height": 38,
+            "scale": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "output-channel",
+      "ok": true,
+      "elapsedMs": 869,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/output-channel.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "the Xessa output channel after Compile File",
+      "dom": {
+        "channel": null,
+        "lines": 15,
+        "text": "[2026-11-25T18:00:38.005Z] wrote /private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/workspace/navigation-theme.map.d.ts\n[2026-11-25T18:00:38.008Z] wrote /private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/workspace/scratch.css\n[2026-11-25T18:00:38.008Z] wrote /private/var/folders/rw/1dv3hk5s6j56vmdj3rjjw7br0000gn/T/xessa-cdp-0KfQ6D/workspace/scratch.map",
+        "hasWroteLine": true,
+        "hasTimestamp": true
+      }
+    },
+    {
+      "name": "grammar",
+      "ok": true,
+      "elapsedMs": 298,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/grammar-clean.png",
+      "width": 2880,
+      "height": 1800,
+      "toasts": {
+        "dismissed": 0,
+        "remaining": 0
+      },
+      "note": "representative document with grammar token colours",
+      "dom": {
+        "tokenSpans": 165,
+        "classes": [
+          "mtk12",
+          "mtk1",
+          "mtk1 bracket-highlighting-0",
+          "mtk10",
+          "mtk28",
+          "mtk22",
+          "mtk18",
+          "mtk13",
+          "mtk7",
+          "mtk26",
+          "mtk25 bracket-highlighting-0",
+          "mtk25",
+          "mtk25 bracket-highlighting-1",
+          "mtk9",
+          "mtk1 dyn-rule-1-7 colorpicker-color-decoration",
+          "mtk17"
+        ],
+        "colours": [
+          "rgb(197, 134, 192)",
+          "rgb(187, 190, 191)",
+          "rgb(255, 215, 0)",
+          "rgb(156, 220, 254)",
+          "rgb(165, 214, 255)",
+          "rgb(255, 123, 114)",
+          "rgb(78, 201, 176)",
+          "rgb(206, 145, 120)",
+          "rgb(181, 206, 168)",
+          "rgb(210, 168, 255)",
+          "rgb(255, 215, 0)",
+          "rgb(201, 209, 217)",
+          "rgb(218, 112, 214)",
+          "rgb(215, 186, 125)",
+          "rgb(187, 190, 191)",
+          "rgb(220, 220, 170)"
+        ]
+      }
+    },
+    {
+      "name": "ax-tree",
+      "ok": true,
+      "file": "/Users/Marky/Desktop/$/xessa/.ai/reports/logs/ui-screens/ax-tree.json",
+      "nodes": 444
+    }
+  ]
+}

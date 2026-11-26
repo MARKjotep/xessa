@@ -1,0 +1,7 @@
+.ui-foo-bar {
+  color: red;
+}
+
+.ui-fooBar {
+  color: blue;
+}

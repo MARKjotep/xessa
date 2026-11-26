@@ -1,0 +1,4 @@
+.button {
+  color: red;
+  .icon { width: 16px; }
+}

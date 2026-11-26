@@ -1,0 +1,4 @@
+.box {
+  width: calc(100% - @md 20px);
+  height: calc(100px + 2rem);
+}

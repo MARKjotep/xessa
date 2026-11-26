@@ -1,0 +1,2 @@
+@setup { css-dir: "../out/styles"; }
+.button { color: red; }

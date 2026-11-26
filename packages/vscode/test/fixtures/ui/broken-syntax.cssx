@@ -1,0 +1,6 @@
+@setup {
+  prefix: "ui";
+}
+.card {
+  width: calc(100% - 20px;
+}

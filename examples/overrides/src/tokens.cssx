@@ -1,0 +1,14 @@
+/*
+ * Compile-time tokens. Imported unqualified by entry.cssx, so `radius`,
+ * `primary` and `gap` are visible as `$radius`, `$primary` and `$gap` — unless
+ * the entry defines a local of its own.
+ */
+@setup {
+  module: true;
+}
+
+@variables {
+  radius: 4px;
+  primary: #1d4ed8;
+  gap: 8px;
+}

@@ -1,0 +1,8 @@
+@setup {
+  prefix: "ui";
+  css-dir: "../generated/styles";
+  css-name: "theme.css";
+  map-dir: "../generated/maps";
+  map-name: "classes.js";
+}
+.button { color: red; }

@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+@use "./theme.cssx" styles;
+@runtime { surface: #f8fafc @dark #0f172a; }
+.app-surface { background: $surface; }

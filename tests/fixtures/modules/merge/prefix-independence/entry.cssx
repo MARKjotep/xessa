@@ -1,0 +1,7 @@
+@setup {
+  prefix: "admin";
+}
+@use "./panel.cssx" styles;
+.page {
+  padding: 16px;
+}

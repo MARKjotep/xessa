@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.hero {
+  background: url("a@b.png") @md red;
+}

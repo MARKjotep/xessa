@@ -1,0 +1,28 @@
+@setup {
+  prefix: "ui";
+  css-dir: "../generated/styles";
+  css-name: "button.css";
+  map-dir: "../generated/maps";
+  map-name: "button.map.js";
+  map-types: true;
+}
+
+@variables {
+  radius: 6px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $radius;
+  -webkit-appearance: auto;
+
+  &.is-primary {
+    background: #2563eb;
+    color: white;
+  }
+
+  & > .icon {
+    width: 16px;
+  }
+}

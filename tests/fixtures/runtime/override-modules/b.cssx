@@ -1,0 +1,2 @@
+@runtime { accent: #aaaaaa @md #bbbbbb; }
+.b-panel { border-color: $accent; }

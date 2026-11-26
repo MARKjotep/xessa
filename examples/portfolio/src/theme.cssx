@@ -1,0 +1,38 @@
+/*
+* Runtime theme tokens (SPECIFICATION.md §6.2, ADR-0016).
+*
+* Every declaration becomes a native custom property named with the consuming
+* build's prefix (`--pf-*` here) plus a `prefers-color-scheme: dark` override:
+*
+*   :root { --pf-canvas: #f2efe6; ... }
+*   @media (prefers-color-scheme: dark) { :root { --pf-canvas: #0c110f; ... } }
+*
+* The entry imports this module with `styles`, so the `:root` block is emitted
+* in portfolio.css. Components and sections import it as a token namespace and
+* reference `$theme.*`, which the compiler rewrites to `var(--pf-*)` — the
+* values therefore follow the system theme without any page-level JavaScript.
+*
+* `index.html` adds a manual Auto/Light/Dark control for demo purposes: it
+* mirrors the values of the emitted dark `:root` block onto the document root
+* instead of duplicating any token value in HTML.
+*/
+@setup {
+  prefix: "pf";
+  module: true;
+}
+
+@runtime {
+  canvas: #f2efe6 @dark #0c110f;
+  surface: #fbfaf5 @dark #121916;
+  raised: #ffffff @dark #18211d;
+  ink: #191d1a @dark #edf2ed;
+  muted: #5e675f @dark #a7b5ab;
+  faint: #656d66 @dark #84938a;
+  border: #ddd8c9 @dark #28342d;
+  accent: #0b6b5f @dark #5eead4;
+  accent-soft: #d9efe7 @dark #123c35;
+  accent-ink: #ffffff @dark #042f2a;
+  amber: #c97b16 @dark #f0b45e;
+  amber-soft: #f6e7cd @dark #3a2a12;
+  shadow: 0 18px 50px -30px rgb(20 30 24 / 0.35) @dark 0 18px 50px -28px rgb(0 0 0 / 0.7);
+}

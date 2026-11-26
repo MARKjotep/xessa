@@ -1,0 +1,50 @@
+/*
+* A rule-bearing component module. The entry style-imports it, so these rules
+* are merged into the entry's single stylesheet in authored order (ADR-0014).
+* The module owns its tokens by importing them itself: token imports are not
+* re-exported through the entry.
+*/
+@setup {
+  module: true;
+}
+
+@use "../tokens.cssx";
+
+@variables {
+  akis: 3rem;
+  takas: 4rem;
+}
+
+@runtime {
+  lordy: calc(1px,1rem);
+}
+
+.cardingsxx {
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: $card-padding;
+  border: 1px solid $border;
+  border-radius: $card-radius;
+  background: $raised;
+  color: $ink;
+  font-size: $lordy;
+
+  &:hover {
+    border-color: $accent;
+  }
+
+  &.card > .cardingsxx {
+    margin: 2rem;
+    color: red;
+  }
+}
+
+.card-icon {
+  width: 24px;
+  height: 24px;
+  color: $accent;
+}

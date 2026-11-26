@@ -1,0 +1,4 @@
+@setup { prefix: "ui"; }
+.button {
+  color: red @
+}

@@ -1,0 +1,16 @@
+@group.badge {
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.status {
+  @group.badge {
+    padding: 2px 6px;
+  }
+}
+
+.status {
+  @group.badge {
+    border-radius: 0;
+  }
+}

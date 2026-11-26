@@ -1,0 +1,6 @@
+@setup {
+  prefix: "card";
+}
+.card {
+  padding: 12px;
+}

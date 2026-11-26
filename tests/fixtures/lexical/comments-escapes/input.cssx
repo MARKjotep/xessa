@@ -1,0 +1,7 @@
+/* Mentions @md, $radius and "strings" but must stay inert. */
+.button {
+  --label: "@dark /* not a comment */";
+  content: "\"quoted\" @xl";
+  color: red; /* trailing @lg comment */
+  .status\:active { color: green; }
+}

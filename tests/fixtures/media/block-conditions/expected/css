@@ -1,0 +1,22 @@
+.ui-card {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .ui-card {
+    display: grid;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 768px) and (prefers-color-scheme: dark) {
+  .ui-card {
+    background: #111111;
+  }
+}
+
+@media print {
+  .ui-card {
+    display: none;
+  }
+}

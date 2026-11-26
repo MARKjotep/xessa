@@ -1,0 +1,1 @@
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}.ui-spinner{animation:spin 1s linear infinite;}.app-page{animation-name:spin;animation-duration:2s;}

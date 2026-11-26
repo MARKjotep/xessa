@@ -1,0 +1,24 @@
+@setup {
+  prefix: "ui";
+  css-dir: "../generated/styles";
+  css-name: "card.css";
+  map-dir: "../generated/maps";
+  map-name: "card.map.js";
+}
+@use "./tokens.cssx";
+@use "./layout.cssx" as layout;
+@variables {
+  gap: $layout.gutter;
+  spacing: 16px;
+}
+@runtime {
+  primary: #2563eb @dark #60a5fa;
+}
+.card {
+  padding: $spacing;
+  margin: $gap;
+  border-radius: $radius;
+  color: $primary;
+  background: $surface @dark #181818;
+  &:hover { border-color: $primary; }
+}

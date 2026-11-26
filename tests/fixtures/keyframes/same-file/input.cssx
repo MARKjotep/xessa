@@ -1,0 +1,9 @@
+@setup { prefix: "ui"; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation-name: $keyframes.spin;
+  animation-duration: 1s;
+}

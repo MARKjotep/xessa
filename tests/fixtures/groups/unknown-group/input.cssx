@@ -1,0 +1,9 @@
+.card {
+  @group.missing {
+    padding: 4px;
+  }
+}
+
+.kept {
+  padding: 8px;
+}

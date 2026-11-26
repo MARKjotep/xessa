@@ -1,0 +1,7 @@
+@setup {
+  prefix: "app";
+}
+@use "./card.cssx" styles;
+.page {
+  display: grid;
+}

@@ -1,0 +1,9 @@
+@setup {
+  prefix: "app";
+}
+@use "./a.cssx" styles;
+@use "./b.cssx" styles;
+@use "./c.cssx" styles;
+.page {
+  margin: 0;
+}

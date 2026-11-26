@@ -1,0 +1,1 @@
+:root{--ui-primary:#2563eb;}@media (prefers-color-scheme: dark){:root{--ui-primary:#60a5fa;}}.ui-card{padding:16px;margin:16px;border-radius:8px;color:var(--ui-primary);background:#ffffff;}@media (prefers-color-scheme: dark){.ui-card{background:#181818;}}.ui-card:hover{border-color:var(--ui-primary);}

@@ -1,0 +1,8 @@
+@setup {
+  module: true;
+  prefix: "ui";
+  emit-css: true;
+}
+.card {
+  padding: 8px;
+}

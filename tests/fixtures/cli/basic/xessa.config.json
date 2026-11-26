@@ -1,0 +1,16 @@
+{
+  "include": ["src/**/*.cssx"],
+  "exclude": ["src/tokens", "node_modules", "dist", "generated"],
+  "output": {
+    "cssDir": "dist/styles",
+    "mapDir": "dist/maps",
+    "emitCss": true,
+    "emitMap": true,
+    "mapTypes": true,
+    "sourceMap": false,
+    "minify": false
+  },
+  "classes": { "strategy": "prefix", "prefix": "app" },
+  "media": { "md": "(min-width: 768px)", "xl": "(min-width: 1280px)" },
+  "compiler": { "strict": true, "mediaGrouping": "safe" }
+}

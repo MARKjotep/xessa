@@ -1,0 +1,6 @@
+@setup {
+  prefix: "ui";
+}
+.button {
+  color: red @ultrawide blue;
+}

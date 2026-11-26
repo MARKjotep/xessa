@@ -1,0 +1,7 @@
+@setup {
+  prefix: "app";
+}
+@use "./theme.cssx" as t styles;
+.page {
+  margin: $t.gap;
+}

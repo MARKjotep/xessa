@@ -1,0 +1,9 @@
+.button {
+  --label: "@dark /* not a comment */";
+  content: "\"quoted\" @xl";
+  color: red;
+}
+
+.button .status\:active {
+  color: green;
+}

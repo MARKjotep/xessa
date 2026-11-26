@@ -1,0 +1,14 @@
+/*
+* Runtime theme tokens. The entry imports this module with `styles`, so this
+* `:root` block is emitted in the build. Group defaults may not reference
+* these (ADR-0017 decision (b)): the entry uses them at a use site instead.
+*/
+@setup {
+  prefix: "ui";
+  module: true;
+}
+
+@runtime {
+  surface: #ffffff @dark #0f172a;
+  accent: #0f766e @dark #2dd4bf;
+}

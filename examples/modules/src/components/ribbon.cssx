@@ -1,0 +1,24 @@
+/*
+* A rule-only module. `map-inherit: false` keeps `.ribbon` out of the entry's
+* class map while the rule still merges in cascade order (ADR-0020). Combined
+* with `module: true`, the class exists in the emitted CSS but nowhere in any
+* generated map by default: the documented escape hatch for presentational
+* classes that JavaScript never looks up.
+*/
+@setup {
+  module: true;
+  map-inherit: false;
+}
+
+@use "../tokens.cssx";
+
+.ribbon {
+  display: inline-block;
+  padding: $ribbon-padding;
+  border-radius: 999px;
+  background: $accent;
+  color: #ffffff;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

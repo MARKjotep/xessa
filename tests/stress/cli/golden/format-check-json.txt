@@ -1,0 +1,29 @@
+{
+  "command": "format",
+  "success": false,
+  "exitCode": 1,
+  "check": true,
+  "dryRun": false,
+  "workspaceRoot": "<ROOT>",
+  "configFile": "<ROOT>/xessa.config.json",
+  "files": [
+    {
+      "file": "src/button.cssx",
+      "changed": true,
+      "written": false,
+      "reason": "not-written"
+    },
+    {
+      "file": "src/card.cssx",
+      "changed": true,
+      "written": false,
+      "reason": "not-written"
+    }
+  ],
+  "changed": [
+    "src/button.cssx",
+    "src/card.cssx"
+  ],
+  "diagnostics": [],
+  "errors": []
+}

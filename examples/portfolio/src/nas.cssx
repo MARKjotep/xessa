@@ -1,0 +1,13 @@
+@setup {
+  module: true;
+}
+
+@use "./tokens.cssx" as tk;
+
+.tk {
+  color: $tk.raised;
+  background-color: #C586C0;
+  margin: 2rem;
+  font-size: 2rem @dark 5px;
+  color: #000000;
+}

@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Generated Xessa artifacts (examples/<name>/generated is committed on purpose)
+generated/
+!examples/**/generated/
+!examples/**/generated/**
+.cssx-manifest.json
+tests/**/tmp/
+coverage/
+
+# Test and tool artifacts
+playwright-report/
+test-results/
+.vscode-test/
+*.vsix
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,2 @@
+@setup { map-dir: "../out/maps"; }
+.button { color: red; }

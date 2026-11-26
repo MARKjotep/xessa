@@ -1,0 +1,5 @@
+@setup { prefix: "ui"; }
+.button {
+  color: red
+  &:hover { color: blue; }
+}

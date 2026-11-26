@@ -1,0 +1,4 @@
+@setup {
+  emit-map: false;
+}
+.button { color: red; }

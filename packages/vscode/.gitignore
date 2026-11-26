@@ -1,0 +1,3 @@
+# Extension build output (manifest main is out/extension.js; modules live in dist/)
+out/
+dist/

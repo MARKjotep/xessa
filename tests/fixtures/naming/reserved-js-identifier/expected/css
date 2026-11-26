@@ -1,0 +1,11 @@
+.ui-default {
+  color: red;
+}
+
+.ui-delete {
+  color: blue;
+}
+
+.ui-button {
+  color: green;
+}

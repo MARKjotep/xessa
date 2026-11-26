@@ -1,0 +1,6 @@
+{
+  "command": "build",
+  "success": false,
+  "exitCode": 2,
+  "error": "Unknown option \"--wat\"."
+}

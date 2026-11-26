@@ -1,0 +1,85 @@
+@setup {
+  css-dir: "../generated/styles";
+  css-name: "app.css";
+  map-dir: "../generated/maps";
+  map-name: "app.map.js";
+}
+
+/*
+ * Merge order (ADR-0016): style-imported modules first in authored order, then
+ * the entry. theme-base.cssx is imported before theme-alt.cssx, so if the entry
+ * did not define `primary`, theme-alt's #dc2626 would be the module winner.
+ * The entry's local @runtime below is last and wins over both.
+ */
+@use "./theme-base.cssx" as base styles;
+@use "./theme-alt.cssx" styles;
+/*
+ * tokens.cssx is imported twice deliberately: the unqualified binding makes
+ * `radius`/`gap` shadowable by local definitions, while the `tokens` alias keeps
+ * the module's original 4px/8px and compile-time `primary` addressable. The
+ * graph loads the module once, and it has no rules, so nothing is emitted twice.
+ */
+@use "./tokens.cssx";
+@use "./tokens.cssx" as tokens;
+
+/*
+ * Strategy: compile-time local override. These locals shadow the unqualified
+ * values imported from tokens.cssx (radius is 4px and gap is 8px there).
+ */
+@variables {
+  radius: 12px;
+  gap: 20px;
+}
+
+/*
+ * Strategy: entry runtime override. This declaration is last in merge order,
+ * so --ui-primary is #0f766e (dark #2dd4bf) even though both imported theme
+ * modules also declare `primary`.
+ */
+@runtime {
+  primary: #0f766e @dark #2dd4bf;
+}
+
+
+/*
+ * Strategy: compile-time local override — $radius/$gap are the local 12px/20px,
+ * not the imported 4px/8px.
+ */
+.local-override {
+  border-radius: $radius;
+  gap: $gap;
+}
+
+/*
+ * Strategy: namespace disambiguation — the alias exposes the imported values
+ * that the local definitions shadow: $tokens.radius is 4px while $radius is
+ * 12px, and $tokens.primary is the compile-time #1d4ed8 while $primary is the
+ * entry's runtime custom property. The `base` alias likewise keeps theme-base's
+ * runtime members addressable.
+ */
+.namespace-disambiguation {
+  outline-offset: $tokens.radius;
+  border-color: $tokens.primary;
+  background: $base.surface;
+  
+  
+}
+
+/*
+ * Strategy: entry runtime override — both references are rewritten to
+ * var(--ui-*) and therefore resolve to the entry's winning values.
+ */
+.runtime-override {
+  color: $primary;
+  background: $base.surface;
+}
+
+/*
+ * Strategy: imported keyframe reference — `fade` is declared in theme-base.cssx,
+ * whose rules and @keyframes block this build emits because the import uses
+ * "styles". A token-only import would make this reference XESSA2001.
+ */
+.imported-keyframes {
+  animation-name: $keyframes.fade;
+  animation-duration: 240ms;
+}

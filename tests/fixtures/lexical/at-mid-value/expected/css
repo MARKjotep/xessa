@@ -1,0 +1,9 @@
+.ui-hero {
+  background: url("a@b.png");
+}
+
+@media (min-width: 768px) {
+  .ui-hero {
+    background: red;
+  }
+}

@@ -1,0 +1,12 @@
+@group.card {
+  padding: 12px;
+  border: 1px solid #ddd;
+  color: black;
+}
+
+.panel {
+  @group.card {
+    padding: 20px;
+    color: navy;
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "command": "check",
+  "success": false,
+  "exitCode": 1,
+  "dryRun": false,
+  "workspaceRoot": "<ROOT>",
+  "configFile": "<ROOT>/xessa.config.json",
+  "entries": [
+    {
+      "file": "src/broken.cssx",
+      "dependencies": [],
+      "outputs": [
+        {
+          "kind": "css",
+          "path": "src/broken.css",
+          "written": false,
+          "reason": "check"
+        },
+        {
+          "kind": "js",
+          "path": "src/broken.map.js",
+          "written": false,
+          "reason": "check"
+        }
+      ],
+      "diagnostics": [
+        {
+          "code": "XESSA2001",
+          "severity": "error",
+          "message": "Undefined token \"$missing\" in \"<ROOT>/src/broken.cssx\".",
+          "file": "src/broken.cssx",
+          "line": 2,
+          "column": 10
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "XESSA2001",
+      "severity": "error",
+      "message": "Undefined token \"$missing\" in \"<ROOT>/src/broken.cssx\".",
+      "file": "src/broken.cssx",
+      "line": 2,
+      "column": 10
+    }
+  ],
+  "warnings": [],
+  "errors": []
+}

@@ -1,0 +1,6 @@
+@setup {
+  prefix: "c";
+}
+.charlie {
+  color: silver;
+}

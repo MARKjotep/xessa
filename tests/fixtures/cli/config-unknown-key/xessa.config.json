@@ -1,0 +1,6 @@
+{
+  "include": ["src/*.cssx"],
+  "compiler": { "strict": true },
+  "unknownTop": true,
+  "output": { "cssDir": "out", "wat": 1 }
+}

@@ -1,0 +1,475 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/deepseek-v4.1-flash#high",
+  "default_agent": "build",
+  "experimental": {
+    "subagent_depth": 1,
+    "todo": true
+  },
+  "watcher": {
+    "ignore": [
+      "**/node_modules/**",
+      "**/coverage/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
+      ".ai/reports/logs/**"
+    ]
+  },
+  "agents": {
+    "build": {
+      "description": "DeepSeek V4.1 Flash 1017 High lead architect; schedule at most four native workers, coordinate handoffs, and use a fresh verify session for independent final validation. Follow AGENTS.md.",
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4.1-flash#high",
+      "permissions": [
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "subagent",
+          "resource": "code",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "verify",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "deepseek_max",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "ui",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "browser_test",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "advisor",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "evaluate",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "review",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "explore",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "sanity_check",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "research",
+          "effect": "allow"
+        },
+        {
+          "action": "subagent",
+          "resource": "vision",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "git status*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "git diff*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "git log*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "git show*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "bun --version",
+          "effect": "allow"
+        }
+      ]
+    },
+    "code": {
+      "description": "DeepSeek V4.1 Flash 1017 High implementation worker; fix, test and write persistent task/report records within assigned scope.",
+      "mode": "all",
+      "model": "opencode-go/deepseek-v4.1-flash#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ]
+    },
+    "verify": {
+      "description": "Independent GLM-5.3-Flash final verifier. Use a fresh context with the original request, acceptance criteria and Git diff; run checks and return a verdict with evidence before build reads the code worker report. Do not edit files or spawn subagents.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3-flash#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "git status*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "git diff*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "git show*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "git log*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "bun --version",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "bun test*",
+          "effect": "allow"
+        },
+        {
+          "action": "shell",
+          "resource": "bun run*",
+          "effect": "allow"
+        }
+      ]
+    },
+    "deepseek_max": {
+      "description": "DeepSeek V4.1 Flash 1017 Max read-only escalation. Use only for unusually complex plans or a task that is stuck; return recommendations to build or code. Do not edit files or spawn subagents.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4.1-flash#max",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ]
+    },
+    "ui": {
+      "description": "Specify semantic HTML, CSS, responsive layout, accessibility, interaction states and acceptance criteria. Do not implement.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3-flash#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ]
+    },
+    "browser_test": {
+      "description": "Validate actual rendered DOM with existing Playwright tooling. Report reproduction and evidence; do not edit tests or source.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3-flash#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ]
+    },
+    "advisor": {
+      "description": "Resolve blocked architectural decisions; compare concrete alternatives and recommend one.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 8
+    },
+    "evaluate": {
+      "description": "Evaluate consequential technical tradeoffs with evidence; do not duplicate review.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 8
+    },
+    "review": {
+      "description": "Review substantial changes for correctness, regressions, security and missing tests. Cite file:line evidence.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3#high",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 15
+    },
+    "explore": {
+      "description": "Locate relevant files, symbols, callers and tests with bounded searches.",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.6-flash",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 15
+    },
+    "sanity_check": {
+      "description": "Quick read-only verification of narrow changes and obvious issues.",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.6-flash",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 6
+    },
+    "research": {
+      "description": "Research authoritative external documentation and report applicable versions and sources.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4.1-flash#medium",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 12
+    },
+    "vision": {
+      "description": "Inspect visual inputs only if model supports them; otherwise report unverified and use DOM evidence.",
+      "mode": "subagent",
+      "model": "opencode-go/glm-5.3",
+      "permissions": [
+        {
+          "action": "subagent",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "edit",
+          "resource": "*",
+          "effect": "deny"
+        },
+        {
+          "action": "shell",
+          "resource": "*",
+          "effect": "deny"
+        }
+      ],
+      "steps": 6
+    }
+  },
+  "permissions": [
+    {
+      "action": "shell",
+      "resource": "git commit*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git push*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git reset*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git clean*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git stash*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git checkout*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git switch*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git restore*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git rebase*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git merge*",
+      "effect": "ask"
+    },
+    {
+      "action": "shell",
+      "resource": "git pull*",
+      "effect": "ask"
+    }
+  ]
+}

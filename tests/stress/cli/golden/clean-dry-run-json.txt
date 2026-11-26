@@ -1,0 +1,37 @@
+{
+  "command": "clean",
+  "success": true,
+  "exitCode": 0,
+  "dryRun": true,
+  "workspaceRoot": "<ROOT>",
+  "configFile": "<ROOT>/xessa.config.json",
+  "removed": [
+    {
+      "path": "generated/maps/button.map.d.ts",
+      "reason": "would-delete"
+    },
+    {
+      "path": "generated/maps/button.map.js",
+      "reason": "would-delete"
+    },
+    {
+      "path": "generated/maps/card.map.d.ts",
+      "reason": "would-delete"
+    },
+    {
+      "path": "generated/maps/card.map.js",
+      "reason": "would-delete"
+    },
+    {
+      "path": "generated/styles/button.css",
+      "reason": "would-delete"
+    },
+    {
+      "path": "generated/styles/card.css",
+      "reason": "would-delete"
+    }
+  ],
+  "skipped": [],
+  "warnings": [],
+  "errors": []
+}

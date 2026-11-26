@@ -1,0 +1,9 @@
+@setup {
+  prefix: "ui";
+}
+.shared {
+  color: blue;
+}
+.solo {
+  outline-style: dotted;
+}

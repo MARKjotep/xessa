@@ -1,0 +1,13 @@
+@setup {
+  prefix: "ui";
+}
+@variables {
+  gap: 10px;
+}
+@runtime {
+  primary: #2563eb @dark #60a5fa;
+}
+.card {
+  padding: $gap;
+  color: $primary;
+}

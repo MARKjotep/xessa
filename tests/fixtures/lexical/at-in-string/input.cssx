@@ -1,0 +1,4 @@
+.message::before {
+  content: "@dark";
+  quotes: "@md" "@xl+dark";
+}

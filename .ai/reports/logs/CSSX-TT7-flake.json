@@ -1,0 +1,165 @@
+{
+  "case": "TT7 flake detection",
+  "ok": true,
+  "machine": {
+    "cpu": "Apple M1 Pro",
+    "cores": 8,
+    "memoryGb": 16,
+    "platform": "darwin",
+    "arch": "arm64",
+    "osRelease": "27.3.0",
+    "bun": "1.4.5",
+    "node": "26.3.0"
+  },
+  "config": {
+    "runs": 5,
+    "suites": [
+      "verify",
+      "browser"
+    ],
+    "timeoutMs": 1800000
+  },
+  "wallClockMs": 677828,
+  "flakeRate": {
+    "verify": "0/5",
+    "browser": "0/5"
+  },
+  "suites": [
+    {
+      "suite": "verify",
+      "command": "bun run verify",
+      "runs": [
+        {
+          "run": 1,
+          "exit": 0,
+          "durationMs": 47230,
+          "pass": 1160,
+          "fail": 0,
+          "tests": 1162,
+          "files": 85,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 2,
+          "exit": 0,
+          "durationMs": 46739,
+          "pass": 1160,
+          "fail": 0,
+          "tests": 1162,
+          "files": 85,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 3,
+          "exit": 0,
+          "durationMs": 46106,
+          "pass": 1160,
+          "fail": 0,
+          "tests": 1162,
+          "files": 85,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 4,
+          "exit": 0,
+          "durationMs": 46851,
+          "pass": 1160,
+          "fail": 0,
+          "tests": 1162,
+          "files": 85,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 5,
+          "exit": 0,
+          "durationMs": 46710,
+          "pass": 1160,
+          "fail": 0,
+          "tests": 1162,
+          "files": 85,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        }
+      ],
+      "flakes": 0,
+      "requestedRuns": 5
+    },
+    {
+      "suite": "browser",
+      "command": "bun run test:browser",
+      "runs": [
+        {
+          "run": 1,
+          "exit": 0,
+          "durationMs": 89035,
+          "pass": 96,
+          "fail": null,
+          "tests": null,
+          "files": null,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 2,
+          "exit": 0,
+          "durationMs": 87718,
+          "pass": 96,
+          "fail": null,
+          "tests": null,
+          "files": null,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 3,
+          "exit": 0,
+          "durationMs": 87927,
+          "pass": 96,
+          "fail": null,
+          "tests": null,
+          "files": null,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 4,
+          "exit": 0,
+          "durationMs": 90279,
+          "pass": 96,
+          "fail": null,
+          "tests": null,
+          "files": null,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        },
+        {
+          "run": 5,
+          "exit": 0,
+          "durationMs": 89224,
+          "pass": 96,
+          "fail": null,
+          "tests": null,
+          "files": null,
+          "flaky": null,
+          "skipped": null,
+          "flaked": false
+        }
+      ],
+      "flakes": 0,
+      "requestedRuns": 5
+    }
+  ]
+}

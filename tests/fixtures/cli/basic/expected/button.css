@@ -1,0 +1,22 @@
+.ui-button {
+  display: flex;
+  padding: 12px;
+}
+
+@media (min-width: 768px) {
+  .ui-button {
+    padding: 12px;
+  }
+}
+
+.ui-button {
+  border-radius: 8px;
+}
+
+.ui-button:hover {
+  opacity: 0.85;
+}
+
+.ui-button > .ui-icon {
+  width: 16px;
+}

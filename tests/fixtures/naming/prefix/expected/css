@@ -1,0 +1,7 @@
+.ui-card {
+  color: red;
+}
+
+.ui-card-header {
+  color: blue;
+}

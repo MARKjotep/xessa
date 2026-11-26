@@ -1,0 +1,4 @@
+{
+  "include": ["src/**/*.cssx"],
+  "compiler": { "strict": true, "mediaGrouping": "safe" }
+}

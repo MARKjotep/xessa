@@ -1,0 +1,7 @@
+@media-types { compact: (max-width: 500px); }
+.card {
+  padding: 12px @md 20px @xl 32px;
+  background: white @dark #181818 @xl+dark #101010;
+  @xl { display: grid; gap: 24px; }
+  @compact { display: block; }
+}

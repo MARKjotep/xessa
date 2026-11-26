@@ -1,0 +1,8 @@
+[
+  {
+    "code": "XESSA2001",
+    "severity": "error",
+    "messageContains": "Unknown group \"@group.card\"",
+    "span": { "line": 4, "col": 3 }
+  }
+]

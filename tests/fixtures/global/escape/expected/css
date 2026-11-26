@@ -1,0 +1,11 @@
+.ui-icon {
+  color: red;
+}
+
+.external-icon {
+  color: blue;
+}
+
+.ui-card .external-icon {
+  margin: 0;
+}
