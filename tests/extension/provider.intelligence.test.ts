@@ -108,6 +108,10 @@ describe("completion contexts", () => {
     const items = completionsAt(text, offset, { analysis: state.analysis }).items;
     const byLabel = new Map(items.map((item) => [item.label, item]));
     expect(byLabel.get("@2xl")?.detail).toContain("(min-width: 1536px)");
+    expect(byLabel.get("@smd")?.detail).toContain("(min-width: 624px)");
+    expect(byLabel.get("@no_hover")?.detail).toContain("(pointer: coarse)");
+    expect(byLabel.get("@mobile")?.detail).toContain("(pointer: coarse)");
+    expect(byLabel.get("@screen")?.detail).toContain("screen");
     expect(byLabel.get("@md")?.detail).toContain("(min-width: 768px)");
     expect(byLabel.get("@compact")?.detail).toContain("(max-width: 500px)");
   });
@@ -334,7 +338,7 @@ describe("completion contexts", () => {
       word: "m",
       inSelector: true,
     });
-    expect(aliasLabels(state.analysis, text, offset)).toEqual(["@md"]);
+    expect(aliasLabels(state.analysis, text, offset)).toEqual(["@md", "@mobile"]);
   });
 
   test("top-level @ completion survives recovery-pending statements", async () => {

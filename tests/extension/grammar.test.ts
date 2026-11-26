@@ -120,7 +120,16 @@ describe("directive and media alias matchers", () => {
     const source = grammar.repository.alias?.match ?? "";
     expect(source.length).toBeGreaterThan(0);
     const matcher = anchoredRegex(source);
-    for (const alias of ["@md", "@2xl", "@xl+dark", "@dark", "@compact", "@print"]) {
+    for (const alias of [
+      "@md",
+      "@2xl",
+      "@xl+dark",
+      "@dark",
+      "@compact",
+      "@print",
+      "@no_hover",
+      "@screen",
+    ]) {
       expect(matcher.test(alias)).toBe(true);
     }
     for (const reserved of [

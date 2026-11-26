@@ -82,6 +82,7 @@ export const BOOLEAN_SETUP_KEYS: readonly string[] = Object.freeze([
  * powers completion and hover detail for aliases that are always available.
  */
 export const BUILTIN_MEDIA_ALIASES: Readonly<Record<string, string>> = Object.freeze({
+  smd: "(min-width: 624px)",
   sm: "(min-width: 640px)",
   md: "(min-width: 768px)",
   lg: "(min-width: 1024px)",
@@ -91,8 +92,12 @@ export const BUILTIN_MEDIA_ALIASES: Readonly<Record<string, string>> = Object.fr
   light: "(prefers-color-scheme: light)",
   portrait: "(orientation: portrait)",
   landscape: "(orientation: landscape)",
+  screen: "screen",
   print: "print",
   reduced: "(prefers-reduced-motion: reduce)",
+  // `no_hover` and `mobile` intentionally share the coarse-pointer condition.
+  no_hover: "(pointer: coarse)",
+  mobile: "(pointer: coarse)",
 });
 
 /** Layer a media alias definition came from; later layers win by key. */

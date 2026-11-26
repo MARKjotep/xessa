@@ -166,6 +166,30 @@ describe("media aliases", () => {
     expect(aliases.find((alias) => alias.name === "compact")?.layer).toBe("document");
   });
 
+  test("mirrored built-ins include smd, no_hover, mobile and screen", () => {
+    const aliases = analyzeText(source("")).mediaAliases;
+    expect(aliases.find((alias) => alias.name === "smd")).toMatchObject({
+      condition: "(min-width: 624px)",
+      layer: "builtin",
+    });
+    expect(aliases.find((alias) => alias.name === "no_hover")).toMatchObject({
+      condition: "(pointer: coarse)",
+      layer: "builtin",
+    });
+    expect(aliases.find((alias) => alias.name === "mobile")).toMatchObject({
+      condition: "(pointer: coarse)",
+      layer: "builtin",
+    });
+    expect(aliases.find((alias) => alias.name === "screen")).toMatchObject({
+      condition: "screen",
+      layer: "builtin",
+    });
+    expect(aliases.find((alias) => alias.name === "print")).toMatchObject({
+      condition: "print",
+      layer: "builtin",
+    });
+  });
+
   test("document aliases expose definition ranges from parser spans", () => {
     const text =
       "@media-types { compact: (max-width: 500px); }\n.card { padding: 1px @compact 2px; }";

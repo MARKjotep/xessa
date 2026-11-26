@@ -253,6 +253,7 @@ Default aliases (all `min-width` unless noted):
 
 | Alias | Condition |
 |---|---|
+| `smd` | `(min-width: 624px)` |
 | `sm` | `(min-width: 640px)` |
 | `md` | `(min-width: 768px)` |
 | `lg` | `(min-width: 1024px)` |
@@ -262,8 +263,14 @@ Default aliases (all `min-width` unless noted):
 | `light` | `(prefers-color-scheme: light)` |
 | `portrait` | `(orientation: portrait)` |
 | `landscape` | `(orientation: landscape)` |
+| `screen` | `screen` |
 | `print` | `print` |
 | `reduced` | `(prefers-reduced-motion: reduce)` |
+| `no_hover` | `(pointer: coarse)` |
+| `mobile` | `(pointer: coarse)` |
+
+`screen` and `print` are media types; `no_hover` and `mobile` are media features and share the
+coarse-pointer condition.
 
 Aliases merge by key: built-ins < project `media` config < file `@media-types`; the later layer wins
 for the same key and distinct keys accumulate. MVP supports **one media-query expression per

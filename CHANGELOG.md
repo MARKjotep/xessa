@@ -38,6 +38,8 @@ and one compiler correction below. The VS Code extension remains at `0.1.0`.
 
 ### Compiler
 
+- Default media aliases add `smd` (`(min-width: 624px)`), `no_hover`/`mobile` (`(pointer: coarse)`)
+  and `screen`; `print` was already built in.
 - Runtime-token merge order now matches `SPECIFICATION.md` §6.2 and
   [ADR-0016](docs/decisions/ADR-0016-runtime-token-override.md) when two unqualified `styles`
   imports declare the same `@runtime` property: the later module in merge order supplies the single

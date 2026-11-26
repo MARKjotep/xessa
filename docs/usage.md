@@ -331,12 +331,18 @@ Built-in aliases (all `min-width` unless noted):
 
 | Alias | Condition             | Alias       | Condition                          |
 | ----- | --------------------- | ----------- | ---------------------------------- |
-| `sm`  | `(min-width: 640px)`  | `dark`      | `(prefers-color-scheme: dark)`     |
-| `md`  | `(min-width: 768px)`  | `light`     | `(prefers-color-scheme: light)`    |
-| `lg`  | `(min-width: 1024px)` | `portrait`  | `(orientation: portrait)`          |
-| `xl`  | `(min-width: 1280px)` | `landscape` | `(orientation: landscape)`         |
+| `smd` | `(min-width: 624px)`  | `dark`      | `(prefers-color-scheme: dark)`     |
+| `sm`  | `(min-width: 640px)`  | `light`     | `(prefers-color-scheme: light)`    |
+| `md`  | `(min-width: 768px)`  | `portrait`  | `(orientation: portrait)`          |
+| `lg`  | `(min-width: 1024px)` | `landscape` | `(orientation: landscape)`         |
+| `xl`  | `(min-width: 1280px)` | `screen`    | `screen`                           |
 | `2xl` | `(min-width: 1536px)` | `print`     | `print`                            |
 |       |                       | `reduced`   | `(prefers-reduced-motion: reduce)` |
+|       |                       | `no_hover`  | `(pointer: coarse)`                |
+|       |                       | `mobile`    | `(pointer: coarse)`                |
+
+`screen` and `print` are media types; `no_hover` and `mobile` are media features and share the
+coarse-pointer condition.
 
 Inline variants follow a required base value and may combine aliases with `+`, which is logical
 **AND**:

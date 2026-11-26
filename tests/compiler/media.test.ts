@@ -269,6 +269,31 @@ describe("alias precedence (ADR-0006)", () => {
     const { ir } = lowerSource(".a { width: 1px @lg 2px; }", { media: { md: "(max-width: 1px)" } });
     expect(summarize(ir)[1]?.query).toBe("(min-width: 1024px)");
   });
+
+  test("built-in smd, no_hover, mobile and screen aliases keep their definitions", () => {
+    const { ir, diagnostics } = lowerSource(
+      ".a { width: 1px @smd 2px @no_hover 3px @mobile 4px @screen 5px; @smd { height: 6px; } }",
+    );
+    expect(diagnostics).toEqual([]);
+    expect(summarize(ir)).toEqual([
+      { selector: ".a", query: null, keys: [], declarations: ["width:1px"] },
+      { selector: ".a", query: "(min-width: 624px)", keys: ["smd"], declarations: ["width:2px"] },
+      {
+        selector: ".a",
+        query: "(pointer: coarse)",
+        keys: ["no_hover"],
+        declarations: ["width:3px"],
+      },
+      {
+        selector: ".a",
+        query: "(pointer: coarse)",
+        keys: ["mobile"],
+        declarations: ["width:4px"],
+      },
+      { selector: ".a", query: "screen", keys: ["screen"], declarations: ["width:5px"] },
+      { selector: ".a", query: "(min-width: 624px)", keys: ["smd"], declarations: ["height:6px"] },
+    ]);
+  });
 });
 
 describe("XESSA3001 media rejections", () => {
