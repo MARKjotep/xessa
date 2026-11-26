@@ -30,8 +30,8 @@ bun add -d @xessa/cli          # xessa build/check/watch/clean/format
 
 The packaged `bin` points at the built `dist/index.js`, so with Bun `bunx xessa` runs directly. With
 Node, use the same built entry: `node node_modules/@xessa/cli/dist/index.js` (or `npx @xessa/cli` in
-an installed project). A bare `npx xessa` does not run the CLI: it fetches the root reservation stub.
-Install `@xessa/cli` first so the local `xessa` bin wins, or use `npx @xessa/cli`. The source entry
+an installed project). The unscoped `xessa` package is not published; install `@xessa/cli` for the
+local `xessa` bin, or use `npx @xessa/cli`. The source entry
 carries the `#!/usr/bin/env node` shebang, so a plain `bin` symlink also runs on a Node-only machine,
 and Bun executes the same file.
 
@@ -966,8 +966,8 @@ the CLI for the active document. In workspace settings:
 - Keep the quotes around `"$fullFileName"`: Code Runner substitutes the raw path, and workspace paths
   may contain shell-significant characters such as `$`. Without quotes the path is re-expanded by the
   shell and the file is not found.
-- `npx @xessa/cli …` always resolves the CLI package. A bare `npx xessa` does not: it fetches the
-  root reservation stub. Install `@xessa/cli` first so the local `xessa` bin wins. Without a
+- `npx @xessa/cli …` always resolves the CLI package; the unscoped `xessa` package is not published.
+  Install `@xessa/cli` first so its local `xessa` bin is available. Without a
   registry install, use a global link (`cd packages/cli && bun link` or `npm link`, then
   `"xessa": "xessa build \"$fullFileName\""`) or the absolute built entry:
 

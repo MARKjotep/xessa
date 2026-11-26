@@ -7,16 +7,17 @@ the end for detail.
 ## Release status
 
 **0.1.1 ⏳ release-ready, not yet published.**
-`@xessa/compiler@0.1.1`, `@xessa/cli@0.1.1` (compiler pinned `0.1.1`) and the unscoped root package
-`xessa@0.1.1` are prepared for publication. **Publish order: compiler → CLI → root**, with explicit
-owner authorization; see [`docs/release.md`](../docs/release.md). No npm publish, tag or push has
-happened for this release.
+`@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` (compiler pinned `0.1.1`) are prepared for
+publication. **Publish order: compiler → CLI**, then ship the VSIX, with explicit owner
+authorization; see [`docs/release.md`](../docs/release.md). The repository root is **private and
+unpublished**: npm rejected the unscoped `xessa` name as too similar to an existing package. No npm
+publish, tag or push has happened for this release.
 
 | Artifact | Version | Prepared state |
 |---|---|---|
 | `@xessa/compiler` | `0.1.1` | tarball 403 files; ships `dist/**` + `src/**` |
 | `@xessa/cli` | `0.1.1` | depends on `@xessa/compiler@0.1.1`; tarball 89 files; `bin.xessa` |
-| `xessa` (root package) | `0.1.1` | name-reservation stub; repository/homepage/bugs metadata final; 4-file tarball |
+| `xessa` (workspace root) | `0.1.1` | `private: true`; not published (npm rejected the unscoped name as too similar); no bin/files/publishConfig |
 | `@xessa/language-service` | `0.1.0` | `private: true`; internal editor service, not an npm artifact |
 | VS Code extension | `0.1.0` | publisher `xessa`; PP4b (Marketplace) deferred; local VSIX 18 files / 144.93 KB |
 
@@ -69,14 +70,15 @@ order; the editor extension remains `0.1.0`.
 - Both tarballs ship `src/`, so every `.js`/`.d.ts` map `sources` entry resolves.
 - The compiler README example `await`s `compile()`; the `docs/usage.md` quick start is
   formatter-clean with an ESM note for generated maps.
-- Root `package.json` now carries repository/homepage/bugs metadata; the language service is
-  `private: true`; the TextMate `fileTypes` value is `cssx` (source extension).
-- Manifests: `@xessa/compiler@0.1.1`, `@xessa/cli@0.1.1` with `"@xessa/compiler": "0.1.1"`, root
-  package `xessa@0.1.1`, VS Code extension `0.1.0` (PP4b deferred).
+- Root `package.json` now carries repository/homepage/bugs metadata and is `private: true` (no `bin`,
+  `files` or `publishConfig`); the language service is `private: true`; the TextMate `fileTypes` value
+  is `cssx` (source extension).
+- Manifests: `@xessa/compiler@0.1.1`, `@xessa/cli@0.1.1` with `"@xessa/compiler": "0.1.1"`, private
+  workspace root `xessa@0.1.1` (not published), VS Code extension `0.1.0` (PP4b deferred).
 
-Publish order when authorized: compiler → CLI → root. The root uses
-`npm publish --access public` from the repository root; the full command sequence and post-checks are
-in [`docs/release.md`](../docs/release.md).
+Publish order when authorized: compiler → CLI, then the VSIX. There is no root publish step; npm
+rejected the unscoped `xessa` name as too similar. The full command sequence and post-checks are in
+[`docs/release.md`](../docs/release.md).
 
 ## What changed since the previous handover
 

@@ -24,8 +24,8 @@
 2. Kept `.cssx`, `.cssx-manifest.json`, `.cssx-tmp`, the `cssx` token, `CSSX-*` report names and CSSX
    history.
 3. Rewrote historical records (CHANGELOG, `.ai/reports`, plans, ADRs) under the clean-slate decision.
-4. Root package is unscoped `xessa` (name-reservation pointer stub at `0.1.1`); the CLI is
-   `@xessa/cli`, compiler `@xessa/compiler`, language service `@xessa/language-service`.
+4. Root package is a private, unpublished workspace root; the CLI is `@xessa/cli`, compiler
+   `@xessa/compiler`, language service `@xessa/language-service` (npm rejected the unscoped root name).
 5. Repository URLs → `https://github.com/MARKjotep/xessa.git`,
    `https://github.com/MARKjotep/xessa#readme`, `https://github.com/MARKjotep/xessa/issues`.
 6. VS Code extension: `name`/`displayName`/`publisher` `xessa`, language ID `xessa`, aliases
@@ -42,7 +42,8 @@ old scope prefix → `@xessa/`, old uppercase env prefix → `XESSA_`, old upper
 `dist/`, `out/`, `coverage/`, `playwright-report/`, `test-results/`, `.vscode-test/`, `*.vsix`,
 binary image/font assets, `.DS_Store` and `bun.lock`.
 
-Renamed: `bin/<old>.js`→`bin/xessa.js`;
+Renamed: `bin/<old>.js`→ a root `xessa` pointer stub (later removed on 2026-11-27 when the
+unscoped root publish was rejected);
 `packages/vscode/syntaxes/<old>.tmLanguage.json`→`xessa.tmLanguage.json`;
 `examples/{overrides,groups}/<old>.config.json`→`xessa.config.json`;
 `tests/fixtures/cli/{basic,broken,config-unknown-key}/<old>.config.json` and
@@ -53,11 +54,13 @@ Renamed: `bin/<old>.js`→`bin/xessa.js`;
 
 ## Key corrections
 
-- Root `package.json`: `name: xessa`, `bin.xessa`, release assertions expect `@xessa/compiler`,
+- Root `package.json`: `name: xessa`, `bin.xessa` (both `bin` and the pointer stub were later removed;
+  the root is now private and unpublished), release assertions expect `@xessa/compiler`,
   `@xessa/cli`, extension `xessa`, language `xessa`, `.cssx`.
-- `bin/xessa.js` states the CLI is `@xessa/cli`, the root reserves the unscoped name only.
-- README/release/HANDOVER/todo/usage now state the unscoped `xessa` name is available, the root is a
-  pointer stub, and a bare `npx xessa` fetches that stub rather than the CLI.
+- The root pointer stub (removed 2026-11-27) stated the CLI is `@xessa/cli`; the unscoped root is
+  private and unpublished, so the unscoped root cannot serve as a CLI entry point.
+- README/release/HANDOVER/todo/usage now state the root is a private, unpublished workspace package
+  and the CLI is `@xessa/cli` (npm rejected the unscoped root name as too similar).
 - `docs/release.md`: "npm alias" → "Root package", root row updated, old tag/commit claims removed.
 - ADR-0001 directory reference `chiky` → `xessa`; root package wording corrected. ADR-0013 keeps
   `.cssx` and reads coherently for Xessa (historical old-extension prose only; no functional
@@ -128,8 +131,9 @@ Re-run results after the fix:
 - `bun.lock` regeneration moved `@types/node` from `22.20.5` to `22.20.7` (within its declared `^22`
   range). No dependency was added, removed or declared differently; this was unavoidable to replace
   the stale old scoped root workspace name using `bun install` rather than hand-editing the lockfile.
-- Root `xessa` is a pointer stub, not the CLI; `npx xessa` alone is not the CLI. Marketplace publisher
-  `xessa` and npm `@xessa` scope must exist before future publication. Icons were retained.
+- The workspace root `xessa` is private and unpublished, not the CLI; the CLI is `@xessa/cli`.
+  Marketplace publisher `xessa` and npm `@xessa` scope must exist before future publication. Icons
+  were retained.
 
 ## Next action
 

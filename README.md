@@ -20,8 +20,8 @@ is [SPECIFICATION.md](SPECIFICATION.md); architecture decisions are recorded in
 Source files use the `.cssx` extension; the language ID, packages, CLI command and `XESSA####`
 diagnostics keep the Xessa name ([ADR-0013](docs/decisions/ADR-0013-cssx-file-extension.md)).
 
-**npm package name:** the unscoped `xessa` name is available. The repository root publishes as
-`xessa`, a name-reservation pointer that contains no compiler or CLI. The CLI is
+**npm package name:** npm rejected the unscoped `xessa` name as too similar to an existing package,
+so the repository root is private and is not published. The CLI is
 [`@xessa/cli`](https://www.npmjs.com/package/@xessa/cli), the compiler is
 [`@xessa/compiler`](https://www.npmjs.com/package/@xessa/compiler), and the VS Code extension is
 `xessa` on the Marketplace (publication deferred).
@@ -98,9 +98,9 @@ npm install --save-dev @xessa/cli
 
 Requires Node.js ≥ 20 or Bun. The compiler is ESM and has no runtime dependencies; the CLI is ESM,
 ships built `dist` output, and its `bin` entry points at `dist/index.js` — run `bunx xessa` with Bun,
-or `npx @xessa/cli` (or `node node_modules/@xessa/cli/dist/index.js`) with Node. A bare `npx xessa`
-does not run the CLI: it fetches the root reservation stub. Install `@xessa/cli` first so the local
-`xessa` bin wins, or use `npx @xessa/cli`.
+or `npx @xessa/cli` (or `node node_modules/@xessa/cli/dist/index.js`) with Node. The unscoped `xessa`
+package is unavailable; use `npx @xessa/cli`, or install `@xessa/cli` first so the local `xessa` bin
+is available (`bunx xessa`).
 
 The VS Code extension is **not published to the Marketplace yet** (PP4b deferred). Build the local
 VSIX from this checkout and install it by hand:

@@ -27,3 +27,18 @@ property (later-in-merge-order wins, one `:root` declaration, no diagnostic), th
 case (XESSA2001 remains), the existing entry override, a namespaced-reference case, and a token-only
 rank case. The five feature
 records are closed as no-change; no compiler behavior changed during the rename.
+
+## Release decision (2026-11-27)
+
+**Root package `xessa` is not published.** npm rejected the unscoped `xessa` name under its
+name-similarity policy when the owner attempted the root publish. Decision:
+
+- keep the workspace root `private: true`; remove its `bin`, `files` and `publishConfig`, the
+  `bin/xessa.js` pointer stub and the root `.npmignore`;
+- do not add a root publish step or a `npx xessa` instruction to the release docs;
+- publish `@xessa/compiler` and `@xessa/cli` only; the `xessa` command comes from the
+  `@xessa/cli` package (`npx @xessa/cli`, or the local `xessa` bin after installing the CLI);
+- record the rejection rather than claiming the root name is available or reserved.
+
+At the 2026-11-27 registry check, `xessa`, `@xessa/compiler` and `@xessa/cli` all returned 404;
+no npm package is live.

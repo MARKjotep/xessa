@@ -1,6 +1,7 @@
 {
   "name": "xessa",
   "version": "0.1.1",
+  "private": true,
   "type": "module",
   "description": "Xessa — a CSS-first, property-centric stylesheet language and compiler.",
   "license": "MIT",
@@ -11,13 +12,6 @@
   "homepage": "https://github.com/MARKjotep/xessa#readme",
   "bugs": {
     "url": "https://github.com/MARKjotep/xessa/issues"
-  },
-  "files": ["README.md", "LICENSE", "bin"],
-  "bin": {
-    "xessa": "./bin/xessa.js"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "workspaces": ["packages/*"],
   "engines": {

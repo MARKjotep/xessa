@@ -17,8 +17,8 @@ The repository directory is named `xessa`, which is incidental.
 
 Use Xessa everywhere public:
 
-- packages are scoped `@xessa/*`; the workspace root package is `xessa` (a name-reservation pointer;
-  the CLI is `@xessa/cli`);
+- packages are scoped `@xessa/*`; the workspace root package is a private, unpublished `xessa` root
+  (the CLI is `@xessa/cli`; npm rejected the unscoped root name);
 - the CLI command is `xessa`;
 - source files use the `.cssx` extension (ADR-0013; ADR-0001 originally chose `.xessa`);
 - the VS Code language ID is `xessa`;

@@ -4,11 +4,11 @@ This page records what `bun run release:check` validates, how to publish, and th
 steps for the package owners.
 
 **Current status (2026-11-27):** **`0.1.1` is release-ready, not yet published.** `@xessa/compiler`
-and `@xessa/cli` are `0.1.1`; the unscoped root package `xessa` reserves the name at `0.1.1`. The
-local gate is green; publish in the order **compiler → CLI → root**, then run the registry
-post-checks. The VS Code Marketplace extension (PP4b) remains deferred by the
-owner; the extension stays at `0.1.0` and the local VSIX is the interim distribution. Publishing
-anything needs explicit owner authorization.
+and `@xessa/cli` are `0.1.1`; the repository root is private and is not published (npm rejected the
+unscoped `xessa` name as too similar to an existing package). The local gate is green; publish in the
+order **compiler → CLI**, then ship the VSIX. The VS Code Marketplace extension (PP4b) remains deferred
+by the owner; the extension stays at `0.1.0` and the local VSIX is the interim distribution.
+Publishing anything needs explicit owner authorization.
 
 Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics stay
 Xessa ([ADR-0013](decisions/ADR-0013-cssx-file-extension.md)).
@@ -54,7 +54,6 @@ Each sub-result is printed. `release:check` does not publish anything and does n
      publish. Confirm the packed manifest before publishing:
      `tar -xzOf xessa-cli-0.1.1.tgz package/package.json | grep '@xessa/compiler'`, then
      `npm publish --workspace @xessa/cli --access public`.
-   - **Root reservation package:** `npm publish --access public` from the repository root.
    - **VS Code Marketplace (deferred):** `cd packages/vscode && vsce publish` (publisher `xessa`;
      needs a PAT with Marketplace *Manage* scope via `npx @vscode/vsce login xessa` or `VSCE_PAT`).
      Until then the local VSIX is self-contained and can be distributed by hand.
@@ -67,17 +66,14 @@ From a clean environment with no workspace symlinks:
 ```sh
 npm view @xessa/compiler version     # 0.1.1
 npm view @xessa/cli version          # 0.1.1
-npm view xessa version               # 0.1.1
 mkdir -p /tmp/xessa-release && cd /tmp/xessa-release
 npm init -y && npm i @xessa/cli@0.1.1
-npx xessa --version                  # 0.1.1
-npx -y @xessa/cli@0.1.1 --version    # unambiguous package specifier
+npx @xessa/cli --version             # 0.1.1
 bunx @xessa/cli@0.1.1 --version
 ```
 
-- `npx xessa` alone does not run the CLI: it fetches the root reservation stub (root `bin/xessa.js`)
-  that exits 1. Install `@xessa/cli` first (as above) so the local `bin` wins, or use
-  `npx @xessa/cli` / the explicit specifier.
+- The unscoped `xessa` package is not published; `npx @xessa/cli` resolves the CLI package, and after
+  installing `@xessa/cli` the local `xessa` bin is available in the project.
 - Run the [usage guide](usage.md) quick start end to end with `xessa build`/`check`/`format --check`.
 - Record actual outputs in `.ai/reports/`; never claim a publish before it succeeds.
 
@@ -85,7 +81,7 @@ bunx @xessa/cli@0.1.1 --version
 
 | Artifact | Value |
 |---|---|
-| Repository root | unscoped `xessa` name-reservation stub, `0.1.1` (no code; `bin/xessa.js` only); repository/homepage/bugs metadata final |
+| Repository root | private workspace package `xessa`, `0.1.1` (not published; npm rejected the unscoped name as too similar) |
 | `@xessa/compiler` | `0.1.1`, MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE` |
 | `@xessa/cli` | `0.1.1`, MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js` |
 | VS Code extension | marketplace `name: xessa`, `version: 0.1.0`, publisher `xessa`, `icon: media/icon.png`, language `xessa` with `.cssx` |
@@ -94,23 +90,13 @@ bunx @xessa/cli@0.1.1 --version
 
 ## Root package
 
-The unscoped name `xessa` is available, so the repository root publishes as `xessa`, a minimal
-public package (`0.1.1`) that only reserves the name. It ships no code: `files` is limited to
-`README.md`, `LICENSE` and `bin`, the sole bin is `bin/xessa.js`, and that stub prints a pointer to
-`@xessa/cli` and exits 1. It is **not** the CLI and must not be used as one. The tarball is
-constrained by `files` (the authoritative allowlist) with a root `.npmignore` as a second guard; npm
-ignores `.npmignore` whenever `files` is present.
+The repository root is a **private, unpublished workspace package** (`"private": true`). npm rejected
+the unscoped `xessa` name under its name-similarity policy, so the root declares no `bin`, `files` or
+`publishConfig` and has no publish step. The old root pointer stub and root `.npmignore` were removed
+with the abandoned root tarball.
 
-To publish (owner, from the repository root):
-
-```sh
-npm pack --dry-run --json   # must list exactly package.json, README.md, LICENSE, bin/xessa.js
-npm publish --access public
-```
-
-Unscoped packages publish publicly by default; `--access public` is passed explicitly and
-`publishConfig.access` is also `"public"`. The root has no dependencies and no build step; this is a
-name reservation, not a release of the compiler or CLI.
+The CLI is **`@xessa/cli`** (`bin.xessa` → `dist/index.js`); the local `xessa` command comes from that
+package after installing it. The root has no dependencies and no build step.
 
 ## Extension packaging (vsce)
 
@@ -133,7 +119,7 @@ The `*.vsix` pattern is gitignored.
 
 `release:check` asserts each package tarball contains `package.json`, `README.md`, `LICENSE` and
 `dist/**`; package-level `README.md` and `LICENSE` copies exist so npm tarballs are self-describing.
-The root tarball is checked by `npm pack --dry-run` and is limited to four files.
+Only the two scoped packages are packed; the private root has no tarball.
 
 ## Framework note
 

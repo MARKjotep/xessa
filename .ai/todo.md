@@ -7,14 +7,14 @@ Report new bugs and feature requests under the matching section; the lead routes
 1. colors for $variable - deepblue? $runtimeVariables or --var in magenta?, and imported variables vis namespace must match - green for example then the variable color. — 🟢 done in CSSX-COLOR-TOKENS (semantic tokens now work zero-config: `contributes.semanticTokenScopes` maps variable→`variable.language`, namespace→`entity.name.type`, runtimeVariable/customProperty→`keyword.control`, keyframe→`entity.name.function`, so colors follow the active theme; compile-time `$token` `#4C8DF8`, runtime tokens and `--var` `#D6409F`, the `$ns` prefix `#4EC9B0`, resolved `$keyframes.<name>` `#D18616` remain the documented literal override in the README settings snippet. See `.ai/reports/CSSX-COLOR-TOKENS.md`)
 
 2. v0.1 implementation is complete. Release: **0.1.1 is release-ready, not yet published**
-   (2026-11-27) — `@xessa/compiler`, `@xessa/cli` and the unscoped root package `xessa` are prepared
-   for publication; the publish order is compiler → CLI → root
-   (`docs/release.md`). **PP4b (VS Code Marketplace) stays deferred**, so the extension remains at
-   `0.1.0`; PP5b follows it. Owner field-testing continues.
+   (2026-11-27) — `@xessa/compiler` and `@xessa/cli` are prepared for publication; the publish order
+   is compiler → CLI (`docs/release.md`). The repository root is private and not published: npm
+   rejected the unscoped `xessa` name as too similar. **PP4b (VS Code Marketplace) stays deferred**,
+   so the extension remains at `0.1.0`; PP5b follows it. Owner field-testing continues.
 
-3. The root package `xessa` is a `0.1.1` name-reservation stub, **prepared for publication** (pointer
-   stub only; the unscoped `xessa` name is available; see `docs/release.md` → Root package). —
-   ⏳ release-ready
+3. The workspace root `xessa` is `private: true` and **unpublished** — npm rejected the unscoped name
+   as too similar, so the root has no bin, files allowlist or publishConfig. The `xessa` command comes
+   from `@xessa/cli`. — 🟢 decided (not a root publish)
 
 ## Bug reports
 

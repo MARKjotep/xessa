@@ -217,16 +217,18 @@ reason. Do not mark a row passed from unit tests alone — the handover explicit
 **Executed 2026-11-26: compiler, CLI and the alias `xessa` are live at `0.1.1`** (compiler
 first, CLI pinned to the exact compiler version; tag `v0.1.1` on `2abfbdf`). PP4b still needs a
 separate owner authorization; no commit, push, tag or publish beyond the recorded release happens
-without it. The steps below are retained for the next version.
+without it. The steps below are retained for the next version. **Update 2026-11-27:** this historical
+record predates the registry 404 check; the unscoped root is now private and is not published (npm
+rejected the name as too similar). Only compiler → CLI remain.
 
 1. Tag `v0.1.0` on the authorized commit.
 2. `npm publish --workspace @xessa/compiler --access public`
 3. `npm publish --workspace @xessa/cli --access public`
 
 The shipped `CHANGELOG.md` date (`2026-11-26`) already covers the feature wave; bump it only if the
-tag lands later. Post-checks: `npm view` both packages, a temp-dir install, `npx xessa --version`,
-`npx -y @xessa/cli@0.1.0 --version` and `bunx @xessa/cli@0.1.0 --version`. Drop the docs' registry
-caveat only after the publish succeeds.
+tag lands later. Post-checks: `npm view` both packages, a temp-dir install, `npx @xessa/cli --version`
+(after installing the CLI for the local `xessa` bin), `npx -y @xessa/cli@0.1.0 --version` and
+`bunx @xessa/cli@0.1.0 --version`. Drop the docs' registry caveat only after the publish succeeds.
 
 Dependencies: PP0–PP3 complete including the PP2a URL decision; `bun run release:check` green
 immediately before publishing.
@@ -256,7 +258,9 @@ re-publish npm to match.
 `format --check`, plain-Node map import, `clean` and a configured rerun; the 0.1.1 section adds the
 installed source-map and alias-stub checks).
 
-1. `npm i @xessa/cli@0.1.1 && npx xessa --version`; `bunx @xessa/cli@0.1.1 --version`.
+1. `npm i @xessa/cli@0.1.1 && npx @xessa/cli --version`; `bunx @xessa/cli@0.1.1 --version`. The root is
+   private and unpublished (npm rejected the unscoped `xessa` name); the local `xessa` bin comes from
+   `@xessa/cli`.
 2. Run the `docs/usage.md` quick start end to end with `xessa build`: optional config, two `.cssx`
    files, generated CSS/map, JSX import and a rendered page.
 3. Record the checklist with actual outputs in `.ai/reports/CSSX-PP5A.md`.

@@ -49,15 +49,16 @@ diagnostic. After the fix, `bun test tests/compiler/runtime.test.ts tests/compil
 ## Prepublish changes
 
 - Root `package.json`: `repository`, `homepage` and `bugs` point at
-  `https://github.com/MARKjotep/xessa`; name/version/bin/files/workspaces unchanged.
+  `https://github.com/MARKjotep/xessa`; the root is `private: true` and its `bin`, `files` and
+  `publishConfig` were removed with the abandoned root tarball; root `.npmignore` deleted.
 - `packages/language-service/package.json`: `"private": true` (internal editor service).
 - `packages/vscode/syntaxes/xessa.tmLanguage.json`: `fileTypes` is `["cssx"]` (extension), with the
   grammar test updated.
 - Docs status: `README.md`, `docs/usage.md`, `docs/release.md`, `packages/compiler/README.md`,
   `packages/cli/README.md`, `CHANGELOG.md`, `.ai/HANDOVER.md`, `.ai/todo.md` and
   `docs/known-limitations.md` now say **0.1.1 is the first Xessa release (2026-11-27), prepared for
-  publication**, not published. `docs/release.md` records the compiler → CLI → root order and the
-  root metadata; stale live/tag claims were removed from active sections.
+  publication**, not published. `docs/release.md` records the compiler → CLI order, the private
+  unpublished root and its metadata; stale live/tag claims were removed from active sections.
 - `.ai/framework/bugs/runtime-token-merge-order-first-wins.md` is **Fixed in 0.1.1** (original
   evidence retained); `.ai/framework/TRIAGE.md` records the fix and test path.
 - `examples/portfolio/src/sections.cssx` and its generated outputs were not touched.
@@ -78,13 +79,20 @@ The two skips are the opt-in soak suites (`XESSA_SOAK`), unchanged.
 
 1. Create/confirm the npm **`@xessa`** org/scope and log in with 2FA.
 2. Publish in order: `npm publish --workspace @xessa/compiler --access public`, then
-   `npm publish --workspace @xessa/cli --access public`, then `npm publish --access public` for the
-   root reservation package.
+   `npm publish --workspace @xessa/cli --access public`. The repository root is private and is not
+   published (npm rejected the unscoped `xessa` name as too similar).
 3. Run the registry post-checks in `docs/release.md` (versions, clean install, `npx`/`bunx`).
 4. Create the VS Code publisher **`xessa`**, then `cd packages/vscode && npx @vscode/vsce publish`
    (extension `0.1.0`) or distribute the local VSIX.
 5. After publication, update `docs/release.md`, `.ai/HANDOVER.md`, `.ai/todo.md` and the root README
    from release-ready to published, and record actual registry output.
+
+## Root package rejection
+
+npm rejected the unscoped `xessa` name under its name-similarity policy when the owner attempted the
+root publish. The root is therefore `private: true` with no `bin`, `files`, `publishConfig`, pointer
+stub or `.npmignore`. All three npm names (`xessa`, `@xessa/compiler`, `@xessa/cli`) were still 404 at
+the 2026-11-27 check, so the docs avoid any live claim.
 
 ## Pre-existing finding left untouched
 
