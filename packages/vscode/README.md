@@ -1,4 +1,4 @@
-<p align="center"><img src="media/icon.png" alt="Xessa chick logo" width="128" height="128"></p>
+<p align="center"><img src="media/icon.png" alt="Xessa logo" width="128" height="128"></p>
 
 # Xessa for VS Code
 
@@ -7,7 +7,10 @@ The extension uses the same `@xessa/compiler` as the CLI and build tools; it add
 dependency to your project.
 
 Xessa source files use the `.cssx` extension; the language ID stays `xessa`, and `.cssx` files get a
-chick file icon in both light and dark themes ([ADR-0013](../../docs/decisions/ADR-0013-cssx-file-extension.md)).
+green X/S monogram file icon in both light and dark themes
+([ADR-0013](../../docs/decisions/ADR-0013-cssx-file-extension.md)).
+
+The mark is an X/S monogram in the brand green, shared by the app icon and the `.cssx` file icons.
 
 ## Features
 

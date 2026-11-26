@@ -1,11 +1,16 @@
 # Changelog — Xessa for VS Code
 
+## Unreleased
+
+- Retired the chick mascot: the app icon is now the X/S monogram, and `.cssx` files use green light
+  and dark monogram file icons.
+
 ## 0.1.0 — 2026-11-25
 
 First MVP release candidate.
 
-- Marketplace identity: unscoped `xessa` name, `0.1.0`, chick logo icon and `.cssx` file icons for
-  light and dark themes.
+- Marketplace identity: unscoped `xessa` name, `0.1.0`, X/S monogram app icon and `.cssx` file icons
+  for light and dark themes.
 - Registers the `xessa` language and `.cssx` files with a standalone TextMate grammar and language
   configuration (comments, brackets, auto-closing pairs, indentation).
 - Diagnostics from a tolerant parse plus an in-memory compile, debounced at 150 ms with stale-version

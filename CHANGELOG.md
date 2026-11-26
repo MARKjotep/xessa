@@ -69,8 +69,8 @@ The honest limits are listed in [docs/known-limitations.md](docs/known-limitatio
 - Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics keep
   the Xessa name ([ADR-0013](docs/decisions/ADR-0013-cssx-file-extension.md)). `.xessa` files are not
   recognised.
-- Extension identity: marketplace name `xessa`, version `0.1.0`, chick logo and `.cssx` light/dark file
-  icons; package-level `README.md`/`LICENSE` copies for the compiler and CLI tarballs.
+- Extension identity: marketplace name `xessa`, version `0.1.0`, Xessa monogram and `.cssx`
+  light/dark file icons; package-level `README.md`/`LICENSE` copies for the compiler and CLI tarballs.
 
 ### Language
 
@@ -168,8 +168,8 @@ The honest limits are listed in [docs/known-limitations.md](docs/known-limitatio
 ### VS Code extension
 
 - `xessa` language ID, `.cssx` files, standalone TextMate grammar and language configuration
-  (comments, brackets, auto-closing, indentation); chick marketplace icon and light/dark `.cssx` file
-  icons.
+  (comments, brackets, auto-closing, indentation); X/S monogram marketplace icon and light/dark
+  `.cssx` file icons.
 - Diagnostics from a tolerant parse plus in-memory compile, debounced, with stale-document discard
   and imported-file problem routing. `@setup { module: true }` is understood (ADR-0014).
 - Completions for properties, values, media aliases, `$` tokens and namespace members, setup keys,

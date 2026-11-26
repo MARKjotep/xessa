@@ -459,9 +459,10 @@ async function severitySweep(t) {
  * Item 6 — file-icon visibility.
  *
  * Both theme variants must exist, be declared in the language contribution and
- * be real SVGs with matching inverted glyph colours (dark glyph for light
- * themes, light glyph for dark themes). Rendered contrast is a pixel question
- * the vision pass could not answer here; that is recorded, not claimed.
+ * be real SVGs carrying the brand X/S palette (dark mark on a pale tile for
+ * light themes, light mark on a dark tile for dark themes). Rendered contrast
+ * is a pixel question the vision pass could not answer here; that is recorded,
+ * not claimed.
  */
 async function fileIcons(t, extension, manifest) {
   const language = manifest.contributes.languages.find((entry) => entry.id === "xessa");
@@ -483,10 +484,15 @@ async function fileIcons(t, extension, manifest) {
   }
   const light = readFileSync(path.resolve(extension.extensionPath, language.icon.light), "utf8");
   const dark = readFileSync(path.resolve(extension.extensionPath, language.icon.dark), "utf8");
-  // Inverted glyph colours are what makes one file legible on both themes.
-  t.match(light, /fill="#000000"/, "the light-theme icon is not dark-on-transparent");
+  // The monogram pairs a dark X/S with a pale tile for light themes and a light
+  // X/S with a dark tile for dark themes, so one file stays legible on both.
+  t.match(light, /fill="#E6F7F1"/, "the light-theme icon has no pale tile");
+  t.match(light, /stroke="#0B6B5F"/, "the light-theme icon has no dark X mark");
+  t.match(light, /stroke="#16A34A"/, "the light-theme icon has no green S mark");
   t.equal(/#ffffff/.test(light), false, "the light-theme icon carries a white fill");
-  t.match(dark, /fill="#ffffff"/, "the dark-theme icon is not light-on-transparent");
+  t.match(dark, /fill="#071A16"/, "the dark-theme icon has no dark tile");
+  t.match(dark, /stroke="#5EEAD4"/, "the dark-theme icon has no light X mark");
+  t.match(dark, /stroke="#A7F3D0"/, "the dark-theme icon has no mint S mark");
   t.equal(/#000000/.test(dark), false, "the dark-theme icon carries a black fill");
   t.ok(light !== dark, "both theme variants are the same bytes");
   return true;

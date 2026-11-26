@@ -1,19 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Xessa chick logo">
-  <title>Xessa chick logo</title>
-  <rect width="512" height="512" fill="#ffffff" />
-  <g transform="translate(29 20) scale(14.2)">
-    <path
-      fill="#000000"
-      fill-rule="evenodd"
-      d="M5.9 19.4C5.9 14.2 9.2 11 14 11C18.8 11 22.1 14.4 22.1 19.6C22.1 24.4 18.8 27.6 14 27.6C9.2 27.6 5.9 24.4 5.9 19.4ZM9.1 18.1C10.1 16.4 13.4 16.3 14.7 17.9C15.7 19.2 14.8 21.1 12.8 21.4C10.7 21.7 8.6 20.1 9.1 18.1Z"
-    />
-    <path
-      fill="#000000"
-      fill-rule="evenodd"
-      d="M24.7 10A5.2 5.2 0 1 1 14.3 10A5.2 5.2 0 1 1 24.7 10ZM20.7 7.4A1.15 1.15 0 1 1 20.7 9.7A1.15 1.15 0 1 1 20.7 7.4Z"
-    />
-    <path fill="#000000" d="M24 9.2L28.8 11L24.2 12.8Z" />
-    <path fill="#000000" d="M7.4 16.6L3 14.4L5.6 20.8Z" />
-    <path fill="#000000" d="M10.9 26.2H12.3V29.6H10.9ZM15.7 26.2H17.1V29.6H15.7ZM9.2 29.6H13.4V30.8H9.2ZM14 29.6H18.2V30.8H14Z" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Xessa monogram: interlocked X and S">
+  <defs>
+    <linearGradient id="a-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1F1A"/>
+      <stop offset="1" stop-color="#071A16"/>
+    </linearGradient>
+    <linearGradient id="a-x" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4ADE80"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <linearGradient id="a-s" x1="0" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#A7F3D0"/>
+      <stop offset="1" stop-color="#5EEAD4"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#a-bg)"/>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="url(#a-x)" stroke-width="56">
+      <path d="M128 128 L384 384"/>
+      <path d="M384 128 L128 384"/>
+    </g>
+
+    <!-- S sits over the crossing; dark gap keeps both letterforms legible -->
+    <g transform="translate(256 256) scale(0.82) translate(-256 -256)">
+      <path d="M338 176 C 320 138 258 122 222 150 C 186 178 194 222 234 242 C 274 262 302 278 308 306 C 316 346 272 372 230 364 C 198 358 172 340 162 320"
+            stroke="#081713" stroke-width="92"/>
+      <path d="M338 176 C 320 138 258 122 222 150 C 186 178 194 222 234 242 C 274 262 302 278 308 306 C 316 346 272 372 230 364 C 198 358 172 340 162 320"
+            stroke="url(#a-s)" stroke-width="62"/>
+    </g>
   </g>
 </svg>

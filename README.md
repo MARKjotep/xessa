@@ -203,7 +203,8 @@ Flags: `--config <path>`, `--json`, `--dry-run`, `--minify`, `--no-minify` (last
 ## VS Code extension
 
 The extension (`packages/vscode`) registers the `xessa` language and `.cssx` files with a standalone
-TextMate grammar, language configuration and a chick file icon in light and dark themes. It provides:
+TextMate grammar, language configuration and a green X/S monogram file icon in light and dark
+themes. It provides:
 
 - syntax highlighting for directives, aliases, `$tokens`, selectors, values and native at-rules;
 - diagnostics from the tolerant parser and an in-memory compile, with exact spans and XESSA codes;
