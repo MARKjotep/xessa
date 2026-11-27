@@ -31,6 +31,11 @@ diagnostics keep the Xessa name ([ADR-0013](docs/decisions/ADR-0013-cssx-file-ex
 | Following a practical tutorial  | [`docs/usage.md`](docs/usage.md) — language tour, outputs, editor, theming                                |
 | Configuring output              | [`docs/configuration.md`](docs/configuration.md) — every `@setup` and `xessa.config.json` key             |
 
+The published [`@xessa/compiler`](https://www.npmjs.com/package/@xessa/compiler) package ships
+`SPECIFICATION.md` and the `docs/` tree, generated from this repository at pack time, so npm and CLI
+users have the language contract offline at `node_modules/@xessa/compiler/`. GitHub remains
+canonical.
+
 **npm package name:** npm rejected the unscoped `xessa` name as too similar to an existing package,
 so the repository root is private and is not published. The CLI is
 [`@xessa/cli`](https://www.npmjs.com/package/@xessa/cli), the compiler is

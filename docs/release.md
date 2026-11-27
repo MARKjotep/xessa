@@ -27,8 +27,10 @@ It runs, in order:
 3. `bun run --cwd packages/compiler build` and `bun run --cwd packages/cli build` — emit `dist`.
 4. Package metadata assertion: compiler/CLI/extension names, versions (`0.1.1`, `0.1.1`, `0.1.0`),
    licences, entry points, extension icon and the `xessa` language contribution with `.cssx` files.
-5. `npm pack --dry-run --json --workspace @xessa/compiler` and `@xessa/cli` — assert the tarball
-   contains `package.json`, `README.md`, `LICENSE` and `dist/**`.
+5. `npm pack --dry-run --json --workspace @xessa/compiler` and `@xessa/cli` — assert the tarballs
+   contain `package.json`, `README.md`, `LICENSE` and `dist/**`. The compiler tarball must also
+   contain `SPECIFICATION.md` and the `docs/` tree (including `docs/decisions/`), generated from the
+   repository at pack time by `scripts/sync-package-docs.mjs`.
 6. Build all nine examples through the CLI (`basic`, `responsive`, `variables`, `jsx`,
    `custom-output`, `overrides`, `groups`, `portfolio`, `modules`). Each example uses
    `--config examples/<name>/xessa.config.json` only when that file exists; config-less examples run
@@ -118,8 +120,10 @@ The `*.vsix` pattern is gitignored.
 ## Tarball contents
 
 `release:check` asserts each package tarball contains `package.json`, `README.md`, `LICENSE` and
-`dist/**`; package-level `README.md` and `LICENSE` copies exist so npm tarballs are self-describing.
-Only the two scoped packages are packed; the private root has no tarball.
+`dist/**`; the compiler tarball additionally ships `SPECIFICATION.md` and the full `docs/` tree,
+generated from the repository at pack time. Package-level `README.md` and `LICENSE` copies exist so
+npm tarballs are self-describing. Only the two scoped packages are packed; the private root has no
+tarball.
 
 ## Framework note
 
