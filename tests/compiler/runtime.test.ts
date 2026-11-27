@@ -531,6 +531,82 @@ describe("runtime tokens: values", () => {
     expect(result.diagnostics).toEqual([]);
     expect(declarationsOf(result.ir).at(-1)?.value).toBe("1px solid var(--ui-primary)");
   });
+
+  test("a standalone call rewrites a first-argument runtime reference as the property name", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { primary: #ffffff; }\n.x { color: var($primary, #333); }\n",
+    };
+    const entry = `${WORKSPACE}/input.cssx`;
+    const graph = await buildModuleGraph([entry], createHost(files), {
+      file: entry,
+    } as CompileOptions);
+    const record = graph.modules.get(entry);
+    if (record === undefined) throw new Error("entry not loaded");
+    const lowered = lower(record.ast, { file: entry } as CompileOptions);
+
+    const result = emitRuntimeTokens(lowered.ir, graph, entry, { prefix: "ui" });
+
+    expect(result.diagnostics).toEqual([]);
+    expect(declarationsOf(result.ir).at(-1)?.value).toBe("var(--ui-primary, #333)");
+    expect(rootRules(result.ir).map(ruleSummary)[0]?.declarations).toEqual([
+      ["--ui-primary", "#ffffff"],
+    ]);
+  });
+
+  test("runtime values may name another runtime property in the var() first argument", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { base: #ffffff; brand: var($base, #000000); }\n.x { color: $brand; }\n",
+    };
+    const { result } = await runRuntime(files, `${WORKSPACE}/input.cssx`, { prefix: "ui" });
+
+    expect(result.diagnostics).toEqual([]);
+    expect(rootRules(result.ir).map(ruleSummary)[0]?.declarations).toEqual([
+      ["--ui-base", "#ffffff"],
+      ["--ui-brand", "var(--ui-base, #000000)"],
+    ]);
+  });
+
+  test("a runtime reference in a group default's var() first argument keeps the group rejection", async () => {
+    const files = {
+      [`${WORKSPACE}/entry.cssx`]:
+        "@runtime { primary: #2563eb; }\n" +
+        "@group.card { color: var($primary, #333); }\n" +
+        ".x { @group.card { background: red; } }\n",
+    };
+    const result = await compileProject(["entry.cssx"], createHost(files), {
+      projectRoot: WORKSPACE,
+    });
+    const entry = result["entry.cssx"];
+    if (entry === undefined) throw new Error("entry produced no result");
+
+    expect(entry.diagnostics.map((diagnostic) => diagnostic.code)).toContain("XESSA2001");
+    expect(
+      entry.diagnostics.some((diagnostic) =>
+        diagnostic.message.includes("@runtime token is not allowed in a group default"),
+      ),
+    ).toBe(true);
+    expect(entry.css).not.toContain("$primary");
+  });
+
+  test("@setup prefix applies to the var() name shorthand end to end", async () => {
+    const files = {
+      [`${WORKSPACE}/entry.cssx`]:
+        '@setup { prefix: "ui"; }\n' +
+        "@runtime { primary: #2563eb; }\n" +
+        ".x { color: var($primary, #333); }\n",
+    };
+    const result = await compileProject(["entry.cssx"], createHost(files), {
+      projectRoot: WORKSPACE,
+    });
+    const entry = result["entry.cssx"];
+    if (entry === undefined) throw new Error("entry produced no result");
+
+    expect(entry.diagnostics).toEqual([]);
+    expect(entry.css).toContain("var(--ui-primary, #333)");
+    expect(entry.css).not.toContain("var(var(");
+  });
 });
 
 describe("runtime tokens: ordering and purity", () => {

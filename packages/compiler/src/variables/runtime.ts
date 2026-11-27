@@ -57,9 +57,12 @@ import { mapIrDeclarations, rootRule } from "./walk.js";
  * while letting the native custom-property cascade do the work — conditional
  * *reference* splitting is deliberately not performed.
  *
- * References inside declaration values are rewritten to `var(--...)`; a compile
- * reference that reaches this pass is expanded textually in its defining module
- * (the pass is safe to call without `substitute`, and idempotent after it).
+ * References inside declaration values are rewritten to `var(--...)`; a
+ * reference that is the entire first argument of an authored `var()` is
+ * rewritten to the bare custom-property name instead (SPECIFICATION.md §6.2). A
+ * compile reference that reaches this pass is expanded textually in its
+ * defining module (the pass is safe to call without `substitute`, and idempotent
+ * after it).
  */
 
 /** Options for {@link emitRuntimeTokens}. */
@@ -240,9 +243,10 @@ export function emitRuntimeTokens(
   }
 
   const hooks: ExpansionHooks = {
-    runtimeRef: (token) => {
+    runtimeRef: (token, _authored, usage) => {
       register(token, token.span);
-      return `var(${runtimePropertyName(token.name, prefix)})`;
+      const property = runtimePropertyName(token.name, prefix);
+      return usage === "name" ? property : `var(${property})`;
     },
     report: (diagnostic) => diagnostics.push(diagnostic),
   };

@@ -15,6 +15,12 @@ import type { Span } from "../types/span.js";
  * their defining module and a local override never mutates an imported module
  * (§6.1).
  *
+ * One position is special (SPECIFICATION.md §6.2): when a `$` reference is the
+ * entire first argument of an authored `var(` call, a runtime token renders as
+ * the bare custom-property name (`var($primary, #333)` → `var(--ui-primary,
+ * #333)`) and a build-time reference is rejected as XESSA2001. Every other
+ * position keeps the normal `var(--...)` or inline rendering.
+ *
  * Expansion is textual, not evaluative: the authored slice is spliced, so
  * whitespace, `calc()` spacing, comments and every non-reference token stay
  * byte-identical. The built-in `keyframes` namespace (ADR-0015) is the one
@@ -43,13 +49,27 @@ export interface ValueOrigin {
   readonly fallback: Span;
 }
 
+/**
+ * How a runtime reference is rendered.
+ *
+ * - `value` is the normal position: `var(--<prefix>-<name>)`.
+ * - `name` is the first argument of an authored `var()` call, where the
+ *   custom-property name itself is expected, not another `var()`.
+ */
+export type RuntimeReferenceUsage = "value" | "name";
+
 /** Hooks that make expansion policy explicit for each caller. */
 export interface ExpansionHooks {
   /**
    * Renders a reference to a runtime token. Substitution and runtime emission
-   * both emit `var(--...)`; the authored text is passed for diagnostics.
+   * both emit `var(--...)` for `value` and the bare custom-property name for
+   * `name`; the authored text is passed for diagnostics.
    */
-  readonly runtimeRef: (token: ScopedToken, authored: string) => string;
+  readonly runtimeRef: (
+    token: ScopedToken,
+    authored: string,
+    usage: RuntimeReferenceUsage,
+  ) => string;
   /** Receives one diagnostic per rejected reference. */
   readonly report: (diagnostic: Diagnostic) => void;
 }
@@ -100,6 +120,101 @@ export function splitReference(authored: string): TokenReference | null {
 
 function fail(message: string, span: Span): ReferenceResolution {
   return { kind: "error", diagnostic: error("XESSA2001", message, span) };
+}
+
+/** One open `(` while scanning for `var()` first arguments. */
+interface ArgumentFrame {
+  /** Whether this call is a case-insensitive `var(`. */
+  readonly isVar: boolean;
+  /** Offset just after `(` or after the previous top-level comma. */
+  argumentStart: number;
+  /** Zero-based index of the current argument. */
+  argumentIndex: number;
+}
+
+/** CSS whitespace, the only characters trimmed around a `var()` argument. */
+const ARGUMENT_WHITESPACE = new Set([" ", "\t", "\n", "\r", "\f"]);
+
+/**
+ * `"<start>:<end>"` keys of `$` ranges that are the entire first argument of a
+ * `var()` call.
+ *
+ * The scan is structural rather than tokenizing: it tracks parentheses, quotes
+ * and comments so `VAR(`, nested calls and quoted `var(` text behave, and each
+ * `var()` first argument is trimmed of CSS whitespace. A range only counts when
+ * it exactly equals one lexer `dollar-ref` token (checked by the caller), so
+ * `var($a + 1px)` or `var(--x, $a)` never matches. Calls nested in a first
+ * argument are independent: the inner call contributes its own range.
+ */
+function varFirstArgumentKeys(text: string): Set<string> {
+  const keys = new Set<string>();
+  const stack: ArgumentFrame[] = [];
+  let quote: string | null = null;
+
+  const closeArgument = (frame: ArgumentFrame, end: number): void => {
+    if (!frame.isVar || frame.argumentIndex !== 0) return;
+    let start = frame.argumentStart;
+    while (start < end && ARGUMENT_WHITESPACE.has(text[start] as string)) start++;
+    let trimmedEnd = end;
+    while (trimmedEnd > start && ARGUMENT_WHITESPACE.has(text[trimmedEnd - 1] as string)) {
+      trimmedEnd--;
+    }
+    if (start < trimmedEnd) keys.add(`${start}:${trimmedEnd}`);
+  };
+
+  for (let index = 0; index < text.length; index++) {
+    const character = text[index] as string;
+    if (character === "\\") {
+      index++;
+      continue;
+    }
+    if (quote !== null) {
+      if (character === quote) quote = null;
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === "/" && text[index + 1] === "*") {
+      const close = text.indexOf("*/", index + 2);
+      index = close === -1 ? text.length : close + 1;
+      continue;
+    }
+    if (character === "(") {
+      let nameStart = index;
+      while (nameStart > 0 && /[A-Za-z0-9_-]/.test(text[nameStart - 1] as string)) nameStart--;
+      stack.push({
+        isVar: text.slice(nameStart, index).toLowerCase() === "var",
+        argumentStart: index + 1,
+        argumentIndex: 0,
+      });
+      continue;
+    }
+    if (character === ",") {
+      const frame = stack[stack.length - 1];
+      if (frame === undefined) continue;
+      closeArgument(frame, index);
+      frame.argumentIndex += 1;
+      frame.argumentStart = index + 1;
+      continue;
+    }
+    if (character === ")") {
+      const frame = stack.pop();
+      if (frame !== undefined) closeArgument(frame, index);
+    }
+  }
+  for (const frame of stack) closeArgument(frame, text.length);
+  return keys;
+}
+
+/** Rejection for a build-time reference in the custom-property-name position. */
+function varNameError(authored: string, span: Span): Diagnostic {
+  return error(
+    "XESSA2001",
+    `"${authored}" cannot be the first argument of var(): it is resolved at build time, so the custom-property name would be a literal value. Use a @runtime token instead, or write the property name directly (for example var(--name)).`,
+    span,
+  );
 }
 
 /**
@@ -243,6 +358,9 @@ export function expandValue(
   if (!text.includes("$")) return text;
 
   const { tokens } = tokenize(text, origin.module);
+  // Only `$` references that *are* the first argument of `var(` are shorthand
+  // for the custom-property name; any other position keeps the existing rules.
+  const varNameKeys = /var\(/i.test(text) ? varFirstArgumentKeys(text) : null;
   let output = "";
   let cursor = 0;
   let changed = false;
@@ -258,16 +376,21 @@ export function expandValue(
       hooks.report(resolution.diagnostic);
       return null;
     }
+    const asVarName = varNameKeys?.has(`${token.start}:${token.end}`) === true;
 
     if (resolution.kind === "runtime") {
       output += text.slice(cursor, token.start);
-      output += hooks.runtimeRef(resolution.token, token.value);
+      output += hooks.runtimeRef(resolution.token, token.value, asVarName ? "name" : "value");
       cursor = token.end;
       changed = true;
       continue;
     }
 
     if (resolution.kind === "text") {
+      if (asVarName) {
+        hooks.report(varNameError(token.value, span));
+        return null;
+      }
       // Built-in compile-time text (`$keyframes.<name>`, ADR-0015): spliced
       // verbatim, never expanded recursively, so no `$` can survive here.
       output += text.slice(cursor, token.start);
@@ -275,6 +398,13 @@ export function expandValue(
       cursor = token.end;
       changed = true;
       continue;
+    }
+
+    // A compile-time token in the name position would make `var()` receive a
+    // literal value; reject instead of emitting invalid CSS.
+    if (asVarName) {
+      hooks.report(varNameError(token.value, span));
+      return null;
     }
 
     const definition = resolution.token;

@@ -23,7 +23,13 @@ const DEFAULTS = Object.freeze({
   "xessa.compileOnSave": false,
   "xessa.editor.formatOnSave": false,
   "xessa.editor.completePropertyWithSemicolon": true,
+  "xessa.editor.groupOverrideHints": "always",
   "xessa.previewSplitEditor": true,
+});
+
+/** String settings whose contributed enum is part of the contract. */
+const ENUMS = Object.freeze({
+  "xessa.editor.groupOverrideHints": ["always", "inside", "off"],
 });
 
 const ENTRY = '@setup { prefix: "cfg"; }\n.button { color: red; }\n';
@@ -114,8 +120,13 @@ async function run(t) {
     `the settings matrix enumerates the manifest exactly (manifest: ${keys.join(", ")})`,
   );
   for (const [key, value] of Object.entries(DEFAULTS)) {
-    t.equal(properties[key].type, "boolean", `${key} is not contributed as a boolean`);
+    const expectedType = typeof value === "boolean" ? "boolean" : "string";
+    t.equal(properties[key].type, expectedType, `${key} is not contributed as a ${expectedType}`);
     t.equal(properties[key].default, value, `${key} default`);
+    const expectedEnum = ENUMS[key];
+    if (expectedEnum !== undefined) {
+      t.deepEqual(properties[key].enum, expectedEnum, `${key} enum`);
+    }
     t.ok(
       typeof properties[key].description === "string" && properties[key].description.length > 0,
       `${key} has no settings-page description`,
@@ -233,6 +244,24 @@ async function run(t) {
       "compileOnSave off after a build still rewrote the artifact",
     );
 
+    // ---- xessa.editor.groupOverrideHints: enum flips round-trip through the setting. ----
+    // Rendering itself is not readable through the decoration API; this pins the
+    // contributed enum/default and that every mode can be selected and restored.
+    await update("xessa.editor.groupOverrideHints", "inside");
+    t.equal(
+      setting("xessa.editor.groupOverrideHints"),
+      "inside",
+      "hint mode does not select inside",
+    );
+    await update("xessa.editor.groupOverrideHints", "off");
+    t.equal(setting("xessa.editor.groupOverrideHints"), "off", "hint mode does not select off");
+    await update("xessa.editor.groupOverrideHints", "always");
+    t.equal(
+      setting("xessa.editor.groupOverrideHints"),
+      "always",
+      "hint mode does not restore always",
+    );
+
     // ---- xessa.previewSplitEditor: beside (2 editors) ↔ replacing (1). ----
     const source = await workspace.open("preview-source.cssx", ENTRY);
     await vscode.commands.executeCommand("workbench.action.closeAllEditors");
@@ -286,7 +315,7 @@ async function run(t) {
       );
     }
 
-    return "4 settings toggled on/off/restored + manifest inventory";
+    return "5 settings toggled on/off/restored + manifest inventory";
   } finally {
     await vscode.commands.executeCommand("workbench.action.closeAllEditors");
     await restoreAll();

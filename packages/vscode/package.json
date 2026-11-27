@@ -102,6 +102,17 @@
           "default": true,
           "description": "Insert the semicolon when accepting a CSS property completion (color becomes color: ;) and place the cursor after the colon, before the semicolon. Turning this off inserts only `property: `."
         },
+        "xessa.editor.groupOverrideHints": {
+          "type": "string",
+          "enum": ["always", "inside", "off"],
+          "default": "always",
+          "enumDescriptions": [
+            "Show every overridden group default in every visible Xessa editor.",
+            "Show a hint only while the cursor is inside that use-site block.",
+            "Never show group override hints."
+          ],
+          "description": "Show the group default a use-site declaration overrides as dim italic `// value` ghost text after the declaration. Purely cosmetic: nothing is written and no columns move."
+        },
         "xessa.previewSplitEditor": {
           "type": "boolean",
           "default": true,

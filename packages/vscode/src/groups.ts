@@ -18,7 +18,7 @@
  */
 
 import { parse } from "../../compiler/src/index.js";
-import type { GroupDefinition, Stylesheet } from "../../compiler/src/index.js";
+import type { Declaration, GroupDefinition, Stylesheet } from "../../compiler/src/index.js";
 import { dirnamePath, joinPath, normalizePath } from "./paths.js";
 import { type Range, computeLineStarts, rangeAt } from "./positions.js";
 
@@ -31,6 +31,11 @@ export interface GroupDefault {
   readonly property: string;
   /** Raw base value exactly as authored (`$pad` is not resolved here). */
   readonly value: string;
+  /**
+   * Full authored value, including every inline variant segment
+   * (`1rem @md 2rem`) and `!important`; used by cosmetic hints only.
+   */
+  readonly authored: string;
   /** Property name range in the defining module. */
   readonly range: Range;
 }
@@ -277,6 +282,17 @@ function isDefinition(raw: unknown): raw is GroupDefinition {
   );
 }
 
+/** Rebuild the authored value text, keeping inline variants and their values. */
+function authoredValue(declaration: Declaration): string {
+  if (declaration.variants.length === 0) return declaration.value;
+  const segments: string[] = [];
+  if (declaration.value !== "") segments.push(declaration.value);
+  for (const variant of declaration.variants) {
+    segments.push(`@${variant.aliases.join("+")} ${variant.value}`);
+  }
+  return segments.join(" ");
+}
+
 /** One definition node → editor symbol, with name/keyword and default ranges. */
 function symbolOf(
   definition: GroupDefinition,
@@ -293,6 +309,7 @@ function symbolOf(
     defaults: definition.declarations.map((declaration) => ({
       property: declaration.property,
       value: declaration.value,
+      authored: authoredValue(declaration),
       range: rangeAt(
         lineStarts,
         declaration.span.start,

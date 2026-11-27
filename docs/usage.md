@@ -326,6 +326,25 @@ order — style-imported modules first, then other token modules, entry last —
 diagnostic ([ADR-0016](decisions/ADR-0016-runtime-token-override.md)). Runtime tokens are emitted
 per consuming entrypoint.
 
+**Naming a runtime property inside `var()`.** The first argument of `var()` is a property name, not a
+value, so Xessa accepts a runtime token there and writes the prefixed name for you:
+
+```xessa
+@runtime { primary: #2563eb; }
+
+.card {
+  color: var($primary, #333);          // .ui-card { color: var(--ui-primary, #333); }
+  border-color: var(--ui-primary);     // hand-written names are untouched
+}
+```
+
+The shorthand applies only when the reference is the **whole** first argument. Other positions keep
+their normal rendering: `var(--brand, $primary)` becomes `var(--brand, var(--ui-primary))`, and
+`var($a, var($b, red))` becomes `var(--ui-a, var(--ui-b, red))`. Nesting, `VAR(`, surrounding
+whitespace and the fallback text are preserved. A compile-time token in the name position is
+`XESSA2001` — it would emit a literal value where a property name belongs — so use a `@runtime` token
+or write `var(--name)` directly. Group defaults still reject runtime references in every position.
+
 ### 2.5 Media aliases, inline variants and conditional blocks
 
 Built-in aliases (all `min-width` unless noted):

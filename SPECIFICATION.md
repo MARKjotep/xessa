@@ -493,6 +493,24 @@ Imported runtime tokens are emitted in each consuming entrypoint; a token refere
 `styles`-imported module's rules is emitted too. Compile-time and runtime symbols cannot share a
 local name (§6.1). Native `var()` remains valid.
 
+**Runtime token as a `var()` name (2026-11-28).** The first argument of an authored `var()` call
+expects a custom-property name, so a `$` reference that is the **entire** first argument MUST render
+as that token's custom-property name, without a wrapping `var()`. With prefix `ui`,
+`color: var($primary, #333)` emits `color: var(--ui-primary, #333)`, and a namespaced
+`var($theme.primary, black)` emits `var(--ui-primary, black)`; the name uses the same effective
+prefix and namespace rules as every other runtime reference. Nested calls are independent:
+`var($a, var($b, red))` with both runtime emits `var(--ui-a, var(--ui-b, red))`. Only the whole first
+argument is special: whitespace, commas, fallback text, other functions and any `!important` outside
+the call are preserved byte for byte, and `var($a + 1px, …)` keeps the normal reference rendering.
+
+A reference in that position that resolves to a compile-time token (or built-in compile-time text)
+MUST be XESSA2001 and the declaration segment omitted, exactly like other rejected references: the
+value would become a literal custom-property name rather than a runtime one. The message names the
+authored text and directs the author to a `@runtime` token or a hand-written `var(--name)`. Every
+other position is unchanged: compile-time tokens inline and runtime tokens become `var(--…)`, so
+`color: var(--brand, $primary)` emits `var(--brand, var(--ui-primary))`. Group defaults keep
+rejecting `@runtime` references in every position, including this one (ADR-0017).
+
 **Merge-order override (ADR-0016, owner decision of 2026-11-25).** When two runtime definitions
 produce the same post-prefix custom-property name, the definition later in merge order wins and the
 compiler emits one resolved declaration for that property. Merge order is:

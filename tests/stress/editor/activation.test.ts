@@ -63,15 +63,16 @@ describe("controller activation loop", () => {
     // Every cycle registers exactly the same handlers: no accumulation, no
     // silent skip after the first one.
     expect(deltas.every((delta) => delta === deltas[0])).toBe(true);
-    // 28 tracked disposables: output channel, status bar, diagnostic collection,
-    // 10 language providers, 6 commands and 8 workspace listeners. (The preview
-    // content provider is the 29th entry of `disposables` and owns no fake API.)
-    expect(deltas[0]).toBe(28);
+    // 32 tracked disposables: output channel, status bar, diagnostic collection,
+    // decoration type, 10 language providers, 6 commands, 8 workspace listeners
+    // and 3 window listeners. (The preview content provider is the 33rd entry of
+    // `disposables` and owns no fake API.)
+    expect(deltas[0]).toBe(32);
     // The ExtensionContext contract collects the disposables the host will
     // dispose on deactivate, so this array grows by `disposables.length` per
     // activation; recorded, not asserted as a leak (a real host activates once).
-    expect(subscriptionGrowth[0]).toBe(29);
-    expect(subscriptionGrowth[CYCLES - 1]).toBe(29 * CYCLES);
+    expect(subscriptionGrowth[0]).toBe(33);
+    expect(subscriptionGrowth[CYCLES - 1]).toBe(33 * CYCLES);
     expect(rejections).toEqual([]);
   });
 
@@ -93,6 +94,7 @@ describe("controller activation loop", () => {
     expect(delta).toEqual({
       "window.createOutputChannel": 1,
       "window.createStatusBarItem": 1,
+      "window.createTextEditorDecorationType": 1,
       "languages.createDiagnosticCollection": 1,
       "workspace.registerTextDocumentContentProvider": 1,
       "languages.registerCompletionItemProvider": 1,
@@ -114,6 +116,9 @@ describe("controller activation loop", () => {
       "workspace.onDidChangeWorkspaceFolders": 1,
       "workspace.onDidGrantWorkspaceTrust": 1,
       "workspace.onDidChangeConfiguration": 1,
+      "window.onDidChangeActiveTextEditor": 1,
+      "window.onDidChangeVisibleTextEditors": 1,
+      "window.onDidChangeTextEditorSelection": 1,
     });
   });
 
@@ -127,7 +132,7 @@ describe("controller activation loop", () => {
     second.activate();
     // Disposing the retired controller twice must not disturb the live one.
     first.dispose();
-    expect(host.live()).toBe(28);
+    expect(host.live()).toBe(32);
     second.dispose();
     expect(host.live()).toBe(0);
   });

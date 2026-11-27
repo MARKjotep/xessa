@@ -31,6 +31,7 @@ import { XessaColorProvider } from "./providers/color.js";
 import { XessaCompletionProvider } from "./providers/completion.js";
 import { XessaDiagnostics } from "./providers/diagnostics.js";
 import { XessaFormattingProvider, formattingEdits } from "./providers/formatting.js";
+import { XessaGroupHintsProvider } from "./providers/group-hints.js";
 import { XessaHoverProvider } from "./providers/hover.js";
 import {
   XessaDefinitionProvider,
@@ -93,6 +94,7 @@ export class XessaController {
   private readonly index = new ProjectIndex();
   private readonly service: AnalysisService;
   private readonly diagnostics: XessaDiagnostics;
+  private readonly groupHints: XessaGroupHintsProvider;
   private readonly preview = new PreviewContentProvider();
   private readonly disposables: vscode.Disposable[] = [];
   private hasSuccessfulBuild = false;
@@ -104,6 +106,7 @@ export class XessaController {
     this.status.command = COMMANDS.buildProject;
     this.service = new AnalysisService((source) => this.analyzeSource(source));
     this.diagnostics = new XessaDiagnostics(this.service, (message) => this.log(message));
+    this.groupHints = new XessaGroupHintsProvider(this.service);
   }
 
   /** Wire providers, commands and events. */
@@ -115,6 +118,7 @@ export class XessaController {
       this.output,
       this.status,
       this.diagnostics,
+      this.groupHints,
       this.preview,
       vscode.workspace.registerTextDocumentContentProvider(PREVIEW_SCHEME, this.preview),
       vscode.languages.registerCompletionItemProvider(
@@ -202,6 +206,7 @@ export class XessaController {
       vscode.workspace.onDidCloseTextDocument((document) => {
         if (!this.isCssxDocument(document)) return;
         this.diagnostics.clear(document.uri);
+        this.groupHints.clear(document.uri);
         // Closing a dirty module falls back to its on-disk text, so importers
         // must re-analyze even though no file event fires.
         this.service.invalidateAll();
@@ -215,11 +220,22 @@ export class XessaController {
         if (event.affectsConfiguration("xessa")) {
           this.log("Xessa settings changed.");
         }
+        if (event.affectsConfiguration("xessa.editor.groupOverrideHints")) {
+          this.groupHints.refreshVisible();
+        }
       }),
+      vscode.window.onDidChangeActiveTextEditor((editor) => {
+        if (editor !== undefined) this.groupHints.refreshEditor(editor);
+      }),
+      vscode.window.onDidChangeVisibleTextEditors(() => this.groupHints.refreshVisible()),
+      vscode.window.onDidChangeTextEditorSelection((event) =>
+        this.groupHints.refreshEditor(event.textEditor),
+      ),
     );
     this.context.subscriptions.push(...this.disposables);
 
     for (const document of vscode.workspace.textDocuments) this.onDocumentOpened(document);
+    this.groupHints.refreshVisible();
   }
 
   dispose(): void {
@@ -249,6 +265,7 @@ export class XessaController {
   private onDocumentOpened(document: vscode.TextDocument): void {
     if (!this.isCssxDocument(document)) return;
     this.diagnostics.schedule(document);
+    this.groupHints.schedule(document);
   }
 
   /** A real `.cssx` file document (not the read-only preview virtual document). */
@@ -267,6 +284,7 @@ export class XessaController {
     for (const open of vscode.workspace.textDocuments) {
       if (open === except || open.isClosed || !this.isCssxDocument(open)) continue;
       this.diagnostics.schedule(open);
+      this.groupHints.schedule(open);
     }
   }
 
@@ -299,6 +317,7 @@ export class XessaController {
     // the other open documents (no reverse-import index in 0.1.0).
     this.service.invalidateAll();
     await this.diagnostics.refresh(document);
+    this.groupHints.refresh(document);
     this.scheduleOpenCssxDocuments(document);
     if (basenamePath(toPosix(document.uri.fsPath)) === "xessa.config.json") {
       this.index.invalidate();

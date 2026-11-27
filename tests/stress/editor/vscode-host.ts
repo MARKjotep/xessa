@@ -108,6 +108,10 @@ export function createFakeVscodeHost(): FakeVscodeHost {
     ) {}
   }
 
+  class FakeThemeColor {
+    constructor(readonly id: string) {}
+  }
+
   const createDiagnosticCollection = (name: string) => ({
     name,
     set: noop,
@@ -166,6 +170,7 @@ export function createFakeVscodeHost(): FakeVscodeHost {
 
   const window = {
     activeTextEditor: undefined,
+    visibleTextEditors: [] as unknown[],
     createOutputChannel: (name: string) => ({
       name,
       append: noop,
@@ -191,6 +196,9 @@ export function createFakeVscodeHost(): FakeVscodeHost {
     showWarningMessage: async () => undefined,
     showTextDocument: async () => undefined,
     createTextEditorDecorationType: () => track("window.createTextEditorDecorationType"),
+    onDidChangeActiveTextEditor: register("window.onDidChangeActiveTextEditor"),
+    onDidChangeVisibleTextEditors: register("window.onDidChangeVisibleTextEditors"),
+    onDidChangeTextEditorSelection: register("window.onDidChangeTextEditorSelection"),
   };
 
   const commands = {
@@ -205,6 +213,7 @@ export function createFakeVscodeHost(): FakeVscodeHost {
     Range: FakeRange,
     SemanticTokens: FakeSemanticTokens,
     SemanticTokensLegend: FakeSemanticTokensLegend,
+    ThemeColor: FakeThemeColor,
     Uri: {
       file: (path: string) => ({
         scheme: "file",

@@ -105,6 +105,7 @@ Use **Developer: Inspect Editor Tokens and Scopes** on a token to confirm which 
 | Setting | Default | Meaning |
 |---|---|---|
 | `xessa.compileOnSave` | `false` | Compile the saved file and write its outputs. Off by default; requires a trusted workspace. |
+| `xessa.editor.groupOverrideHints` | `"always"` | Show `// value` dim italic ghost text for each overridden group default: `always`, `inside` (only while the cursor is in that block) or `off`. |
 | `xessa.previewSplitEditor` | `true` | Open preview beside the editor instead of replacing it. |
 
 Compile/Build write through the compiler's `planOutputs` (validated destinations, temp-file plus

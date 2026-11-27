@@ -443,6 +443,136 @@ describe("substitute: runtime references", () => {
     expect(result.diagnostics).toEqual([]);
     expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--ui-primary)");
   });
+
+  test("a runtime reference in the first var() argument becomes the property name", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { primary: #2563eb; }\n.x { color: var($primary, #333); }\n",
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--ui-primary, #333)");
+  });
+
+  test("a namespaced runtime token in the first var() argument uses the same prefix", async () => {
+    const files = {
+      [`${WORKSPACE}/theme.cssx`]: "@runtime { primary: #2563eb; }\n",
+      [`${WORKSPACE}/input.cssx`]:
+        '@use "./theme.cssx" as theme;\n.x { color: var($theme.primary, black); }\n',
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--ui-primary, black)");
+  });
+
+  test("nested var() calls resolve their own first arguments", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { a: #111; b: #222; }\n.x { color: var($a, var($b, red)); }\n",
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--ui-a, var(--ui-b, red))");
+  });
+
+  test("runtime references outside the name position still become var(--...)", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { primary: #2563eb; }\n.x { color: var(--brand, $primary); }\n",
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--brand, var(--ui-primary))");
+  });
+
+  test("first-argument shorthand preserves spacing and matches VAR( case-insensitively", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { primary: #2563eb; }\n" +
+        ".x { color: var( $primary , #333 ); border-color: VAR($primary,#333); }\n",
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir).map((declaration) => declaration.value)).toEqual([
+      "var( --ui-primary , #333 )",
+      "VAR(--ui-primary,#333)",
+    ]);
+  });
+
+  test("first-argument shorthand honors empty and custom prefixes", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { primary: #2563eb; }\n.x { color: var($primary, #333); }\n",
+    };
+    const empty = await run(files, `${WORKSPACE}/input.cssx`, "");
+    const custom = await run(files, `${WORKSPACE}/input.cssx`, "app");
+
+    expect(collectDeclarations(empty.ir)[0]?.value).toBe("var(--primary, #333)");
+    expect(collectDeclarations(custom.ir)[0]?.value).toBe("var(--app-primary, #333)");
+  });
+
+  test("naming.prefix wins over prefix for the var() name shorthand", async () => {
+    const entry = `${WORKSPACE}/input.cssx`;
+    const files = {
+      [entry]: "@runtime { primary: #2563eb; }\n.x { color: var($primary, #333); }\n",
+    };
+    const graph = await buildModuleGraph([entry], createHost(files), {
+      file: entry,
+    } as CompileOptions);
+    const record = graph.modules.get(entry);
+    if (record === undefined) throw new Error("entry not loaded");
+    const lowered = lower(record.ast, { file: entry } as CompileOptions);
+
+    const result = substitute(lowered.ir, graph, entry, {
+      prefix: "ui",
+      naming: { prefix: "app" },
+    });
+
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--app-primary, #333)");
+  });
+
+  test("a compile-time token in the first var() argument is XESSA2001 with and without fallback", async () => {
+    for (const written of ["var($pad)", "var($pad, 4px)"]) {
+      const files = {
+        [`${WORKSPACE}/input.cssx`]: `@variables { pad: 4px; }\n.x { padding: ${written}; }\n`,
+      };
+      const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+      expect(result.diagnostics).toHaveLength(1);
+      const diagnostic = result.diagnostics[0];
+      expect(diagnostic?.code).toBe("XESSA2001");
+      expect(diagnostic?.message).toContain('"$pad"');
+      expect(diagnostic?.message).toContain("var(--name)");
+      expect(diagnostic?.span.file).toBe(`${WORKSPACE}/input.cssx`);
+      expect(result.ir.rules).toEqual([]);
+    }
+  });
+
+  test("a compile-time token in the fallback position still inlines", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]: "@variables { pad: 4px; }\n.x { padding: var(--gap, $pad); }\n",
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--gap, 4px)");
+  });
+
+  test("hand-written var() references are untouched", async () => {
+    const files = {
+      [`${WORKSPACE}/input.cssx`]:
+        "@runtime { primary: #2563eb; }\n.x { color: var(--anything, #333); }\n",
+    };
+    const result = await run(files, `${WORKSPACE}/input.cssx`, "ui");
+
+    expect(result.diagnostics).toEqual([]);
+    expect(collectDeclarations(result.ir)[0]?.value).toBe("var(--anything, #333)");
+  });
 });
 
 describe("substitute: purity and determinism", () => {

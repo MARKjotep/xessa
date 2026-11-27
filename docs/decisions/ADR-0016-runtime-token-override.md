@@ -100,3 +100,49 @@ overridable, and specifically for the `:root` custom-property strategy to be set
   `variables/duplicate-local` and `variables/local-overrides-ambiguous-import`, plus
   `tests/compiler/runtime.test.ts`, `resolver.test.ts` and `variables.golden.test.ts`.
 - Cross-entrypoint runtime collisions are still P5 project work and are not changed here.
+
+## Amendment (2026-11-28): runtime token as a `var()` name
+
+### Context
+
+A runtime reference always rendered as `var(--<prefix>-<name>)`. That is correct in a value position
+but wrong in the first argument of an authored `var()` call, which expects a custom-property name
+rather than another `var()`: `color: var($primary, #333)` produced `var(var(--ui-primary), #333)`,
+invalid CSS. The only workarounds were a hand-written prefixed name (which bypasses the compiler's
+prefix/namespace policy) or no fallback at all.
+
+### Decision
+
+1. **First argument of `var()` only.** When a `$` reference is the entire first argument of an
+   authored `var(` call, a runtime token renders as `runtimePropertyName(token.name, prefix)` — the
+   bare custom-property name, not wrapped in `var()`. `var($primary, #333)` with prefix `ui` emits
+   `var(--ui-primary, #333)`; `var($theme.primary, black)` emits `var(--ui-primary, black)`. The
+   effective prefix comes from the existing `effectivePrefix`/`runtimePropertyName` path, so file
+   `@setup prefix`, project `classes.prefix` and empty prefixes agree with normal rendering.
+2. **Structural detection, one shared mechanism.** `variables/expand.ts` marks `$` ranges that are
+   the whole trimmed first argument of a case-insensitive `var(`, tracking parentheses, quotes and
+   comments. Both callers of `expandValue` (`substitute` and `emitRuntimeTokens`) receive the
+   position through the same hooks and implement identical rendering. Nested calls are independent:
+   `var($a, var($b, red))` emits `var(--ui-a, var(--ui-b, red))`. Spacing, commas, fallback text and
+   `!important` outside the call are preserved byte for byte. `var($a + 1px, …)` is not the name
+   position and keeps the normal rendering.
+3. **Compile-time references there are XESSA2001.** A compile-time token (or built-in compile-time
+   text such as `$keyframes.<name>`) in the name position would make `var()` receive a literal
+   value. It is rejected with the existing XESSA2001 and the declaration segment is omitted; the
+   message names the authored text and says to use a `@runtime` token or `var(--name)`. No
+   diagnostic code is added.
+4. **Everything else is unchanged.** Fallback positions, other functions, hand-written `var(--x)`,
+   group-default rejection (ADR-0017, now including this position with the existing message) and the
+   string-level `var(` wildcard for property-family merging all keep their behaviour. Existing
+   sources produce byte-identical output.
+
+### Consequences
+
+- Authors can write an intentional fallback against a runtime token without spelling the prefixed
+  name, and the prefix/namespace policy stays authoritative.
+- A previously emitted `var(var(--x), …)` string (already invalid) is now valid CSS; fixtures that
+  did not use this position are byte-identical.
+- Pinned by `tests/compiler/substitute.test.ts` (plain, namespaced, nested, fallback, spacing,
+  prefix variants, compile-time rejection with and without fallback) and
+  `tests/compiler/runtime.test.ts` (standalone rewrite, runtime-value rewrite, group-default
+  rejection).

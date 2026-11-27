@@ -21,7 +21,10 @@ import { mapIrDeclarations } from "./walk.js";
  * textually. (Values without `$` are passed through untouched: a `dollar-ref`
  * token always contains `$`.) Runtime references become
  * `var(--<prefix>-<name>)` so `@runtime` tokens keep their native cascade
- * (`emitRuntimeTokens` emits the custom-property rules).
+ * (`emitRuntimeTokens` emits the custom-property rules). A reference that is
+ * the entire first argument of an authored `var()` is the exception: a runtime
+ * token renders as the bare custom-property name and a compile-time reference
+ * is XESSA2001 (SPECIFICATION.md §6.2).
  *
  * The authoring module is `declaration.span.file`, not the module being
  * substituted: `@group.<name>` expansion splices another module's declarations
@@ -116,19 +119,22 @@ export function substitute(
 
     let rejectedRuntime = false;
     const hooks: ExpansionHooks = {
-      runtimeRef: (token, authoredText) => {
-        if (!groupDefault) return `var(${runtimePropertyName(token.name, prefix)})`;
-        if (!rejectedRuntime) {
-          diagnostics.push(
-            error(
-              "XESSA2001",
-              `A @runtime token is not allowed in a group default: "${authoredText}" (ADR-0017); reference runtime tokens at the use site.`,
-              declaration.span,
-            ),
-          );
+      runtimeRef: (token, authoredText, usage) => {
+        if (groupDefault) {
+          if (!rejectedRuntime) {
+            diagnostics.push(
+              error(
+                "XESSA2001",
+                `A @runtime token is not allowed in a group default: "${authoredText}" (ADR-0017); reference runtime tokens at the use site.`,
+                declaration.span,
+              ),
+            );
+          }
+          rejectedRuntime = true;
+          return "";
         }
-        rejectedRuntime = true;
-        return "";
+        const property = runtimePropertyName(token.name, prefix);
+        return usage === "name" ? property : `var(${property})`;
       },
       report: (diagnostic) => diagnostics.push(diagnostic),
     };
