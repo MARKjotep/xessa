@@ -4,6 +4,26 @@ All notable changes to Xessa are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). Pre-1.0 syntax changes are called out explicitly.
 
+## [0.1.3] - 2026-11-28
+
+`@xessa/compiler` and `@xessa/cli` `0.1.3` — **not yet published**. The VS Code extension moves to
+`0.1.1` (local VSIX; Marketplace publication still deferred).
+
+### Compiler
+
+- `var($token, fallback)` names a runtime token: the shorthand emits the prefixed custom-property
+  name (`--xessa-token`), so a runtime token can be overridden per theme without recompiling. A
+  compile-time token in the same position is `XESSA2001`; the offending declaration is omitted and
+  the rest of the sheet still compiles.
+
+### Editor
+
+- `@group` use sites show the default they override as a dim italic `// <default>` ghost after the
+  declaration. The new `xessa.editor.groupOverrideHints` setting chooses `always` (default),
+  `inside` (only while the cursor is in that use-site block) or `off`. Ghosts are decoration-only:
+  nothing is written and no columns move.
+- The extension is `0.1.1`; the ghost-hint ranges are non-empty and include the terminating `;`.
+
 ## [0.1.2] - 2026-11-27
 
 `@xessa/compiler` and `@xessa/cli` `0.1.2` — **published 2026-11-27**. The VS Code extension remains

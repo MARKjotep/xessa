@@ -2,7 +2,7 @@
   "name": "xessa",
   "displayName": "Xessa",
   "description": "Xessa language support for VS Code: syntax highlighting, diagnostics, completions, hover, navigation and project commands.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "publisher": "xessa",
   "license": "MIT",

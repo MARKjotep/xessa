@@ -1,7 +1,12 @@
 # Changelog — Xessa for VS Code
 
-## Unreleased
+## 0.1.1 — 2026-11-28
 
+- `@group` use sites show the overridden default as a dim italic `// <default>` ghost after the
+  declaration; the new `xessa.editor.groupOverrideHints` setting picks `always` (default),
+  `inside` or `off`. Ghosts are decoration-only and never modify the document.
+- `var($runtimeToken, fallback)` now names the emitted custom property, so runtime tokens complete,
+  hover and diagnose in the editor like any other token.
 - Retired the chick mascot: the app icon is now the X/S monogram, and `.cssx` files use the transparent
   Xessa main-logo file icon in both light and dark themes.
 

@@ -1,19 +1,20 @@
-# Xessa Handover — 2026-11-27
+# Xessa Handover — 2026-11-28
 
 **Read this file first.** `@xessa/compiler@0.1.2` and `@xessa/cli@0.1.2` are **live on npm** (published
 2026-11-27, `gitHead 2e2febe`). The publish is complete and clean-install verification passed; see
 `.ai/reports/XESSA-0.1.2-PUBLISHED.md`. Published versions are immutable; nothing in 0.1.1 or 0.1.2
-needs republishing.
+needs republishing. The working tree bumps the compiler and CLI to `0.1.3` and the extension to
+`0.1.1`; **neither new version has been published**.
 
 ## Release status (registry checked 2026-11-27)
 
 | Artifact | Version | State | Tarball / files | Notes |
 |---|---|---|---|---|
-| `@xessa/compiler` | `0.1.2` | 🟢 live on npm, published `2026-11-27T06:48:43Z` | **436** | `gitHead 2e2febe`; ships `SPECIFICATION.md` + full `docs/**` |
-| `@xessa/cli` | `0.1.2` | 🟢 live on npm, published `2026-11-27T06:46:27Z` | **89** | `gitHead 2e2febe`; pins `@xessa/compiler@0.1.2` |
+| `@xessa/compiler` | `0.1.3` | 🟡 bumped in repo — **not published** | — | supersedes live `0.1.2`; ships `SPECIFICATION.md` + full `docs/**` |
+| `@xessa/cli` | `0.1.3` | 🟡 bumped in repo — **not published** | — | supersedes live `0.1.2`; pins `@xessa/compiler@0.1.3` |
 | `xessa` (workspace root) | `0.1.1` | 🔴 npm 404 — stays private | n/a | npm rejected the unscoped name as too similar; no bin/files/publishConfig |
 | `@xessa/language-service` | `0.1.0` | ⚪ private | n/a | internal editor service, not an npm artifact |
-| VS Code extension `xessa` | `0.1.0` | 🟡 local VSIX installed; owner testing for a few days | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b revisited after owner acceptance |
+| VS Code extension `xessa` | `0.1.1` | 🟡 local VSIX; owner testing for a few days | local VSIX | publisher `xessa`; PP4b revisited after owner acceptance |
 
 The published compiler tarball for 0.1.1 predates packaged docs (403 files); 0.1.2 carries them (436
 files). The published 0.1.2 tarball READMEs were packed from `2e2febe` and still say "release-ready,

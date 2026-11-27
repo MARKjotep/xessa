@@ -5,12 +5,13 @@ steps for the package owners.
 
 **Current status (2026-11-27):** **`0.1.2` is live on npm** for `@xessa/compiler` and `@xessa/cli`
 (published 2026-11-27; compiler **436 files**, CLI **89 files**, both `gitHead 2e2febe`). The CLI
-pins `@xessa/compiler@0.1.2`. The repository root stays private at `0.1.1` and is not published (npm
+pins `@xessa/compiler@0.1.3`. The repository root stays private at `0.1.1` and is not published (npm
 rejected the unscoped `xessa` name as too similar to an existing package). The local gate is green and
-a clean registry install of `0.1.2` was verified (see the registry audit below). The VS Code extension
+a clean registry install of `0.1.2` was verified (see the registry audit below). `0.1.3` is prepared
+in the repository but is **not published yet**. The VS Code extension
 (PP4b) is **not on the Marketplace**: the owner installed the local `packages/vscode/xessa-0.1.0.vsix`
 directly and is testing it for a few days (started 2026-11-27). Marketplace publication remains
-deferred until that testing passes; the extension stays at `0.1.0` and the local VSIX is the interim
+deferred until that testing passes; the extension moves to `0.1.1` and the local VSIX is the interim
 distribution. Publishing anything needs explicit owner authorization.
 
 Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics stay
@@ -28,7 +29,7 @@ It runs, in order:
 2. `bun run test:browser` — Playwright computed-style gate (Chromium required; Firefox/WebKit when
    installed).
 3. `bun run --cwd packages/compiler build` and `bun run --cwd packages/cli build` — emit `dist`.
-4. Package metadata assertion: compiler/CLI/extension names, versions (`0.1.2`, `0.1.2`, `0.1.0`),
+4. Package metadata assertion: compiler/CLI/extension names, versions (`0.1.3`, `0.1.3`, `0.1.1`),
    licences, entry points, the CLI's exact `@xessa/compiler` dependency pin, extension icon and the
    `xessa` language contribution with `.cssx` files.
 5. `npm pack --dry-run --json --workspace @xessa/compiler` and `@xessa/cli` — assert the tarballs
@@ -109,7 +110,7 @@ future `0.1.3` docs patch — **do not republish 0.1.2**.
 | Repository root | private workspace package `xessa`, `0.1.1` (not published; npm rejected the unscoped name as too similar) |
 | `@xessa/compiler` | `0.1.2` live (published 2026-11-27, `gitHead 2e2febe`), MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE`, `SPECIFICATION.md` and the full `docs/` tree (436 files at pack time) |
 | `@xessa/cli` | `0.1.2` live (published 2026-11-27, `gitHead 2e2febe`), MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js`; depends on exactly `@xessa/compiler@0.1.2` (89 files) |
-| VS Code extension | marketplace `name: xessa`, `version: 0.1.0`, publisher `xessa`, `icon: media/icon.png`, language `xessa` with `.cssx` |
+| VS Code extension | marketplace `name: xessa`, `version: 0.1.1`, publisher `xessa`, `icon: media/icon.png`, language `xessa` with `.cssx` |
 | Language service | `@xessa/language-service` `0.1.0`, `private: true` (internal editor service, not an npm artifact) |
 | Diagnostics | `XESSA####` (unchanged) |
 
