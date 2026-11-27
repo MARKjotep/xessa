@@ -5,7 +5,8 @@ generated artifacts, driving the CLI and the VS Code extension, and theming a pa
 tokens.
 
 The normative language definition is [SPECIFICATION.md](../SPECIFICATION.md). When this guide and the
-specification disagree, the specification wins. Related references:
+specification disagree, the specification wins. CLI command reference:
+[packages/cli/README.md](../packages/cli/README.md). Related references:
 
 - [configuration.md](configuration.md) — every `@setup` and `xessa.config.json` key.
 - [grammar.md](grammar.md) — lexical rules, grammar, decisions D1–D3.

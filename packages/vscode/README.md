@@ -12,6 +12,18 @@ green X/S monogram file icon in both light and dark themes
 
 The mark is an X/S monogram in the brand green, shared by the app icon and the `.cssx` file icons.
 
+## Documentation map
+
+This README is the **editor integration reference**: language registration, syntax highlighting,
+completions, diagnostics UX, navigation, commands, settings, token colors, theming and preview.
+
+The **language and compiler contract** does not live here. It is owned by `@xessa/compiler` and the
+normative [SPECIFICATION.md](https://github.com/MARKjotep/xessa/blob/main/SPECIFICATION.md); see
+the [compiler README](https://github.com/MARKjotep/xessa/blob/main/packages/compiler/README.md) for
+the API and language overview. CLI usage is in the
+[CLI README](https://github.com/MARKjotep/xessa/blob/main/packages/cli/README.md). This page links
+to those documents rather than duplicating the language spec.
+
 ## Features
 
 - **Language registration** — `.cssx` files, language ID `xessa`, comments, brackets, auto-closing

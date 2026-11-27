@@ -2,7 +2,8 @@
 
 Xessa output is configured at three layers: per-file `@setup`, per-project `xessa.config.json`, and a
 small set of explicit CLI flags. The normative definition is [SPECIFICATION.md](../SPECIFICATION.md)
-§9–§10. This page is the practical reference.
+§9–§10. This page is the practical reference; CLI command reference:
+[packages/cli/README.md](../packages/cli/README.md).
 
 ## 1. Precedence
 

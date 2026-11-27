@@ -20,6 +20,17 @@ is [SPECIFICATION.md](SPECIFICATION.md); architecture decisions are recorded in
 Source files use the `.cssx` extension; the language ID, packages, CLI command and `XESSA####`
 diagnostics keep the Xessa name ([ADR-0013](docs/decisions/ADR-0013-cssx-file-extension.md)).
 
+## Documentation by audience
+
+| You are…                        | Start here                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Using the CLI                   | [`packages/cli/README.md`](packages/cli/README.md) — install, commands, flags, config, outputs, exit codes |
+| Using the compiler API          | [`packages/compiler/README.md`](packages/compiler/README.md) — API, `CompileResult`, diagnostics         |
+| Looking for the language spec   | [`SPECIFICATION.md`](SPECIFICATION.md) — normative language and compiler definition                      |
+| Using VS Code                   | [`packages/vscode/README.md`](packages/vscode/README.md) — features, commands, settings, theming          |
+| Following a practical tutorial  | [`docs/usage.md`](docs/usage.md) — language tour, outputs, editor, theming                                |
+| Configuring output              | [`docs/configuration.md`](docs/configuration.md) — every `@setup` and `xessa.config.json` key             |
+
 **npm package name:** npm rejected the unscoped `xessa` name as too similar to an existing package,
 so the repository root is private and is not published. The CLI is
 [`@xessa/cli`](https://www.npmjs.com/package/@xessa/cli), the compiler is
