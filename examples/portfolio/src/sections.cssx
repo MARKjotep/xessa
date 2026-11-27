@@ -35,7 +35,7 @@
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) @lg 3;
+  grid-template-columns: minmax(0, 1fr);
   gap: $space.loose @lg 3;
   align-items: center;
 
