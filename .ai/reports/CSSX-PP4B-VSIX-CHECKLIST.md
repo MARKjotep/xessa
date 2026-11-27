@@ -58,14 +58,14 @@ Then reload the window (Command Palette → **Developer: Reload Window**).
       `evidence:`
 - [x] Trigger completion on a bare line directly above `&` — expected: the property list appears
       there too. `evidence:`
-- [ ] Type `color:` — expected: value completions, including named and hex colours.
+- [x] Type `color:` — expected: value completions, including named and hex colours.
       `bug: only appears when manually typing the right after entering ":". but if from intellisense, it wouldnt popup the color. not big deal for now`
 - [x] Type `#` in selector position — expected: id completions; type `#` in a colour value —
       expected: hex colour completions. `evidence:`
 - [x] Type `(` in a value — expected: function completions. `evidence:`
 - [x] Type `!` in a declaration — expected: `!important` suggested, and accepting it does not double
       the `!`. `evidence:`
-- [ ] Type a digit in a value — expected: unit completions after the number. `bug: no auto suggestion of units`
+- [x] Type a digit in a value — expected: unit completions after the number. `bug: no auto suggestion of units`
 - [x] Type `@` — expected: alias completions. `evidence:`
 - [x] Type `$` — expected: token completions, including nested `$keyframes.` members.
       `evidence:`

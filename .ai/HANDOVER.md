@@ -43,8 +43,7 @@ because `SPECIFICATION.md` and the complete `docs/` tree are copied at pack time
 8. **Do not publish the root `xessa`.** Confirm the npm `@xessa` org and the VS Code publisher `xessa`
    before any VSIX publish.
 
-Also stale and worth reconciling: `.ai/framework/TRIAGE.md`'s final "all 404" line and
-`.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
+Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
 
 ## What changed since 0.1.1 (`80df584..d8e291e`)
 
@@ -61,7 +60,7 @@ Also stale and worth reconciling: `.ai/framework/TRIAGE.md`'s final "all 404" li
 | `2b32777`, `d4dc9e6` | Examples | Portfolio `hero-grid`: valid `minmax(0, 1fr)` columns and `gap: $space.loose`; generated CSS has no `gap:3`/`grid-template-columns:3`. |
 | `f35480a` | Board | Formatter `@use` spacing and `@setup` completion semicolon recorded as open items 30/31. |
 | `d8e291e` | Compiler + editor | Consecutive top-level `@use` lines stay contiguous with one blank line before the next construct; `@setup` value completions append `;` unless one follows. Unit, extension-host and doc coverage. |
-| archive commit | Board | Items 30/31 archived as done with `d8e291e`; `.ai/todo.md` is now a slim live board. See `.ai/reports/TODO-ARCHIVE-2026-11-27.md`. |
+| `fabcb49` | Board | Items 30/31 archived as done with `d8e291e`; `.ai/todo.md` is now a slim live board. See `.ai/reports/TODO-ARCHIVE-2026-11-27.md`. |
 
 ## Current validation (2026-11-27, baseline HEAD `d8e291e`)
 
@@ -122,23 +121,21 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 
 - **No open board items.** Items 30/31 were fixed in `d8e291e` and archived in
   `.ai/reports/TODO-ARCHIVE-2026-11-27.md`; `.ai/todo.md` is a slim live board.
-- `.ai/framework/TRIAGE.md`: runtime merge bug **fixed**; five feature records deferred or rejected.
-  Its final "all 404" registry line predates the publish and is stale.
+- Framework records were retired by the owner on 2026-11-27. The runtime merge-order bug is fixed in
+  0.1.1 (`80df584`); the five remaining framework feature records were triaged deferred/rejected.
 - The `.cssx` file icon is blue/indigo while the app icon is the green X/S monogram; optional tint.
 - A VSIX without the compiler package has no local docs; README links online.
 - Node 20/22 are unverified; runtime engines still declare `>=20`.
 - The current repository has **no tags**; earlier tag/history was removed. The published 0.1.1
   `gitHead 80df584` is reachable in this history.
 - `cli-watch` can flake under load; rerun isolated before investigating.
-- Only unrelated pre-existing `.ai/framework/` deletions remain in the worktree; only
-  owner-authorized commits are pushed.
+- The worktree is clean after this commit; only owner-authorized commits are pushed.
 
 ## Repo / workflow state
 
 - Path `/Users/Marky/Desktop/$/xessa`; branch `main`; remote
-  `https://github.com/MARKjotep/xessa.git`; validation baseline HEAD `d8e291e`, pushed. This
-  archive/docs commit sits on top. Unrelated pre-existing working-tree deletions under
-  `.ai/framework/` were left untouched.
+  `https://github.com/MARKjotep/xessa.git`; validation baseline HEAD `d8e291e`, pushed. The
+  archive/docs commit `fabcb49` sits on top, followed by the framework-record retirement commit.
 - `bun run verify` = typecheck + lint + test. `bun run release:check` = verify + browser + builds,
   tarball assertions, nine examples and VSIX packaging. Neither publishes.
 - `opencode.jsonc` registers the agents; root `AGENTS.md` is the workflow contract. Max four child
@@ -155,8 +152,7 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 - **Reports:** `.ai/reports/XESSA-RENAME.md`, `.ai/reports/XESSA-0.1.1-PREPUBLISH.md`,
   `.ai/reports/CSSX-0.1.1-STAGING.md`, `.ai/reports/CSSX-MEDIA-MERGE.md`,
   `.ai/reports/CSSX-DEFAULTS.md`.
-- **Board/plan:** `.ai/todo.md`, `.ai/plans/CSSX-PLAN-PRODUCTION.md`, `.ai/PROGRESS.md`,
-  `.ai/framework/TRIAGE.md`.
+- **Board/plan:** `.ai/todo.md`, `.ai/plans/CSSX-PLAN-PRODUCTION.md`, `.ai/PROGRESS.md`.
 
 ## Deferred / v0.2
 
