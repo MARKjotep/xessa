@@ -1,47 +1,46 @@
 # Xessa Handover — 2026-11-27
 
-**Read this file first.** `@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` are **live on npm**. The
-repository is ahead of the published commit (`80df584`), so the next release is **0.1.2**. Published
-versions are immutable; nothing in 0.1.1 is pending or needs republishing.
+**Read this file first.** `@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` are **live on npm**. This tree is bumped to **0.1.2**:
+both packages say `0.1.2`, the CLI pins `@xessa/compiler@0.1.2`, the gate is green and the versions are
+**release-ready but not published**. Published versions are immutable; nothing in 0.1.1 is pending or
+needs republishing.
 
 ## Release status (registry checked 2026-11-27)
 
 | Artifact | Version | State | Tarball / files | Notes |
 |---|---|---|---|---|
-| `@xessa/compiler` | `0.1.1` | 🟢 live | 403 published; **436 in the current tree** | `gitHead 80df584`, published 2026-11-26T20:21Z |
-| `@xessa/cli` | `0.1.1` | 🟢 live | 89 | pins `@xessa/compiler@0.1.1`; same `gitHead` |
+| `@xessa/compiler` | `0.1.1` live · `0.1.2` in tree | 🟡 0.1.2 release-ready, not published | 403 published; **436 packed for 0.1.2** | 0.1.1 `gitHead 80df584`; 0.1.2 ships `SPECIFICATION.md` + full `docs/**` |
+| `@xessa/cli` | `0.1.1` live · `0.1.2` in tree | 🟡 0.1.2 release-ready, not published | 89 | pins `@xessa/compiler@0.1.2` |
 | `xessa` (workspace root) | `0.1.1` | 🔴 npm 404 — stays private | n/a | npm rejected the unscoped name as too similar; no bin/files/publishConfig |
 | `@xessa/language-service` | `0.1.0` | ⚪ private | n/a | internal editor service, not an npm artifact |
 | VS Code extension `xessa` | `0.1.0` | 🔴 not on Marketplace | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b remains deferred |
 
-The published compiler tarball predates packaged docs (403 files). The current tree packs **436**
-because `SPECIFICATION.md` and the complete `docs/` tree are copied at pack time. **Do not publish
-0.1.1 again, and do not expect 403 files for 0.1.2.**
+The published compiler tarball predates packaged docs (403 files). 0.1.2 packs **436** because
+`SPECIFICATION.md` and the complete `docs/` tree are copied at pack time. **Do not publish 0.1.1 again,
+and do not expect 403 files for 0.1.2.**
 
-## ⚠ Critical next action — prepare 0.1.2
+## ⚠ Critical next action — publish 0.1.2
 
-1. **Bump the two published packages:** `packages/compiler/package.json` → `0.1.2`;
-   `packages/cli/package.json` → `0.1.2` **and** its dependency pin → `"@xessa/compiler": "0.1.2"`.
-   The private root can stay at `0.1.1`; its version is not asserted or published.
-2. **Update the inline `release:check` assertions** in the root `package.json` (compiler `0.1.2`,
-   CLI `0.1.2`, extension `0.1.0`), then refresh `CHANGELOG.md`, `docs/release.md`, `README.md`, the
-   compiler/CLI package READMEs and any stale "release-ready, not yet published" wording.
-3. **Fix the changelog split:** the `smd` / `no_hover` / `mobile` / `screen` aliases landed **after**
-   `80df584` and now sit under `[Unreleased]`; keep them in the new `[0.1.2]` entry so the published
-   0.1.1 record stays truthful.
-   The 0.1.2 notes also include `d8e291e`: consecutive top-level `@use` statements stay contiguous in
-   canonical formatting, and `@setup` value completions append their terminating `;`.
-4. **Pack and inspect before publishing:** the compiler tarball must contain `SPECIFICATION.md`,
-   `docs/grammar.md`, `docs/cascade.md`, `docs/configuration.md`, the ADRs and `dist/**` (~436 files);
-   the CLI tarball must show `"@xessa/compiler": "0.1.2"` in its packed `package.json`.
-5. **Publish in order: compiler → CLI.** Confirm `npm view @xessa/compiler@0.1.2 version` before the
-   CLI publish, then confirm both dist-tags.
-6. **Post-checks:** clean install, `npx @xessa/cli --version`, `bunx @xessa/cli@0.1.2 --version`, and
-   a quick `xessa build`/`check` against an example.
-7. **Optional:** `npm deprecate` the 0.1.1 compiler and CLI with a message pointing at 0.1.2 (0.1.1
-   lacks the packaged docs, media aliases and rewritten READMEs). **Never unpublish.**
-8. **Do not publish the root `xessa`.** Confirm the npm `@xessa` org and the VS Code publisher `xessa`
-   before any VSIX publish.
+1. **Preconditions:** clean `main` in sync with `origin/main` at the release commit, owner
+   authorization, and npm rights for the `@xessa` org. `bun run release:check` must end exit 0 with
+   the `0.1.2` assertions.
+2. **Pack and inspect before publishing:** `npm pack --dry-run --json --workspace @xessa/compiler`
+   must show **0.1.2** with ~**436** files including `SPECIFICATION.md`, `docs/grammar.md`,
+   `docs/cascade.md`, `docs/configuration.md` and the ADRs; `npm pack --dry-run --json --workspace
+   @xessa/cli` must show **0.1.2**, **89** files and a packed dependency of
+   `"@xessa/compiler": "0.1.2"`.
+3. **Publish in order: compiler → CLI.**
+   `npm publish --workspace @xessa/compiler --access public`, confirm
+   `npm view @xessa/compiler@0.1.2 version`, then `npm publish --workspace @xessa/cli --access public`
+   and confirm `npm view @xessa/cli@0.1.2 version` plus both `latest` dist-tags.
+4. **Post-checks:** clean install outside the workspace, `npx @xessa/cli --version` and
+   `bunx @xessa/cli@0.1.2 --version` both report `0.1.2`, and a quick `xessa build`/`check` against an
+   example passes.
+5. **Optional:** `npm deprecate` 0.1.1 for the compiler and CLI with a message pointing at 0.1.2
+   (0.1.1 lacks the packaged docs, media aliases and rewritten READMEs). **Never unpublish.**
+6. **Do not publish the root `xessa`.** It stays private at `0.1.1`. The VSIX step
+   (`cd packages/vscode && npx @vscode/vsce publish`) is separate: the extension stays `0.1.0` until
+   the Marketplace publisher is confirmed.
 
 Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
 
@@ -61,15 +60,17 @@ Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier 
 | `f35480a` | Board | Formatter `@use` spacing and `@setup` completion semicolon recorded as open items 30/31. |
 | `d8e291e` | Compiler + editor | Consecutive top-level `@use` lines stay contiguous with one blank line before the next construct; `@setup` value completions append `;` unless one follows. Unit, extension-host and doc coverage. |
 | `fabcb49` | Board | Items 30/31 archived as done with `d8e291e`; `.ai/todo.md` is now a slim live board. See `.ai/reports/TODO-ARCHIVE-2026-11-27.md`. |
+| 0.1.2 bump | Release | Compiler and CLI manifests, CLI dependency pin, `release:check` assertions, docs/CHANGELOG/handover refreshed to 0.1.2; root stays private at `0.1.1`. |
 
-## Current validation (2026-11-27, baseline HEAD `d8e291e`)
+## Current validation (2026-11-27, 0.1.2 release commit)
 
 - `bun run typecheck` exit 0; `bun run lint` exit 0 (461 files).
 - `bun run test`: **1369 pass / 2 skip / 0 fail** (1371 tests, 99 files). The two skips are the
   `XESSA_SOAK=1` soak suites.
 - Extension host: **15 scenarios / 941 assertions**; accessibility **190 assertions**.
 - Playwright: **96/96** (32 each on Chromium, Firefox and WebKit).
-- `bun run release:check` exit 0: nine examples, compiler tarball **436 files**, CLI **89**, VSIX
+- `bun run release:check` exit 0 with 0.1.2 assertions and the CLI pin check: nine examples, compiler
+  tarball **436 files** (`SPECIFICATION.md` + 32 `docs/` files), CLI **89**, VSIX
   **17 files / 225.99 KB**.
 - Known load-sensitive `cli-watch` flake: rerun that test isolated, then the full gate once. Not a
   release blocker.
@@ -134,8 +135,8 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 ## Repo / workflow state
 
 - Path `/Users/Marky/Desktop/$/xessa`; branch `main`; remote
-  `https://github.com/MARKjotep/xessa.git`; validation baseline HEAD `d8e291e`, pushed. The
-  archive/docs commit `fabcb49` sits on top, followed by the framework-record retirement commit.
+  `https://github.com/MARKjotep/xessa.git`; the validation baseline is the `0.1.2` release commit on
+  top of `fabcb49` (which follows the framework-record retirement commit).
 - `bun run verify` = typecheck + lint + test. `bun run release:check` = verify + browser + builds,
   tarball assertions, nine examples and VSIX packaging. Neither publishes.
 - `opencode.jsonc` registers the agents; root `AGENTS.md` is the workflow contract. Max four child

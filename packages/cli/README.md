@@ -15,8 +15,8 @@ The CLI depends on `@xessa/compiler`, so the complete spec and docs are installe
 `node_modules/@xessa/compiler/SPECIFICATION.md` and `node_modules/@xessa/compiler/docs/` — available
 offline to npm and CLI users.
 
-**0.1.1** is the first Xessa release (2026-11-27), prepared for publication. Until the packages are
-live on npm, use the source-checkout workflow below.
+**0.1.1** is live on npm; **0.1.2** is release-ready, not yet published. Until 0.1.2 is live, use the
+source-checkout workflow below or install the published 0.1.1.
 
 ## This README vs the language spec
 
@@ -423,8 +423,8 @@ object (`command`, `success: false`, `exitCode: 2`, `error`) so scripts can pars
   workspace, or is not recorded as a compiler artifact. `clean` never deletes unowned files.
 - **Unknown configuration key exits 2.** Fix the key, or opt into warnings with
   `"compiler": { "strict": false }`.
-- **Nothing to install with `npx` yet.** Packages are prepared for publication; use the source
-  checkout commands above.
+- **Installing ahead of the release.** `0.1.1` is on npm; `0.1.2` is release-ready but not yet
+  published, so use the source checkout commands above to run the newest changes.
 
 ## Documentation map
 

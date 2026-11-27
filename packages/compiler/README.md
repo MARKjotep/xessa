@@ -78,7 +78,7 @@ the specification linked above.
 
 ## Install
 
-**0.1.1** is the first Xessa release (2026-11-27), prepared for publication. Once published:
+**0.1.1** is live on npm; **0.1.2** is release-ready, not yet published. Install the current release:
 
 ```sh
 npm install @xessa/compiler

@@ -12,17 +12,17 @@
     },
     "packages/cli": {
       "name": "@xessa/cli",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "bin": {
         "xessa": "./dist/index.js",
       },
       "dependencies": {
-        "@xessa/compiler": "0.1.1",
+        "@xessa/compiler": "0.1.2",
       },
     },
     "packages/compiler": {
       "name": "@xessa/compiler",
-      "version": "0.1.1",
+      "version": "0.1.2",
     },
     "packages/language-service": {
       "name": "@xessa/language-service",

@@ -11,10 +11,12 @@ runtime**, no framework dependency and no editor requirement: `@xessa/compiler` 
 with zero runtime dependencies, the `xessa` CLI drives it from Node or Bun, and the VS Code extension
 is an interface to the same compiler.
 
-Xessa is at **v0.1** — implementation complete. **0.1.1 is the first Xessa release (2026-11-27),
-prepared for publication; publish with [docs/release.md](docs/release.md).** The full release gate
-(`bun run release:check`) is green; registry install checks follow publication. The VS Code extension
-is **not on the Marketplace yet**: it ships as the local VSIX
+Xessa is at **v0.1** — implementation complete. **0.1.1 is live on npm** (the first Xessa release,
+2026-11-27). **0.1.2 is release-ready, not yet published**; it carries the packaged specification and
+docs, the new media aliases and the formatter/completion fixes — publish it with
+[docs/release.md](docs/release.md). The full release gate (`bun run release:check`) is green;
+registry install checks follow publication. The VS Code extension
+is **not on the Marketplace yet**: it stays at `0.1.0` and ships as the local VSIX
 produced by `bun run release:check` (PP4b deferred). It is an MVP with a deliberately small, honest
 feature set — read [compatibility](docs/compatibility.md) and
 [known limitations](docs/known-limitations.md) before adopting it. The normative language definition
@@ -105,8 +107,9 @@ tour, CLI/editor reference and theming recipes, read the **[full usage guide](do
 
 ## Install
 
-`@xessa/compiler` and `@xessa/cli` **0.1.1** are the first Xessa release (2026-11-27), prepared for
-publication — see [docs/release.md](docs/release.md). Once published, install them with:
+`@xessa/compiler` and `@xessa/cli` **0.1.1** are live on npm (the first Xessa release, 2026-11-27).
+**0.1.2** is release-ready and not yet published — see [docs/release.md](docs/release.md). Install
+the current published release with:
 
 ```sh
 bun add @xessa/compiler        # programmatic compiler API

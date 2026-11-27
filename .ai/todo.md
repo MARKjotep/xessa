@@ -6,7 +6,9 @@ Report new bugs and feature requests under the matching section; the lead routes
 
 ## Current release
 
-`@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` are live. The repository is ahead; the next release is 0.1.2 (see `.ai/HANDOVER.md`).
+`@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` are live on npm. **0.1.2 is release-ready and not yet
+published** — the bump, CLI pin, assertions and docs are in place; the remaining step is the publish
+itself (see `.ai/HANDOVER.md` → critical next action).
 
 ## Bug reports
 

@@ -4,7 +4,10 @@ All notable changes to Xessa are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). Pre-1.0 syntax changes are called out explicitly.
 
-## [Unreleased]
+## [0.1.2] - 2026-11-27
+
+`@xessa/compiler` and `@xessa/cli` `0.1.2` (release-ready; 0.1.1 remains the published version until
+this one ships). The VS Code extension remains `0.1.0`.
 
 ### Compiler
 
@@ -39,6 +42,19 @@ All notable changes to Xessa are documented here. The format follows
   `::-moz-selection`, …) are offered after the standard pseudos as optional, lower-priority
   suggestions with a `vendor-prefixed …` detail; typing `web` or `moz` after the colons filters to
   them, and accepting one keeps the correct colon count.
+
+### Packaging and docs
+
+- The `@xessa/compiler` tarball ships `SPECIFICATION.md` plus the complete `docs/` tree (`docs/**`,
+  including every ADR), generated from the repository at pack time by
+  `scripts/sync-package-docs.mjs`; the packed tarball grows from 403 to ~436 files, so npm users get
+  the language contract offline at `node_modules/@xessa/compiler/`. Generated copies stay gitignored.
+- The compiler, CLI and extension READMEs are reorganized by audience: the compiler owns the language
+  and API contract, the CLI owns install/commands/operations, the extension owns editor behaviour.
+  npm-visible links use absolute GitHub URLs.
+- The repository root stays a private, unpublished workspace package at `0.1.1`; only
+  `@xessa/compiler`, `@xessa/cli` and the hand-built VSIX are published artifacts.
+- The VS Code extension remains `0.1.0` (Marketplace publication still deferred).
 
 ## [0.1.1] - 2026-11-27
 

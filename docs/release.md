@@ -3,12 +3,13 @@
 This page records what `bun run release:check` validates, how to publish, and the remaining manual
 steps for the package owners.
 
-**Current status (2026-11-27):** **`0.1.1` is release-ready, not yet published.** `@xessa/compiler`
-and `@xessa/cli` are `0.1.1`; the repository root is private and is not published (npm rejected the
-unscoped `xessa` name as too similar to an existing package). The local gate is green; publish in the
-order **compiler → CLI**, then ship the VSIX. The VS Code Marketplace extension (PP4b) remains deferred
-by the owner; the extension stays at `0.1.0` and the local VSIX is the interim distribution.
-Publishing anything needs explicit owner authorization.
+**Current status (2026-11-27):** **`0.1.1` is live on npm.** **`0.1.2` is release-ready, not yet
+published.** `@xessa/compiler` and `@xessa/cli` are `0.1.2` in this tree, and the CLI pins
+`@xessa/compiler@0.1.2`. The repository root stays private at `0.1.1` and is not published (npm
+rejected the unscoped `xessa` name as too similar to an existing package). The local gate is green;
+publish in the order **compiler → CLI**, then ship the VSIX. The VS Code Marketplace extension (PP4b)
+remains deferred by the owner; the extension stays at `0.1.0` and the local VSIX is the interim
+distribution. Publishing anything needs explicit owner authorization.
 
 Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics stay
 Xessa ([ADR-0013](decisions/ADR-0013-cssx-file-extension.md)).
@@ -25,8 +26,9 @@ It runs, in order:
 2. `bun run test:browser` — Playwright computed-style gate (Chromium required; Firefox/WebKit when
    installed).
 3. `bun run --cwd packages/compiler build` and `bun run --cwd packages/cli build` — emit `dist`.
-4. Package metadata assertion: compiler/CLI/extension names, versions (`0.1.1`, `0.1.1`, `0.1.0`),
-   licences, entry points, extension icon and the `xessa` language contribution with `.cssx` files.
+4. Package metadata assertion: compiler/CLI/extension names, versions (`0.1.2`, `0.1.2`, `0.1.0`),
+   licences, entry points, the CLI's exact `@xessa/compiler` dependency pin, extension icon and the
+   `xessa` language contribution with `.cssx` files.
 5. `npm pack --dry-run --json --workspace @xessa/compiler` and `@xessa/cli` — assert the tarballs
    contain `package.json`, `README.md`, `LICENSE` and `dist/**`. The compiler tarball must also
    contain `SPECIFICATION.md` and the `docs/` tree (including `docs/decisions/`), generated from the
@@ -50,11 +52,11 @@ Each sub-result is printed. `release:check` does not publish anything and does n
    the root manifest carries the same metadata. No placeholder remains.
 2. **Publish (owner only), in this order:**
    - **Compiler:** `npm publish --workspace @xessa/compiler --access public`.
-   - **CLI:** the CLI pins the compiler to an exact version (`"@xessa/compiler": "0.1.1"`). npm does
+   - **CLI:** the CLI pins the compiler to an exact version (`"@xessa/compiler": "0.1.2"`). npm does
      not rewrite the `workspace:` protocol at pack/publish, so a new compiler release requires
      bumping the CLI dependency to the same version, rebuilding and re-packing the CLI before its own
      publish. Confirm the packed manifest before publishing:
-     `tar -xzOf xessa-cli-0.1.1.tgz package/package.json | grep '@xessa/compiler'`, then
+     `tar -xzOf xessa-cli-0.1.2.tgz package/package.json | grep '@xessa/compiler'`, then
      `npm publish --workspace @xessa/cli --access public`.
    - **VS Code Marketplace (deferred):** `cd packages/vscode && vsce publish` (publisher `xessa`;
      needs a PAT with Marketplace *Manage* scope via `npx @vscode/vsce login xessa` or `VSCE_PAT`).
@@ -66,12 +68,12 @@ Each sub-result is printed. `release:check` does not publish anything and does n
 From a clean environment with no workspace symlinks:
 
 ```sh
-npm view @xessa/compiler version     # 0.1.1
-npm view @xessa/cli version          # 0.1.1
+npm view @xessa/compiler version     # 0.1.2
+npm view @xessa/cli version          # 0.1.2
 mkdir -p /tmp/xessa-release && cd /tmp/xessa-release
-npm init -y && npm i @xessa/cli@0.1.1
-npx @xessa/cli --version             # 0.1.1
-bunx @xessa/cli@0.1.1 --version
+npm init -y && npm i @xessa/cli@0.1.2
+npx @xessa/cli --version             # 0.1.2
+bunx @xessa/cli@0.1.2 --version
 ```
 
 - The unscoped `xessa` package is not published; `npx @xessa/cli` resolves the CLI package, and after
@@ -84,8 +86,8 @@ bunx @xessa/cli@0.1.1 --version
 | Artifact | Value |
 |---|---|
 | Repository root | private workspace package `xessa`, `0.1.1` (not published; npm rejected the unscoped name as too similar) |
-| `@xessa/compiler` | `0.1.1`, MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE` |
-| `@xessa/cli` | `0.1.1`, MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js` |
+| `@xessa/compiler` | `0.1.2` (0.1.1 live), MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE`, `SPECIFICATION.md` and the full `docs/` tree (436 files at pack time) |
+| `@xessa/cli` | `0.1.2` (0.1.1 live), MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js`; depends on exactly `@xessa/compiler@0.1.2` |
 | VS Code extension | marketplace `name: xessa`, `version: 0.1.0`, publisher `xessa`, `icon: media/icon.png`, language `xessa` with `.cssx` |
 | Language service | `@xessa/language-service` `0.1.0`, `private: true` (internal editor service, not an npm artifact) |
 | Diagnostics | `XESSA####` (unchanged) |
@@ -124,6 +126,15 @@ The `*.vsix` pattern is gitignored.
 generated from the repository at pack time. Package-level `README.md` and `LICENSE` copies exist so
 npm tarballs are self-describing. Only the two scoped packages are packed; the private root has no
 tarball.
+
+| Artifact | Version | Files | Payload |
+|---|---|---|---|
+| `xessa-compiler-0.1.2.tgz` | `0.1.2` | **436** | `dist/**`, `src/**`, `package.json`, `README.md`, `LICENSE`, `SPECIFICATION.md`, `docs/**` (generated at pack time) |
+| `xessa-cli-0.1.2.tgz` | `0.1.2` | **89** | `dist/**`, `src/**`, `package.json`, `README.md`, `LICENSE`; packed dependency `@xessa/compiler: 0.1.2` |
+| `xessa-0.1.0.vsix` | `0.1.0` | **17** / 225.99 KB | `out/`, `dist/`, `syntaxes/`, `media/`, `language-configuration.json`, `LICENSE`, `README.md` |
+
+The published 0.1.1 compiler tarball predates the packaged docs (403 files); 0.1.2 is the first
+release whose compiler tarball carries the specification and docs. Do not republish 0.1.1.
 
 ## Framework note
 
