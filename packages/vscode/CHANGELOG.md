@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Retired the chick mascot: the app icon is now the X/S monogram, and `.cssx` files use green light
-  and dark monogram file icons.
+- Retired the chick mascot: the app icon is now the X/S monogram, and `.cssx` files use the transparent
+  Xessa main-logo file icon in both light and dark themes.
 
 ## 0.1.0 — 2026-11-25
 

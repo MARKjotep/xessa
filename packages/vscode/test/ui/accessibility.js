@@ -12,7 +12,7 @@
  *   4. screen-reader readability of the hover Markdown (the U1 fixture set);
  *   5. diagnostic severity appropriateness (enumerated over every committed
  *      fixture, never a single sample);
- *   6. file-icon visibility (both theme variants declared and present).
+ *   6. file-icon visibility (one transparent main-logo PNG declared for both themes).
  *
  * Colour contrast is **not** asserted here: it needs an image, and the vision
  * pass had no image input in this environment. That is recorded in the summary
@@ -458,43 +458,34 @@ async function severitySweep(t) {
 /**
  * Item 6 — file-icon visibility.
  *
- * Both theme variants must exist, be declared in the language contribution and
- * be real SVGs carrying the brand X/S palette (dark mark on a pale tile for
- * light themes, light mark on a dark tile for dark themes). Rendered contrast
- * is a pixel question the vision pass could not answer here; that is recorded,
- * not claimed.
+ * One transparent PNG generated from the Xessa main logo serves both themes:
+ * the language contribution declares the same path for `light` and `dark`, and
+ * the file must exist, be a real PNG and be exactly 64×64 (VS Code's requested
+ * file-icon size) so neither theme ships a missing or malformed icon.
  */
 async function fileIcons(t, extension, manifest) {
   const language = manifest.contributes.languages.find((entry) => entry.id === "xessa");
   t.ok(language, "no xessa language contribution");
   t.ok(language.icon, "the language contributes no file icon");
-  t.equal(language.icon.light, "./media/file-icon.svg", "light icon path changed");
-  t.equal(language.icon.dark, "./media/file-icon-dark.svg", "dark icon path changed");
+  t.equal(language.icon.light, "./media/file-icon.png", "light icon path changed");
+  t.equal(language.icon.dark, "./media/file-icon.png", "dark icon path changed");
   t.equal(manifest.contributes.iconThemes, undefined, "the icons moved into an icon theme?");
 
+  const PNG_SIGNATURE = "89504e470d0a1a0a";
+  const PNG_SIZE = 64;
+  const icons = new Map();
   for (const key of ["light", "dark"]) {
     const absolute = path.resolve(extension.extensionPath, language.icon[key]);
     t.ok(existsSync(absolute), `${key} file icon is missing at ${absolute}`);
-    const svg = readFileSync(absolute, "utf8");
-    t.match(svg, /^<svg[\s>]/, `${key} file icon is not an SVG document`);
-    t.match(svg, /viewBox="0 0 32 32"/, `${key} file icon has no 32×32 viewBox`);
-    t.ok(svg.length > 400, `${key} file icon is empty`);
-    t.match(svg, /role="img"/, `${key} file icon carries no role`);
-    t.match(svg, /aria-label="Xessa source file"/, `${key} file icon carries no accessible label`);
+    const png = readFileSync(absolute);
+    icons.set(key, png);
+    t.equal(png.subarray(0, 8).toString("hex"), PNG_SIGNATURE, `${key} file icon is not a PNG`);
+    // A PNG's first chunk is IHDR: type at bytes 12–15, width at 16, height at 20.
+    t.equal(png.subarray(12, 16).toString("ascii"), "IHDR", `${key} file icon has no IHDR header`);
+    t.equal(png.readUInt32BE(16), PNG_SIZE, `${key} file icon width is not ${PNG_SIZE}px`);
+    t.equal(png.readUInt32BE(20), PNG_SIZE, `${key} file icon height is not ${PNG_SIZE}px`);
   }
-  const light = readFileSync(path.resolve(extension.extensionPath, language.icon.light), "utf8");
-  const dark = readFileSync(path.resolve(extension.extensionPath, language.icon.dark), "utf8");
-  // The monogram pairs a dark X/S with a pale tile for light themes and a light
-  // X/S with a dark tile for dark themes, so one file stays legible on both.
-  t.match(light, /fill="#E6F7F1"/, "the light-theme icon has no pale tile");
-  t.match(light, /stroke="#0B6B5F"/, "the light-theme icon has no dark X mark");
-  t.match(light, /stroke="#16A34A"/, "the light-theme icon has no green S mark");
-  t.equal(/#ffffff/.test(light), false, "the light-theme icon carries a white fill");
-  t.match(dark, /fill="#071A16"/, "the dark-theme icon has no dark tile");
-  t.match(dark, /stroke="#5EEAD4"/, "the dark-theme icon has no light X mark");
-  t.match(dark, /stroke="#A7F3D0"/, "the dark-theme icon has no mint S mark");
-  t.equal(/#000000/.test(dark), false, "the dark-theme icon carries a black fill");
-  t.ok(light !== dark, "both theme variants are the same bytes");
+  t.ok(icons.get("light").equals(icons.get("dark")), "both theme paths do not resolve to one PNG");
   return true;
 }
 

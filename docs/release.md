@@ -104,7 +104,7 @@ package after installing it. The root has no dependencies and no build step.
 
 `vsce` requires an unscoped lowercase extension `name` (`^[a-z0-9][a-z0-9-]*$`). The manifest is
 named `xessa`; `displayName` stays `Xessa`. The extension also ships `LICENSE` and the Xessa brand
-assets (`icon.png`, `media/icon.png`, `media/file-icon.svg`, `media/file-icon-dark.svg`).
+assets (`icon.png`, `media/icon.png`, `media/file-icon.png`).
 `packages/vscode/.vscodeignore` excludes `src/`, `test/` and `tsconfig.json`; the VSIX carries the
 runtime payload (`out/`, `dist/`, `syntaxes/`, `media/`, `language-configuration.json`).
 
@@ -112,7 +112,7 @@ Recorded output of the packaging step:
 
 ```text
 $ cd packages/vscode && bunx @vscode/vsce package --no-dependencies
-DONE  Packaged: packages/vscode/xessa-0.1.0.vsix (18 files, 223.04 KB)
+DONE  Packaged: packages/vscode/xessa-0.1.0.vsix (17 files, 225.83 KB)
 ```
 
 The `*.vsix` pattern is gitignored.

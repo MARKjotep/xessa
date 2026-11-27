@@ -47,8 +47,8 @@
         "aliases": ["Xessa", "xessa"],
         "extensions": [".cssx"],
         "icon": {
-          "light": "./media/file-icon.svg",
-          "dark": "./media/file-icon-dark.svg"
+          "light": "./media/file-icon.png",
+          "dark": "./media/file-icon.png"
         },
         "configuration": "./language-configuration.json"
       }

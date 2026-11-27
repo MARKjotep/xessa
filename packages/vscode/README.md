@@ -6,11 +6,11 @@ Language support for [Xessa](https://github.com/MARKjotep/xessa/blob/main/README
 property-centric stylesheet language. The extension uses the same `@xessa/compiler` as the CLI and
 build tools; it adds no runtime dependency to your project.
 
-Xessa source files use the `.cssx` extension; the language ID stays `xessa`, and `.cssx` files get a
-green X/S monogram file icon in both light and dark themes
+Xessa source files use the `.cssx` extension; the language ID stays `xessa`, and `.cssx` files get the
+Xessa main-logo file icon in both light and dark themes
 ([ADR-0013](https://github.com/MARKjotep/xessa/blob/main/docs/decisions/ADR-0013-cssx-file-extension.md)).
 
-The mark is an X/S monogram in the brand green, shared by the app icon and the `.cssx` file icons.
+The app icon remains the green X/S monogram; `.cssx` files use the transparent main logo.
 
 ## Documentation map
 

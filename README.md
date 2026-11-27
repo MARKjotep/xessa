@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/layered-cssx-file-logo.png" alt="Xessa — layered CSSX stylesheet" width="520" />
+</p>
+
 # Xessa
 
 Xessa is a CSS-first, property-centric stylesheet language. Responsive values, theme overrides and
@@ -219,8 +223,8 @@ Flags: `--config <path>`, `--json`, `--dry-run`, `--minify`, `--no-minify` (last
 ## VS Code extension
 
 The extension (`packages/vscode`) registers the `xessa` language and `.cssx` files with a standalone
-TextMate grammar, language configuration and a green X/S monogram file icon in light and dark
-themes. It provides:
+TextMate grammar, language configuration and the transparent Xessa main-logo file icon in both light
+and dark themes. It provides:
 
 - syntax highlighting for directives, aliases, `$tokens`, selectors, values and native at-rules;
 - diagnostics from the tolerant parser and an in-memory compile, with exact spans and XESSA codes;
