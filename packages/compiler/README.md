@@ -27,6 +27,11 @@ Xessa name.
 | CLI commands, flags and project workflows                   | [`@xessa/cli`](https://github.com/MARKjotep/xessa/blob/main/packages/cli/README.md)                               |
 | Editor integration (registration, completions, settings)    | [`xessa` for VS Code](https://github.com/MARKjotep/xessa/blob/main/packages/vscode/README.md)                     |
 
+The published tarball ships `SPECIFICATION.md` and `docs/`; read them from
+`node_modules/@xessa/compiler/` (for example `node_modules/@xessa/compiler/SPECIFICATION.md` and
+`node_modules/@xessa/compiler/docs/grammar.md`). The copies are generated from the repository at
+pack time, so they match the published compiler version.
+
 ## Language contract
 
 Xessa is **CSS-first and property-centric**. A `.cssx` file is a stylesheet: declarations sit inside

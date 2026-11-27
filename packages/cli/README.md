@@ -2,13 +2,18 @@
 
 The official Xessa command-line interface. It compiles `.cssx` sources to CSS, JavaScript class
 maps, optional TypeScript declarations and optional source maps, and is a thin wrapper around
-[`@xessa/compiler`](../compiler/README.md): the same parser, resolver and emitters that power the
+[`@xessa/compiler`](https://github.com/MARKjotep/xessa/blob/main/packages/compiler/README.md): the same parser, resolver and emitters that power the
 API and the VS Code extension.
 
 `@xessa/cli` is the command and operations reference. The complete language and compiler contract
-lives in [`@xessa/compiler`](../compiler/README.md) and the normative
+lives in [`@xessa/compiler`](https://github.com/MARKjotep/xessa/blob/main/packages/compiler/README.md)
+and the normative
 [`SPECIFICATION.md`](https://github.com/MARKjotep/xessa/blob/main/SPECIFICATION.md); this page does
 not restate the language.
+
+The CLI depends on `@xessa/compiler`, so the complete spec and docs are installed at
+`node_modules/@xessa/compiler/SPECIFICATION.md` and `node_modules/@xessa/compiler/docs/` — available
+offline to npm and CLI users.
 
 **0.1.1** is the first Xessa release (2026-11-27), prepared for publication. Until the packages are
 live on npm, use the source-checkout workflow below.
@@ -18,7 +23,7 @@ live on npm, use the source-checkout workflow below.
 | Question                                          | Reference                                                                                |
 | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | How do I install, run, configure and script it?    | This page                                                                                |
-| What does a `.cssx` file mean?                     | [`@xessa/compiler`](../compiler/README.md) → [`SPECIFICATION.md`](https://github.com/MARKjotep/xessa/blob/main/SPECIFICATION.md) |
+| What does a `.cssx` file mean?                     | [`@xessa/compiler`](https://github.com/MARKjotep/xessa/blob/main/packages/compiler/README.md) → [`SPECIFICATION.md`](https://github.com/MARKjotep/xessa/blob/main/SPECIFICATION.md) |
 | How does the editor behave?                        | [`packages/vscode/README.md`](https://github.com/MARKjotep/xessa/blob/main/packages/vscode/README.md) |
 
 ## Requirements
@@ -425,14 +430,14 @@ object (`command`, `success: false`, `exitCode: 2`, `error`) so scripts can pars
 
 | Topic                                              | Where                                                                                                             |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Complete language and compiler spec (normative)    | [`@xessa/compiler` README](../compiler/README.md) and [`SPECIFICATION.md`](https://github.com/MARKjotep/xessa/blob/main/SPECIFICATION.md) |
+| Complete language and compiler spec (normative)    | [`@xessa/compiler` README](https://github.com/MARKjotep/xessa/blob/main/packages/compiler/README.md) and [`SPECIFICATION.md`](https://github.com/MARKjotep/xessa/blob/main/SPECIFICATION.md) |
 | Grammar and lexical rules                          | [`docs/grammar.md`](https://github.com/MARKjotep/xessa/blob/main/docs/grammar.md)                                 |
 | Cascade and emitted order                          | [`docs/cascade.md`](https://github.com/MARKjotep/xessa/blob/main/docs/cascade.md)                                 |
 | Configuration keys and precedence                  | [`docs/configuration.md`](https://github.com/MARKjotep/xessa/blob/main/docs/configuration.md)                     |
 | Practical usage guide                              | [`docs/usage.md`](https://github.com/MARKjotep/xessa/blob/main/docs/usage.md)                                     |
 | Compatibility and known limitations                | [`docs/compatibility.md`](https://github.com/MARKjotep/xessa/blob/main/docs/compatibility.md), [`docs/known-limitations.md`](https://github.com/MARKjotep/xessa/blob/main/docs/known-limitations.md) |
 | Editor integration (VS Code)                       | [`packages/vscode/README.md`](https://github.com/MARKjotep/xessa/blob/main/packages/vscode/README.md)            |
-| Compiler API                                       | [`packages/compiler/README.md`](../compiler/README.md)                                                            |
+| Compiler API                                       | [`packages/compiler/README.md`](https://github.com/MARKjotep/xessa/blob/main/packages/compiler/README.md)                                                            |
 
 ## License
 

@@ -2,13 +2,13 @@
 
 # Xessa for VS Code
 
-Language support for [Xessa](../../README.md), the CSS-first, property-centric stylesheet language.
-The extension uses the same `@xessa/compiler` as the CLI and build tools; it adds no runtime
-dependency to your project.
+Language support for [Xessa](https://github.com/MARKjotep/xessa/blob/main/README.md), the CSS-first,
+property-centric stylesheet language. The extension uses the same `@xessa/compiler` as the CLI and
+build tools; it adds no runtime dependency to your project.
 
 Xessa source files use the `.cssx` extension; the language ID stays `xessa`, and `.cssx` files get a
 green X/S monogram file icon in both light and dark themes
-([ADR-0013](../../docs/decisions/ADR-0013-cssx-file-extension.md)).
+([ADR-0013](https://github.com/MARKjotep/xessa/blob/main/docs/decisions/ADR-0013-cssx-file-extension.md)).
 
 The mark is an X/S monogram in the brand green, shared by the app icon and the `.cssx` file icons.
 
@@ -23,6 +23,10 @@ the [compiler README](https://github.com/MARKjotep/xessa/blob/main/packages/comp
 the API and language overview. CLI usage is in the
 [CLI README](https://github.com/MARKjotep/xessa/blob/main/packages/cli/README.md). This page links
 to those documents rather than duplicating the language spec.
+
+The VSIX does not bundle the full language docs. `@xessa/compiler` ships them, so they are
+available offline at `node_modules/@xessa/compiler/SPECIFICATION.md` and
+`node_modules/@xessa/compiler/docs/` when the compiler is installed.
 
 ## Features
 
