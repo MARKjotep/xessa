@@ -222,9 +222,10 @@ describe("canonical layout", () => {
     );
   });
 
-  test("@use … styles keeps the rule-merge clause (and a literal `styles` alias stays an alias)", () => {
+  test("consecutive `@use` lines stay contiguous and `styles` keeps the rule-merge clause", () => {
     // Regression for CSSX-A22/A24: `printUse` used to drop `UseImport.styles`,
     // silently downgrading a rule-merge import to a token-only one (ADR-0014).
+    // Consecutive imports also form one contiguous block (board item 30).
     const source = [
       '@use "./x.cssx" as m styles;',
       '@use "./x.cssx" styles;',
@@ -238,9 +239,7 @@ describe("canonical layout", () => {
     expect(result.formatted).toBe(
       [
         '@use "./x.cssx" as m styles;',
-        "",
         '@use "./x.cssx" styles;',
-        "",
         '@use "./x.cssx" as styles;',
         "",
         ".button {",

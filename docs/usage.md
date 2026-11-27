@@ -726,6 +726,10 @@ xessa --version
 | `format`              | Reprint sources canonically in place; parse errors never rewrite a file.                                                                                |
 | `--help`, `--version` | Usage / version, exit 0.                                                                                                                                |
 
+Canonical formatting keeps consecutive top-level `@use` statements contiguous (no blank line between
+them); the next top-level construct still gets one blank line, matching the compiler formatter and
+Format Document in the extension.
+
 Flags:
 
 | Flag                        | Effect                                                                                                                                                                         |
@@ -834,8 +838,10 @@ Registered trigger characters: `@`, `$`, `.`, `:`, `/`, `&`, `(`, `#`, `!`.
   yields one `!important`.
 
 Accepting a property inserts `property: ;` with the cursor before the semicolon by default
-(`xessa.editor.completePropertyWithSemicolon`). The suggest-widget rendering (ordering, color
-swatches, filtering) is a manual editor behavior and is not claimed by this guide.
+(`xessa.editor.completePropertyWithSemicolon`). Accepting an `@setup` key inserts `<key>: ` so the
+value list can follow; accepting a value (`true`, `false`, `merge`, `safe`, `none`) appends the
+setting's `;` immediately unless one already follows the cursor. The suggest-widget rendering
+(ordering, color swatches, filtering) is a manual editor behavior and is not claimed by this guide.
 
 ### 5.2 Hover, navigation and rename
 
@@ -910,7 +916,8 @@ scope fallback.
   reported declaration end.
 - **Format Document** (⌥⇧F) runs the canonical whole-document formatter. `xessa.editor.formatOnSave`
   (default off) runs the same edit on save. There is no range formatting; a parse error leaves the
-  document unchanged.
+  document unchanged. Canonical style keeps consecutive top-level `@use` statements contiguous (no
+  blank line between them); the next top-level construct still gets one blank line.
 
 ### 5.5 Commands and settings
 

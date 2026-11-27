@@ -43,7 +43,8 @@ available offline at `node_modules/@xessa/compiler/SPECIFICATION.md` and
   nested selectors, pseudo-classes and the document's own id selectors after `#` (ids are
   document-global and are never renamed or mapped). Accepting a property reopens the value list at
   the cursor, and typing a digit in a value suggests the CSS units that can follow it
-  (`margin: 1` → `1rem`, `1px`, …).
+  (`margin: 1` → `1rem`, `1px`, …). Accepting an `@setup` value appends its terminating `;`; the
+  key itself inserts `key: ` so the value list can follow.
 - **Navigation and insight** — hover for resolved token values, media conditions and generated class
   names; definition and references for tokens; single-file `$token` rename; color provider; outline.
 - **Commands** (all under the `Xessa` category) — Compile File, Build Project, Preview Compiled CSS,

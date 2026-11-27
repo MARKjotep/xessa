@@ -234,6 +234,47 @@ describe("completion contexts", () => {
     ]);
   });
 
+  test("@setup value completions append the terminating semicolon", async () => {
+    // Accepting `true` on an empty value writes the settings terminator
+    // (board item 31). The key completion still inserts `key: `, so the value
+    // list follows and the semicolon arrives with the accepted value.
+    const empty = "@setup {\n  emit-css: ";
+    const emptyState = await analyze(empty);
+    const emptyResult = completionsAt(empty, empty.length, { analysis: emptyState.analysis });
+    expect(accept(empty, emptyResult, suggestion(emptyResult, "true"))).toBe(
+      "@setup {\n  emit-css: true;",
+    );
+
+    // A typed prefix is replaced whole and still ends terminated.
+    const typed = "@setup {\n  emit-css: t";
+    const typedState = await analyze(typed);
+    const typedResult = completionsAt(typed, typed.length, { analysis: typedState.analysis });
+    expect(accept(typed, typedResult, suggestion(typedResult, "true"))).toBe(
+      "@setup {\n  emit-css: true;",
+    );
+
+    // A semicolon already following the cursor is not duplicated.
+    const terminated = "@setup {\n  emit-css: ;";
+    const terminatedOffset = terminated.indexOf(";");
+    const terminatedState = await analyze(terminated);
+    const terminatedResult = completionsAt(terminated, terminatedOffset, {
+      analysis: terminatedState.analysis,
+    });
+    expect(accept(terminated, terminatedResult, suggestion(terminatedResult, "true"))).toBe(
+      "@setup {\n  emit-css: true;",
+    );
+
+    // Fixed-value keys get the same terminator.
+    const grouping = "@setup {\n  media-grouping: ";
+    const groupingState = await analyze(grouping);
+    const groupingResult = completionsAt(grouping, grouping.length, {
+      analysis: groupingState.analysis,
+    });
+    expect(accept(grouping, groupingResult, suggestion(groupingResult, "merge"))).toBe(
+      "@setup {\n  media-grouping: merge;",
+    );
+  });
+
   test("import paths complete inside @use strings through the injected lister", async () => {
     const text = '@use "./';
     const state = await analyze(text);

@@ -87,9 +87,7 @@ describe("formatter round trip: current grammar", () => {
     expect(formatted).toBe(
       [
         '@use "./base.cssx" styles;',
-        "",
         '@use "./tokens.cssx" as styles;',
-        "",
         '@use "./plain.cssx";',
         "",
         ".spinner {",

@@ -3199,18 +3199,25 @@ export function completionsAt(
     }
     case "setup-value": {
       const replaceStart = offset - context.word.length;
+      // Accepting a value terminates the setting immediately: the setup entry
+      // needs its `;` and the author should not have to type it. When the
+      // cursor already sits before a semicolon (only spaces/tabs between), the
+      // value is inserted bare so no `;;` is produced.
+      const semicolon = /^[ \t]*;/.test(text.slice(offset)) ? "" : ";";
       const fixed = SETUP_VALUE_COMPLETIONS[context.key];
       if (fixed !== undefined) {
         return result(
-          fixed.filter((item) => context.word === "" || item.label.startsWith(context.word)),
+          fixed
+            .filter((item) => context.word === "" || item.label.startsWith(context.word))
+            .map((item) => ({ ...item, insertText: `${item.label}${semicolon}` })),
           replaceStart,
         );
       }
       if (!SETUP_BOOLEAN_COMPLETION_KEYS.includes(context.key)) return result([], replaceStart);
       return result(
         [
-          { label: "true", kind: "setup-value", insertText: "true" },
-          { label: "false", kind: "setup-value", insertText: "false" },
+          { label: "true", kind: "setup-value", insertText: `true${semicolon}` },
+          { label: "false", kind: "setup-value", insertText: `false${semicolon}` },
         ],
         replaceStart,
       );

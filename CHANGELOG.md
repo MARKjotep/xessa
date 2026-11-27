@@ -6,7 +6,17 @@ All notable changes to Xessa are documented here. The format follows
 
 ## [Unreleased]
 
+### Compiler
+
+- Consecutive top-level `@use` statements stay contiguous in canonical formatting; the next
+  top-level construct still gets one blank line.
+- Default media aliases add `smd` (`(min-width: 624px)`), `no_hover`/`mobile` (`(pointer: coarse)`)
+  and `screen`; `print` was already built in.
+
 ### Editor
+
+- Accepting an `@setup` value completion (`true`, `false`, `merge`, `safe`, `none`) appends the
+  terminating `;` immediately unless one already follows the cursor.
 
 - Media variant markers (`@md`, `@dark`, `@xl+dark`, block variant headers and `@media-types`
   captions) now use the `@`-directive keyword colour: the grammar scopes them as
@@ -32,14 +42,12 @@ All notable changes to Xessa are documented here. The format follows
 
 ## [0.1.1] - 2026-11-27
 
-The first Xessa release, prepared for publication on 2026-11-27 (see
+The first public Xessa release (published 2026-11-27; see
 [docs/release.md](docs/release.md)). It carries the 0.1.0 language surface plus the packaging fixes
 and one compiler correction below. The VS Code extension remains at `0.1.0`.
 
 ### Compiler
 
-- Default media aliases add `smd` (`(min-width: 624px)`), `no_hover`/`mobile` (`(pointer: coarse)`)
-  and `screen`; `print` was already built in.
 - Runtime-token merge order now matches `SPECIFICATION.md` §6.2 and
   [ADR-0016](docs/decisions/ADR-0016-runtime-token-override.md) when two unqualified `styles`
   imports declare the same `@runtime` property: the later module in merge order supplies the single

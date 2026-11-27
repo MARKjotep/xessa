@@ -10,8 +10,10 @@
  *
  * - two-space indentation, one declaration per line, every declaration ends
  *   with `;`, and the file ends with a single `\n`;
- * - one blank line between top-level constructs, and inside a rule or at-rule
- *   block a blank line whenever either side is a nested rule/conditional block;
+ * - one blank line between top-level constructs, except that consecutive `@use`
+ *   statements stay contiguous; the construct after the `@use` run still gets
+ *   one blank line. Inside a rule or at-rule block a blank line appears whenever
+ *   either side is a nested rule/conditional block;
  * - inline variants stay on the declaration line (`padding: 12px @md 20px;`),
  *   and adjacent authored markers stay adjacent (`x: 1 @a@b 2;`) because
  *   `@a@b` and `@a @b` split into different variants;
@@ -77,6 +79,8 @@ interface EmbeddedRange {
 interface Chunk {
   readonly lines: readonly string[];
   readonly block: boolean;
+  /** A top-level `@use` chunk, kept contiguous with the previous `@use`. */
+  readonly use?: boolean;
 }
 
 const INDENT = "  ";
@@ -245,16 +249,21 @@ class Printer {
       const comments = this.takeComments(itemStart(item), 0);
       const printed = this.printItem(item, 0);
       const lines = [...comments, ...(printed?.lines ?? [])];
-      if (lines.length > 0) chunks.push({ lines, block: printed?.block ?? false });
+      if (lines.length > 0) {
+        chunks.push({ lines, block: printed?.block ?? false, use: printed?.use ?? false });
+      }
     }
     const rest = this.takeRest(0);
-    if (rest.length > 0) chunks.push({ lines: rest, block: false });
+    if (rest.length > 0) chunks.push({ lines: rest, block: false, use: false });
 
     const output: string[] = [];
     for (let index = 0; index < chunks.length; index += 1) {
       const chunk = chunks[index];
       if (chunk === undefined) continue;
-      if (index > 0) output.push("");
+      // Consecutive `@use` statements form one contiguous block; every other
+      // pair (including the construct after the import run) keeps one blank line.
+      const previous = index > 0 ? chunks[index - 1] : undefined;
+      if (index > 0 && !(previous?.use === true && chunk.use === true)) output.push("");
       output.push(...chunk.lines);
     }
     return output;
@@ -297,7 +306,11 @@ class Printer {
     // `styles` is semantic, not cosmetic: dropping it would downgrade a
     // rule-merge import to a token-only one (ADR-0014, SPECIFICATION.md §6.3).
     const styles = item.styles === true ? " styles" : "";
-    return { lines: [`${pad(level)}@use "${item.path}"${alias}${styles};`], block: false };
+    return {
+      lines: [`${pad(level)}@use "${item.path}"${alias}${styles};`],
+      block: false,
+      use: true,
+    };
   }
 
   private printVariables(block: VariablesBlock, level: number): Chunk {

@@ -641,6 +641,13 @@ async function run(t) {
         items.every((item) => item.kind === KIND.Value),
         "setup values map to Value",
       );
+      const trueItem = items.find((item) => host.labelOf(item) === "true");
+      t.ok(trueItem !== undefined, "the `true` setup value is offered");
+      t.equal(
+        host.insertTextOf(trueItem),
+        "true;",
+        "accepting a setup value appends the terminating semicolon",
+      );
     }
 
     // 12. `@group.` names and `$keyframes.` members.
