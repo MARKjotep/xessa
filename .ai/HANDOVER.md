@@ -12,7 +12,7 @@ versions are immutable; nothing in 0.1.1 is pending or needs republishing.
 | `@xessa/cli` | `0.1.1` | 🟢 live | 89 | pins `@xessa/compiler@0.1.1`; same `gitHead` |
 | `xessa` (workspace root) | `0.1.1` | 🔴 npm 404 — stays private | n/a | npm rejected the unscoped name as too similar; no bin/files/publishConfig |
 | `@xessa/language-service` | `0.1.0` | ⚪ private | n/a | internal editor service, not an npm artifact |
-| VS Code extension `xessa` | `0.1.0` | 🔴 not on Marketplace | local VSIX: 17 files / 225.83 KB | publisher `xessa`; PP4b remains deferred |
+| VS Code extension `xessa` | `0.1.0` | 🔴 not on Marketplace | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b remains deferred |
 
 The published compiler tarball predates packaged docs (403 files). The current tree packs **436**
 because `SPECIFICATION.md` and the complete `docs/` tree are copied at pack time. **Do not publish
@@ -26,9 +26,11 @@ because `SPECIFICATION.md` and the complete `docs/` tree are copied at pack time
 2. **Update the inline `release:check` assertions** in the root `package.json` (compiler `0.1.2`,
    CLI `0.1.2`, extension `0.1.0`), then refresh `CHANGELOG.md`, `docs/release.md`, `README.md`, the
    compiler/CLI package READMEs and any stale "release-ready, not yet published" wording.
-3. **Fix the changelog split:** the `[0.1.1]` Compiler section currently lists the `smd` /
-   `no_hover` / `mobile` / `screen` aliases, which landed **after** `80df584`. Move those bullets into
-   the new `[0.1.2]` entry so the published 0.1.1 record stays truthful.
+3. **Fix the changelog split:** the `smd` / `no_hover` / `mobile` / `screen` aliases landed **after**
+   `80df584` and now sit under `[Unreleased]`; keep them in the new `[0.1.2]` entry so the published
+   0.1.1 record stays truthful.
+   The 0.1.2 notes also include `d8e291e`: consecutive top-level `@use` statements stay contiguous in
+   canonical formatting, and `@setup` value completions append their terminating `;`.
 4. **Pack and inspect before publishing:** the compiler tarball must contain `SPECIFICATION.md`,
    `docs/grammar.md`, `docs/cascade.md`, `docs/configuration.md`, the ADRs and `dist/**` (~436 files);
    the CLI tarball must show `"@xessa/compiler": "0.1.2"` in its packed `package.json`.
@@ -41,10 +43,10 @@ because `SPECIFICATION.md` and the complete `docs/` tree are copied at pack time
 8. **Do not publish the root `xessa`.** Confirm the npm `@xessa` org and the VS Code publisher `xessa`
    before any VSIX publish.
 
-Also stale and worth reconciling: `.ai/todo.md` Quick Note 2, `.ai/framework/TRIAGE.md`'s final
-"all 404" line, and `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
+Also stale and worth reconciling: `.ai/framework/TRIAGE.md`'s final "all 404" line and
+`.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
 
-## What changed since 0.1.1 (`80df584..d4dc9e6`)
+## What changed since 0.1.1 (`80df584..d8e291e`)
 
 | Commit(s) | Area | Change |
 |---|---|---|
@@ -58,16 +60,18 @@ Also stale and worth reconciling: `.ai/todo.md` Quick Note 2, `.ai/framework/TRI
 | `2147974` | VS Code | `.cssx` file icon becomes the blue/indigo main logo; old SVG file icons removed. |
 | `2b32777`, `d4dc9e6` | Examples | Portfolio `hero-grid`: valid `minmax(0, 1fr)` columns and `gap: $space.loose`; generated CSS has no `gap:3`/`grid-template-columns:3`. |
 | `f35480a` | Board | Formatter `@use` spacing and `@setup` completion semicolon recorded as open items 30/31. |
+| `d8e291e` | Compiler + editor | Consecutive top-level `@use` lines stay contiguous with one blank line before the next construct; `@setup` value completions append `;` unless one follows. Unit, extension-host and doc coverage. |
+| archive commit | Board | Items 30/31 archived as done with `d8e291e`; `.ai/todo.md` is now a slim live board. See `.ai/reports/TODO-ARCHIVE-2026-11-27.md`. |
 
-## Current validation (2026-11-27, baseline HEAD `d4dc9e6`)
+## Current validation (2026-11-27, baseline HEAD `d8e291e`)
 
 - `bun run typecheck` exit 0; `bun run lint` exit 0 (461 files).
-- `bun run test`: **1368 pass / 2 skip / 0 fail** (1370 tests, 99 files). The two skips are the
+- `bun run test`: **1369 pass / 2 skip / 0 fail** (1371 tests, 99 files). The two skips are the
   `XESSA_SOAK=1` soak suites.
-- Extension host: **15 scenarios / 939 assertions**; accessibility **190 assertions**.
+- Extension host: **15 scenarios / 941 assertions**; accessibility **190 assertions**.
 - Playwright: **96/96** (32 each on Chromium, Firefox and WebKit).
 - `bun run release:check` exit 0: nine examples, compiler tarball **436 files**, CLI **89**, VSIX
-  **17 files / 225.83 KB**.
+  **17 files / 225.99 KB**.
 - Known load-sensitive `cli-watch` flake: rerun that test isolated, then the full gate once. Not a
   release blocker.
 - Gates ran on **Bun 1.4.5 / Node 24.22.3**. Node 20 and 22 remain unverified.
@@ -116,8 +120,8 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 
 ## Open items / known caveats
 
-- `.ai/todo.md` item **30** — formatter `@use` spacing (preserve authored spacing) — 🔴 open.
-- `.ai/todo.md` item **31** — accepting an `@setup` suggestion must append `;` — 🔴 open.
+- **No open board items.** Items 30/31 were fixed in `d8e291e` and archived in
+  `.ai/reports/TODO-ARCHIVE-2026-11-27.md`; `.ai/todo.md` is a slim live board.
 - `.ai/framework/TRIAGE.md`: runtime merge bug **fixed**; five feature records deferred or rejected.
   Its final "all 404" registry line predates the publish and is stale.
 - The `.cssx` file icon is blue/indigo while the app icon is the green X/S monogram; optional tint.
@@ -126,13 +130,15 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 - The current repository has **no tags**; earlier tag/history was removed. The published 0.1.1
   `gitHead 80df584` is reachable in this history.
 - `cli-watch` can flake under load; rerun isolated before investigating.
-- Worktree is clean; only owner-authorized commits are pushed.
+- Only unrelated pre-existing `.ai/framework/` deletions remain in the worktree; only
+  owner-authorized commits are pushed.
 
 ## Repo / workflow state
 
 - Path `/Users/Marky/Desktop/$/xessa`; branch `main`; remote
-  `https://github.com/MARKjotep/xessa.git`; validation baseline HEAD `d4dc9e6`, clean and in sync.
-  This handover commit sits on top and is also pushed.
+  `https://github.com/MARKjotep/xessa.git`; validation baseline HEAD `d8e291e`, pushed. This
+  archive/docs commit sits on top. Unrelated pre-existing working-tree deletions under
+  `.ai/framework/` were left untouched.
 - `bun run verify` = typecheck + lint + test. `bun run release:check` = verify + browser + builds,
   tarball assertions, nine examples and VSIX packaging. Neither publishes.
 - `opencode.jsonc` registers the agents; root `AGENTS.md` is the workflow contract. Max four child
