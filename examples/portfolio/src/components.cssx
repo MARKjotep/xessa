@@ -14,11 +14,8 @@
 }
 
 @use "./tokens.cssx" as color;
-
 @use "./tokens.cssx" as space;
-
 @use "./tokens.cssx" as font;
-
 @use "./theme.cssx" as theme;
 
 @variables {
