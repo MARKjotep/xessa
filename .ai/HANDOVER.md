@@ -13,13 +13,17 @@ needs republishing.
 | `@xessa/cli` | `0.1.1` live · `0.1.2` in tree | 🟡 0.1.2 release-ready, not published | 89 | pins `@xessa/compiler@0.1.2` |
 | `xessa` (workspace root) | `0.1.1` | 🔴 npm 404 — stays private | n/a | npm rejected the unscoped name as too similar; no bin/files/publishConfig |
 | `@xessa/language-service` | `0.1.0` | ⚪ private | n/a | internal editor service, not an npm artifact |
-| VS Code extension `xessa` | `0.1.0` | 🔴 not on Marketplace | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b remains deferred |
+| VS Code extension `xessa` | `0.1.0` | 🟡 local VSIX installed; owner testing for a few days | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b will be revisited after owner acceptance |
 
 The published compiler tarball predates packaged docs (403 files). 0.1.2 packs **436** because
 `SPECIFICATION.md` and the complete `docs/` tree are copied at pack time. **Do not publish 0.1.1 again,
 and do not expect 403 files for 0.1.2.**
 
 ## ⚠ Critical next action — publish 0.1.2
+
+> **Do not publish the VSIX to the Marketplace yet.** The owner installed the local
+> `packages/vscode/xessa-0.1.0.vsix` directly and is testing it for a few days (started 2026-11-27).
+> Wait for acceptance before revisiting PP4b. The npm compiler/CLI publish path below is unaffected.
 
 1. **Preconditions:** clean `main` in sync with `origin/main` at the release commit, owner
    authorization, and npm rights for the `@xessa` org. `bun run release:check` must end exit 0 with
@@ -39,8 +43,9 @@ and do not expect 403 files for 0.1.2.**
 5. **Optional:** `npm deprecate` 0.1.1 for the compiler and CLI with a message pointing at 0.1.2
    (0.1.1 lacks the packaged docs, media aliases and rewritten READMEs). **Never unpublish.**
 6. **Do not publish the root `xessa`.** It stays private at `0.1.1`. The VSIX step
-   (`cd packages/vscode && npx @vscode/vsce publish`) is separate: the extension stays `0.1.0` until
-   the Marketplace publisher is confirmed.
+   (`cd packages/vscode && npx @vscode/vsce publish`) is separate and **on hold**: the owner is
+   testing the local VSIX for a few days, so the extension stays `0.1.0` and Publication waits for
+   acceptance.
 
 Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
 
@@ -125,6 +130,7 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 - Framework records were retired by the owner on 2026-11-27. The runtime merge-order bug is fixed in
   0.1.1 (`80df584`); the five remaining framework feature records were triaged deferred/rejected.
 - The `.cssx` file icon is blue/indigo while the app icon is the green X/S monogram; optional tint.
+- VS Code Marketplace publication paused during local VSIX testing (started 2026-11-27); revisit after acceptance.
 - A VSIX without the compiler package has no local docs; README links online.
 - Node 20/22 are unverified; runtime engines still declare `>=20`.
 - The current repository has **no tags**; earlier tag/history was removed. The published 0.1.1

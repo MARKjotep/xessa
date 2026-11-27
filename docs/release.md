@@ -7,9 +7,11 @@ steps for the package owners.
 published.** `@xessa/compiler` and `@xessa/cli` are `0.1.2` in this tree, and the CLI pins
 `@xessa/compiler@0.1.2`. The repository root stays private at `0.1.1` and is not published (npm
 rejected the unscoped `xessa` name as too similar to an existing package). The local gate is green;
-publish in the order **compiler → CLI**, then ship the VSIX. The VS Code Marketplace extension (PP4b)
-remains deferred by the owner; the extension stays at `0.1.0` and the local VSIX is the interim
-distribution. Publishing anything needs explicit owner authorization.
+publish in the order **compiler → CLI**. The VS Code extension (PP4b) is **not on the Marketplace**:
+the owner installed the local `packages/vscode/xessa-0.1.0.vsix` directly and is testing it for a few
+days (started 2026-11-27). Marketplace publication remains deferred until that testing passes; the
+extension stays at `0.1.0` and the local VSIX is the interim distribution. Publishing anything needs
+explicit owner authorization.
 
 Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics stay
 Xessa ([ADR-0013](decisions/ADR-0013-cssx-file-extension.md)).
@@ -60,7 +62,9 @@ Each sub-result is printed. `release:check` does not publish anything and does n
      `npm publish --workspace @xessa/cli --access public`.
    - **VS Code Marketplace (deferred):** `cd packages/vscode && vsce publish` (publisher `xessa`;
      needs a PAT with Marketplace *Manage* scope via `npx @vscode/vsce login xessa` or `VSCE_PAT`).
-     Until then the local VSIX is self-contained and can be distributed by hand.
+     Do not run this yet: the owner is testing the local VSIX for a few days (started 2026-11-27);
+     revisit after acceptance. Until then the local VSIX is self-contained and can be distributed by
+     hand.
 3. Run the post-release checks below against the registry, then update this status and the docs.
 
 ## Post-release checks

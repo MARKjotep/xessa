@@ -8,7 +8,8 @@ Report new bugs and feature requests under the matching section; the lead routes
 
 `@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` are live on npm. **0.1.2 is release-ready and not yet
 published** — the bump, CLI pin, assertions and docs are in place; the remaining step is the publish
-itself (see `.ai/HANDOVER.md` → critical next action).
+itself (see `.ai/HANDOVER.md` → critical next action). VSIX 0.1.0 is local-only; owner is testing it
+for a few days; Marketplace publish deferred.
 
 ## Bug reports
 
