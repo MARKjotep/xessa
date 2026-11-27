@@ -1,55 +1,47 @@
 # Xessa Handover — 2026-11-27
 
-**Read this file first.** `@xessa/compiler@0.1.1` and `@xessa/cli@0.1.1` are **live on npm**. This tree is bumped to **0.1.2**:
-both packages say `0.1.2`, the CLI pins `@xessa/compiler@0.1.2`, the gate is green and the versions are
-**release-ready but not published**. Published versions are immutable; nothing in 0.1.1 is pending or
+**Read this file first.** `@xessa/compiler@0.1.2` and `@xessa/cli@0.1.2` are **live on npm** (published
+2026-11-27, `gitHead 2e2febe`). The publish is complete and clean-install verification passed; see
+`.ai/reports/XESSA-0.1.2-PUBLISHED.md`. Published versions are immutable; nothing in 0.1.1 or 0.1.2
 needs republishing.
 
 ## Release status (registry checked 2026-11-27)
 
 | Artifact | Version | State | Tarball / files | Notes |
 |---|---|---|---|---|
-| `@xessa/compiler` | `0.1.1` live · `0.1.2` in tree | 🟡 0.1.2 release-ready, not published | 403 published; **436 packed for 0.1.2** | 0.1.1 `gitHead 80df584`; 0.1.2 ships `SPECIFICATION.md` + full `docs/**` |
-| `@xessa/cli` | `0.1.1` live · `0.1.2` in tree | 🟡 0.1.2 release-ready, not published | 89 | pins `@xessa/compiler@0.1.2` |
+| `@xessa/compiler` | `0.1.2` | 🟢 live on npm, published `2026-11-27T06:48:43Z` | **436** | `gitHead 2e2febe`; ships `SPECIFICATION.md` + full `docs/**` |
+| `@xessa/cli` | `0.1.2` | 🟢 live on npm, published `2026-11-27T06:46:27Z` | **89** | `gitHead 2e2febe`; pins `@xessa/compiler@0.1.2` |
 | `xessa` (workspace root) | `0.1.1` | 🔴 npm 404 — stays private | n/a | npm rejected the unscoped name as too similar; no bin/files/publishConfig |
 | `@xessa/language-service` | `0.1.0` | ⚪ private | n/a | internal editor service, not an npm artifact |
-| VS Code extension `xessa` | `0.1.0` | 🟡 local VSIX installed; owner testing for a few days | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b will be revisited after owner acceptance |
+| VS Code extension `xessa` | `0.1.0` | 🟡 local VSIX installed; owner testing for a few days | local VSIX: 17 files / 225.99 KB | publisher `xessa`; PP4b revisited after owner acceptance |
 
-The published compiler tarball predates packaged docs (403 files). 0.1.2 packs **436** because
-`SPECIFICATION.md` and the complete `docs/` tree are copied at pack time. **Do not publish 0.1.1 again,
-and do not expect 403 files for 0.1.2.**
+The published compiler tarball for 0.1.1 predates packaged docs (403 files); 0.1.2 carries them (436
+files). The published 0.1.2 tarball READMEs were packed from `2e2febe` and still say "release-ready,
+not yet published" — cosmetic only; defer to an optional `0.1.3` docs patch. **Never unpublish.**
 
-## ⚠ Critical next action — publish 0.1.2
+## Post-release state — 0.1.2 published
 
 > **Do not publish the VSIX to the Marketplace yet.** The owner installed the local
 > `packages/vscode/xessa-0.1.0.vsix` directly and is testing it for a few days (started 2026-11-27).
-> Wait for acceptance before revisiting PP4b. The npm compiler/CLI publish path below is unaffected.
+> Wait for acceptance before revisiting PP4b.
 
-1. **Preconditions:** clean `main` in sync with `origin/main` at the release commit, owner
-   authorization, and npm rights for the `@xessa` org. `bun run release:check` must end exit 0 with
-   the `0.1.2` assertions.
-2. **Pack and inspect before publishing:** `npm pack --dry-run --json --workspace @xessa/compiler`
-   must show **0.1.2** with ~**436** files including `SPECIFICATION.md`, `docs/grammar.md`,
-   `docs/cascade.md`, `docs/configuration.md` and the ADRs; `npm pack --dry-run --json --workspace
-   @xessa/cli` must show **0.1.2**, **89** files and a packed dependency of
-   `"@xessa/compiler": "0.1.2"`.
-3. **Publish in order: compiler → CLI.**
-   `npm publish --workspace @xessa/compiler --access public`, confirm
-   `npm view @xessa/compiler@0.1.2 version`, then `npm publish --workspace @xessa/cli --access public`
-   and confirm `npm view @xessa/cli@0.1.2 version` plus both `latest` dist-tags.
-4. **Post-checks:** clean install outside the workspace, `npx @xessa/cli --version` and
-   `bunx @xessa/cli@0.1.2 --version` both report `0.1.2`, and a quick `xessa build`/`check` against an
-   example passes.
-5. **Optional:** `npm deprecate` 0.1.1 for the compiler and CLI with a message pointing at 0.1.2
-   (0.1.1 lacks the packaged docs, media aliases and rewritten READMEs). **Never unpublish.**
-6. **Do not publish the root `xessa`.** It stays private at `0.1.1`. The VSIX step
-   (`cd packages/vscode && npx @vscode/vsce publish`) is separate and **on hold**: the owner is
-   testing the local VSIX for a few days, so the extension stays `0.1.0` and Publication waits for
-   acceptance.
+- **Publish: done.** `@xessa/compiler@0.1.2` and `@xessa/cli@0.1.2` are on npm (2026-11-27,
+  `gitHead 2e2febe`, 436 / 89 files, both `latest`). A clean install outside the workspace passed:
+  `npx @xessa/cli --version` and `bunx @xessa/cli@0.1.2 --version` both report `0.1.2`, the compiler
+  payload includes `SPECIFICATION.md`, `docs/grammar.md` and the ADRs, and `npx @xessa/cli build`
+  emitted CSS + map. Evidence: `.ai/reports/XESSA-0.1.2-PUBLISHED.md`.
+- **Optional `0.1.3` docs-only patch.** The published 0.1.2 READMEs still say "release-ready, not yet
+  published" because they were packed from `2e2febe`. A future patch can refresh the package READMEs;
+  it is cosmetic, not a functional defect.
+- **Optional:** `npm deprecate` 0.1.1 for the compiler and CLI with a message pointing at 0.1.2
+  (0.1.1 lacks the packaged docs, media aliases and rewritten READMEs). **Never unpublish.**
+- **Do not publish the root `xessa`.** It stays private at `0.1.1`. The VSIX step
+  (`cd packages/vscode && npx @vscode/vsce publish`) is separate and **on hold** until the owner
+  accepts the local VSIX; the extension stays `0.1.0`.
 
 Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier alias/tag record.
 
-## What changed since 0.1.1 (`80df584..d8e291e`)
+## What changed since 0.1.1 (`80df584..2e2febe`)
 
 | Commit(s) | Area | Change |
 |---|---|---|
@@ -65,7 +57,8 @@ Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier 
 | `f35480a` | Board | Formatter `@use` spacing and `@setup` completion semicolon recorded as open items 30/31. |
 | `d8e291e` | Compiler + editor | Consecutive top-level `@use` lines stay contiguous with one blank line before the next construct; `@setup` value completions append `;` unless one follows. Unit, extension-host and doc coverage. |
 | `fabcb49` | Board | Items 30/31 archived as done with `d8e291e`; `.ai/todo.md` is now a slim live board. See `.ai/reports/TODO-ARCHIVE-2026-11-27.md`. |
-| 0.1.2 bump | Release | Compiler and CLI manifests, CLI dependency pin, `release:check` assertions, docs/CHANGELOG/handover refreshed to 0.1.2; root stays private at `0.1.1`. |
+| `2e2febe` | Release | **0.1.2 published 2026-11-27** (compiler 436 files, CLI 89 files, both `gitHead 2e2febe`): manifests, CLI pin, `release:check` assertions, docs/CHANGELOG/handover; root stays private at `0.1.1`. |
+| `0b2b0b3` | Docs | Local VSIX testing window noted; publish status later recorded in this docs commit. |
 
 ## Current validation (2026-11-27, 0.1.2 release commit)
 
@@ -77,6 +70,10 @@ Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier 
 - `bun run release:check` exit 0 with 0.1.2 assertions and the CLI pin check: nine examples, compiler
   tarball **436 files** (`SPECIFICATION.md` + 32 `docs/` files), CLI **89**, VSIX
   **17 files / 225.99 KB**.
+- Post-publish clean install (2026-11-27): `npm i @xessa/cli@0.1.2` in a fresh directory installed the
+  compiler `0.1.2`; `npx @xessa/cli --version` and `bunx @xessa/cli@0.1.2 --version` → `0.1.2`;
+  `npx @xessa/cli build` emitted CSS + map; `SPECIFICATION.md`, `docs/grammar.md` and 24 ADRs present
+  in the installed compiler package. Details: `.ai/reports/XESSA-0.1.2-PUBLISHED.md`.
 - Known load-sensitive `cli-watch` flake: rerun that test isolated, then the full gate once. Not a
   release blocker.
 - Gates ran on **Bun 1.4.5 / Node 24.22.3**. Node 20 and 22 remain unverified.
@@ -95,28 +92,29 @@ Also stale and worth reconciling: `.ai/plans/CSSX-PLAN-PRODUCTION.md`'s earlier 
 - The **VSIX intentionally does not bundle docs**. Editor users link online or read the compiler
   package when it is installed.
 
-## Publish checklist for 0.1.2
+## Release checklist (next release)
 
-Preconditions: clean `main` in sync with `origin/main`, owner authorization, npm rights for `@xessa`,
-and the 0.1.2 version/docs edits committed and pushed.
+`0.1.2` was published with these commands on 2026-11-27; substitute the next version. Preconditions:
+clean `main` in sync with `origin/main`, owner authorization, npm rights for `@xessa`, and the
+version/docs edits committed and pushed.
 
 ```sh
-bun run release:check                         # must end exit 0 with 0.1.2 assertions
+bun run release:check                         # must end exit 0 with the new version's assertions
 npm pack --dry-run --json --workspace @xessa/compiler
 npm pack --dry-run --json --workspace @xessa/cli   # inspect the pin
 npm publish --workspace @xessa/compiler --access public
-npm view @xessa/compiler version              # 0.1.2
+npm view @xessa/compiler version
 npm publish --workspace @xessa/cli --access public
-npm view @xessa/cli version                   # 0.1.2
+npm view @xessa/cli version
 ```
 
 Then, outside the workspace:
 
 ```sh
-mkdir -p "$TMPDIR/xessa-0.1.2-check" && cd "$TMPDIR/xessa-0.1.2-check"
-npm init -y && npm i @xessa/cli@0.1.2
+mkdir -p "$TMPDIR/xessa-release-check" && cd "$TMPDIR/xessa-release-check"
+npm init -y && npm i @xessa/cli@<version>
 npx @xessa/cli --version
-bunx @xessa/cli@0.1.2 --version
+bunx @xessa/cli@<version> --version
 ```
 
 Rollback rule: publish a new patch version. **Never unpublish** a version or move an existing tag.
@@ -141,8 +139,9 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
 ## Repo / workflow state
 
 - Path `/Users/Marky/Desktop/$/xessa`; branch `main`; remote
-  `https://github.com/MARKjotep/xessa.git`; the validation baseline is the `0.1.2` release commit on
-  top of `fabcb49` (which follows the framework-record retirement commit).
+  `https://github.com/MARKjotep/xessa.git`; the validation baseline is the `0.1.2` release commit
+  `2e2febe` (published) on top of `fabcb49`, followed by the local-VSIX note and this
+  published-status docs commit.
 - `bun run verify` = typecheck + lint + test. `bun run release:check` = verify + browser + builds,
   tarball assertions, nine examples and VSIX packaging. Neither publishes.
 - `opencode.jsonc` registers the agents; root `AGENTS.md` is the workflow contract. Max four child
@@ -156,9 +155,9 @@ Marketplace publisher is confirmed; the extension stays `0.1.0` until then.
   [`docs/cascade.md`](../docs/cascade.md), [`docs/compatibility.md`](../docs/compatibility.md),
   [`docs/known-limitations.md`](../docs/known-limitations.md).
 - **Release:** [`docs/release.md`](../docs/release.md); package READMEs under `packages/*/README.md`.
-- **Reports:** `.ai/reports/XESSA-RENAME.md`, `.ai/reports/XESSA-0.1.1-PREPUBLISH.md`,
-  `.ai/reports/CSSX-0.1.1-STAGING.md`, `.ai/reports/CSSX-MEDIA-MERGE.md`,
-  `.ai/reports/CSSX-DEFAULTS.md`.
+- **Reports:** `.ai/reports/XESSA-0.1.2-PUBLISHED.md`, `.ai/reports/XESSA-RENAME.md`,
+  `.ai/reports/XESSA-0.1.1-PREPUBLISH.md`, `.ai/reports/CSSX-0.1.1-STAGING.md`,
+  `.ai/reports/CSSX-MEDIA-MERGE.md`, `.ai/reports/CSSX-DEFAULTS.md`.
 - **Board/plan:** `.ai/todo.md`, `.ai/plans/CSSX-PLAN-PRODUCTION.md`, `.ai/PROGRESS.md`.
 
 ## Deferred / v0.2

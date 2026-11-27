@@ -3,15 +3,15 @@
 This page records what `bun run release:check` validates, how to publish, and the remaining manual
 steps for the package owners.
 
-**Current status (2026-11-27):** **`0.1.1` is live on npm.** **`0.1.2` is release-ready, not yet
-published.** `@xessa/compiler` and `@xessa/cli` are `0.1.2` in this tree, and the CLI pins
-`@xessa/compiler@0.1.2`. The repository root stays private at `0.1.1` and is not published (npm
-rejected the unscoped `xessa` name as too similar to an existing package). The local gate is green;
-publish in the order **compiler → CLI**. The VS Code extension (PP4b) is **not on the Marketplace**:
-the owner installed the local `packages/vscode/xessa-0.1.0.vsix` directly and is testing it for a few
-days (started 2026-11-27). Marketplace publication remains deferred until that testing passes; the
-extension stays at `0.1.0` and the local VSIX is the interim distribution. Publishing anything needs
-explicit owner authorization.
+**Current status (2026-11-27):** **`0.1.2` is live on npm** for `@xessa/compiler` and `@xessa/cli`
+(published 2026-11-27; compiler **436 files**, CLI **89 files**, both `gitHead 2e2febe`). The CLI
+pins `@xessa/compiler@0.1.2`. The repository root stays private at `0.1.1` and is not published (npm
+rejected the unscoped `xessa` name as too similar to an existing package). The local gate is green and
+a clean registry install of `0.1.2` was verified (see the registry audit below). The VS Code extension
+(PP4b) is **not on the Marketplace**: the owner installed the local `packages/vscode/xessa-0.1.0.vsix`
+directly and is testing it for a few days (started 2026-11-27). Marketplace publication remains
+deferred until that testing passes; the extension stays at `0.1.0` and the local VSIX is the interim
+distribution. Publishing anything needs explicit owner authorization.
 
 Source files use the `.cssx` extension; the language ID, packages, CLI command and diagnostics stay
 Xessa ([ADR-0013](decisions/ADR-0013-cssx-file-extension.md)).
@@ -46,7 +46,9 @@ It runs, in order:
 
 Each sub-result is printed. `release:check` does not publish anything and does not commit.
 
-## Manual pre-release steps
+## Manual release steps
+
+Publishing `0.1.2` was completed on 2026-11-27; these steps apply to the next release.
 
 1. **Metadata URLs are final.** The repository/homepage/bugs URLs are
    `https://github.com/MARKjotep/xessa` (repository `.git` URL, `#readme` homepage and `/issues`
@@ -85,13 +87,28 @@ bunx @xessa/cli@0.1.2 --version
 - Run the [usage guide](usage.md) quick start end to end with `xessa build`/`check`/`format --check`.
 - Record actual outputs in `.ai/reports/`; never claim a publish before it succeeds.
 
+### 0.1.2 registry audit (2026-11-27)
+
+| Check | Result |
+|---|---|
+| `npm view @xessa/compiler version` | `0.1.2` (`latest`), published `2026-11-27T06:48:43Z`, **436 files**, `gitHead 2e2febe` |
+| `npm view @xessa/cli version` | `0.1.2` (`latest`), published `2026-11-27T06:46:27Z`, **89 files**, `gitHead 2e2febe`, dependency `@xessa/compiler: 0.1.2` |
+| `npm view xessa version` | **404** — unscoped root stays private/unpublished |
+| Clean install (`npm i @xessa/cli@0.1.2` in a fresh directory) | 2 packages, 0 vulnerabilities; `npx @xessa/cli --version` → `0.1.2`; `bunx @xessa/cli@0.1.2 --version` → `0.1.2` |
+| Installed compiler payload | `node_modules/@xessa/compiler/package.json` `0.1.2`; `SPECIFICATION.md`, `docs/grammar.md` and `docs/decisions/ADR-*.md` present |
+| Smoke build | `npx @xessa/cli build` on a one-file `.cssx` emitted `generated/styles/button.css` + `generated/maps/button.map.js` (`.ui-button` rule) with exit 0 |
+
+Full evidence: `.ai/reports/XESSA-0.1.2-PUBLISHED.md`. The published 0.1.2 tarball READMEs were packed
+from `2e2febe` and still say "release-ready, not yet published"; this is cosmetic and is deferred to a
+future `0.1.3` docs patch — **do not republish 0.1.2**.
+
 ## Versions, names and identity
 
 | Artifact | Value |
 |---|---|
 | Repository root | private workspace package `xessa`, `0.1.1` (not published; npm rejected the unscoped name as too similar) |
-| `@xessa/compiler` | `0.1.2` (0.1.1 live), MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE`, `SPECIFICATION.md` and the full `docs/` tree (436 files at pack time) |
-| `@xessa/cli` | `0.1.2` (0.1.1 live), MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js`; depends on exactly `@xessa/compiler@0.1.2` |
+| `@xessa/compiler` | `0.1.2` live (published 2026-11-27, `gitHead 2e2febe`), MIT, `dist/**` + `src/**` payload plus package `README.md`/`LICENSE`, `SPECIFICATION.md` and the full `docs/` tree (436 files at pack time) |
+| `@xessa/cli` | `0.1.2` live (published 2026-11-27, `gitHead 2e2febe`), MIT, `dist/**` + `src/**` plus package `README.md`/`LICENSE`; `bin.xessa` → `dist/index.js`; depends on exactly `@xessa/compiler@0.1.2` (89 files) |
 | VS Code extension | marketplace `name: xessa`, `version: 0.1.0`, publisher `xessa`, `icon: media/icon.png`, language `xessa` with `.cssx` |
 | Language service | `@xessa/language-service` `0.1.0`, `private: true` (internal editor service, not an npm artifact) |
 | Diagnostics | `XESSA####` (unchanged) |
@@ -138,7 +155,7 @@ tarball.
 | `xessa-0.1.0.vsix` | `0.1.0` | **17** / 225.99 KB | `out/`, `dist/`, `syntaxes/`, `media/`, `language-configuration.json`, `LICENSE`, `README.md` |
 
 The published 0.1.1 compiler tarball predates the packaged docs (403 files); 0.1.2 is the first
-release whose compiler tarball carries the specification and docs. Do not republish 0.1.1.
+release whose compiler tarball carries the specification and docs (436 files). Do not republish 0.1.1.
 
 ## Framework note
 

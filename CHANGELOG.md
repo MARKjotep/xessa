@@ -6,8 +6,8 @@ All notable changes to Xessa are documented here. The format follows
 
 ## [0.1.2] - 2026-11-27
 
-`@xessa/compiler` and `@xessa/cli` `0.1.2` (release-ready; 0.1.1 remains the published version until
-this one ships). The VS Code extension remains `0.1.0`.
+`@xessa/compiler` and `@xessa/cli` `0.1.2` — **published 2026-11-27**. The VS Code extension remains
+`0.1.0`.
 
 ### Compiler
 

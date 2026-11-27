@@ -21,9 +21,8 @@ specification disagree, the specification wins. CLI command reference:
 ### 1.1 Install
 
 Xessa requires Node.js ≥ 20 or Bun. The compiler is pure ESM with no runtime dependencies.
-`@xessa/compiler` and `@xessa/cli` **0.1.1** are live on npm (the first Xessa release, 2026-11-27);
-**0.1.2** is release-ready, not yet published — publish with [release.md](release.md). Install the
-current published release with:
+`@xessa/compiler` and `@xessa/cli` **0.1.2** are live on npm (published 2026-11-27) — see
+[release.md](release.md). Install the current release with:
 
 ```sh
 bun add @xessa/compiler        # programmatic compiler API

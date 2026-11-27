@@ -78,7 +78,9 @@ the specification linked above.
 
 ## Install
 
-**0.1.1** is live on npm; **0.1.2** is release-ready, not yet published. Install the current release:
+**0.1.2** is live on npm (published 2026-11-27). The published tarball README was packed before this
+status update and still says "release-ready"; the next patch will refresh it. Install the current
+release:
 
 ```sh
 npm install @xessa/compiler
