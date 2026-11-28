@@ -15,6 +15,16 @@
   loosened.
 - Nothing was committed, tagged, pushed or published.
 
+## Commit and Push
+
+- Committed as `31a1015` — `Add group composition, editor navigation and media alias completion`
+  (59 files changed, 3937 insertions, 283 deletions) and pushed to `origin/main`
+  (`769cb5d..31a1015`). Local `main` and `origin/main` both resolve to
+  `31a10156218c8e8086e7e4e1771f11ec3630d3e7`; working tree clean after the push.
+- Owner explicitly authorized this commit and push, including their `examples/portfolio/src/*`
+  edits, the regenerated `portfolio.css`, all reports and the new fixture/ADR.
+- No tag, npm publish or VSIX/Marketplace publication was performed.
+
 ## Version Changes
 
 | File | Change |
