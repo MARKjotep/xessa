@@ -136,6 +136,44 @@ async function run(t) {
       "use-site overrides are a separate bulleted section",
     );
     t.ok(useMarkdown.split("\n- ").length - 1 >= 2, "use-site hover has at least two bullet lines");
+
+    // ADR-0025 composition: a nested base is labelled as such, and a derived
+    // definition hovers with the effective expansion order.
+    const compositionText = [
+      "@group.base { padding: 4px; }",
+      "@group.derived {",
+      "  @group.base { padding: 8px; }",
+      "  color: black;",
+      "}",
+      "",
+    ].join("\n");
+    const { document: compositionDocument } = await groupWorkspace.open(
+      "group-composition.cssx",
+      compositionText,
+    );
+    const compositionHovers = await host.hoversAt(
+      compositionDocument,
+      host.positionOf(compositionDocument, "@group.base { padding: 8px", "@group.".length + 1),
+    );
+    t.ok(compositionHovers.length > 0, "no hover for the composition site");
+    const compositionMarkdown = host.hoverMarkdown(compositionHovers[0]);
+    t.match(compositionMarkdown, /— group composition/, "the composition site is labelled");
+    t.match(compositionMarkdown, /- `padding: 4px`/, "composition hover shows the base default");
+    t.match(
+      compositionMarkdown,
+      /\*\*Overrides in this composition\*\*\n- `padding`/,
+      "composition overrides are their own section",
+    );
+    const derivedHovers = await host.hoversAt(
+      compositionDocument,
+      host.positionOf(compositionDocument, "@group.derived", "@group.".length + 1),
+    );
+    t.ok(derivedHovers.length > 0, "no hover for the derived definition");
+    t.match(
+      host.hoverMarkdown(derivedHovers[0]),
+      /- `padding: 4px`\n- `padding: 8px`\n- `color: black`/,
+      "derived hover follows base, nested override, own declaration order",
+    );
   } finally {
     await groupWorkspace.dispose();
   }

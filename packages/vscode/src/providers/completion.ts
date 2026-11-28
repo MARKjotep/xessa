@@ -4,22 +4,33 @@
  * The context detection and item construction live in `intelligence.ts`; this
  * adapter only converts pure suggestions to `CompletionItem`s and computes the
  * replacement range. Trigger characters: `@`, `$`, `.`, `:`, `/`, `&`, `(`,
- * `#`, `!` and the digits `0`–`9`. The sigils and punctuation are not word
+ * `#`, `!`, `+` and the digits `0`–`9`. The sigils and punctuation are not word
  * characters, so each needs an explicit trigger (nested-selector starters, the
- * call opener, a colour literal and `!important`; SPECIFICATION.md §8). A digit
- * triggers because units are only meaningful behind a typed number (`margin: 1`
- * → `1rem`), and nothing else reopens the list there.
+ * call opener, a colour literal, `!important` and the `@alias+` media chain;
+ * SPECIFICATION.md §8). A digit triggers because units are only meaningful
+ * behind a typed number (`margin: 1` → `1rem`), and nothing else reopens the
+ * list there.
  *
  * A property item carries `retriggerSuggest`: VS Code runs its
  * `editor.action.triggerSuggest` command after the insert or snippet, so the
  * value list opens at the cursor the accepted `property: ` (or `property: ;`)
- * leaves behind (board bug 29). No other suggestion family sets it.
+ * leaves behind (board bug 29). A namespace item (`$theme.`, `$keyframes.`) and
+ * the `@group.` directive carry it for the same reason: accepting one lands in
+ * a member position whose list must open immediately. No other suggestion
+ * family sets it.
+ *
+ * `+` is a very common CSS character (selector combinators, `calc(1+2)`), so
+ * that trigger only runs the completion pipeline when the line prefix actually
+ * ends in an `@alias+` chain; every other `+` returns no items.
  */
 
 import * as vscode from "vscode";
 import { listDirectorySync, sourceTextOf, toCompletionKind } from "../adapter.js";
 import { completionsAt } from "../intelligence.js";
 import type { AnalysisService } from "../service.js";
+
+/** Line prefix ending in an `@alias+` media chain (`@lg+`, `@lg+dark+`). */
+const MEDIA_CHAIN_PREFIX = /@[A-Za-z0-9_-]+(?:\+[A-Za-z0-9_-]*)+$/;
 
 /** Provides context-aware completion for `.cssx` documents. */
 export class XessaCompletionProvider implements vscode.CompletionItemProvider {
@@ -29,12 +40,20 @@ export class XessaCompletionProvider implements vscode.CompletionItemProvider {
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
+    context: vscode.CompletionContext,
   ): Promise<vscode.CompletionItem[]> {
     const source = sourceTextOf(document);
+    const offset = document.offsetAt(position);
+    // A `+` inserted by a selector or arithmetic must not open media aliases.
+    if (
+      context.triggerCharacter === "+" &&
+      !MEDIA_CHAIN_PREFIX.test(source.text.slice(0, offset))
+    ) {
+      return [];
+    }
     const state = await this.service.analyzeNow(source);
     if (token.isCancellationRequested) return [];
 
-    const offset = document.offsetAt(position);
     // Mirrors the built-in CSS support: accepting a property inserts
     // `property: ;` and leaves the cursor before the semicolon.
     const completePropertyWithSemicolon = vscode.workspace

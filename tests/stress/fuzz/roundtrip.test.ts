@@ -4,7 +4,7 @@
  *
  * `formatter.test.ts:137,404` already asserts `format(format(x)) == format(x)` for
  * every fixture and compares the `parse(format(x))` group *shape*. This file
- * extends that to full-IR equality (positions normalized) over the same 67
+ * extends that to full-IR equality (positions normalized) over the same 68
  * fixtures, every unicode/encoding injection and every synthetic template, and
  * over the seeded mutation corpus.
  *
@@ -63,9 +63,9 @@ describe("TT1 round trip: seeded mutation corpus", () => {
 });
 
 describe("TT1 round trip: whole fixture corpus", () => {
-  test("format is idempotent and the reparsed IR is equal for all 67 fixtures", () => {
+  test("format is idempotent and the reparsed IR is equal for all 68 fixtures", () => {
     const fixtures = loadCorpus().fixtures;
-    expect(fixtures).toHaveLength(67);
+    expect(fixtures).toHaveLength(68);
     for (const fixture of fixtures) {
       const outcome = roundTripViolations(fixture.source, fixture.file);
       expect({ fixture: fixture.id, problems: outcome.problems }).toEqual({
@@ -136,11 +136,13 @@ describe("TT1 round trip: formatter defect regressions (CSSX-T01, CSSX-T02)", ()
     expectFixedPoint("@x[a;");
     expectFixedPoint("@x(a");
     expect(format("@x[a", FILE).formatted).toBe("@x [a\n");
-    // Corpus instance from seed 1, budget 200 (hash c4a21866af2c9459).
-    const corpusCase = mutantCorpus(createLabelledRng(1, "roundtrip"), 200).find(
-      (mutant) => mutant.inputHash === "c4a21866af2c9459",
+    // Corpus instance from seed 5, budget 500 (hash 56d5fa2b05643fdc): the
+    // `imbalance` operator put `[` inside an `@use` prelude, so the `;` after
+    // the target is swallowed by the prelude and the formatter must not grow it.
+    const corpusCase = mutantCorpus(createLabelledRng(5, "roundtrip"), 500).find(
+      (mutant) => mutant.inputHash === "56d5fa2b05643fdc",
     );
-    expect(corpusCase?.fixtureId).toBe("output/only-names");
+    expect(corpusCase?.fixtureId).toBe("variables/ambiguous-import");
     expectFixedPoint(corpusCase?.source ?? "");
   });
 
@@ -157,18 +159,19 @@ describe("TT1 round trip: formatter defect regressions (CSSX-T01, CSSX-T02)", ()
     expectFixedPoint(source);
     // Plus-joined aliases stay one variant with two aliases.
     expect(variantAliases(parse(".a { x: 1 @a+b 2; }", { file: FILE }).ast)).toEqual([["a", "b"]]);
-    // Corpus instances: seed 1 budget 200 (017f72c1df03f0f0) and seed 5 budget
-    // 500 (8ede5396d72b69ee, `media/combined-and`).
-    const seedOne = mutantCorpus(createLabelledRng(1, "roundtrip"), 200).find(
-      (mutant) => mutant.inputHash === "017f72c1df03f0f0",
+    // Corpus instances: seed 7, budget 800 (f62cbd16e9f034d7; `20px@md@xl` in a
+    // padding value) and seed 6, budget 800 (be30d1b887f02576; `@md@md` twice
+    // inside `calc()`). Both keep adjacent markers adjacent across the trip.
+    const seedSeven = mutantCorpus(createLabelledRng(7, "roundtrip"), 800).find(
+      (mutant) => mutant.inputHash === "f62cbd16e9f034d7",
     );
-    expect(seedOne?.fixtureId).toBe("runtime/with-variant");
-    expectFixedPoint(seedOne?.source ?? "");
-    const seedFive = mutantCorpus(createLabelledRng(5, "roundtrip"), 500).find(
-      (mutant) => mutant.inputHash === "8ede5396d72b69ee",
+    expect(seedSeven?.fixtureId).toBe("media/inline-variants");
+    expectFixedPoint(seedSeven?.source ?? "");
+    const seedSix = mutantCorpus(createLabelledRng(6, "roundtrip"), 800).find(
+      (mutant) => mutant.inputHash === "be30d1b887f02576",
     );
-    expect(seedFive?.fixtureId).toBe("media/combined-and");
-    expectFixedPoint(seedFive?.source ?? "");
+    expect(seedSix?.fixtureId).toBe("lexical/calc");
+    expectFixedPoint(seedSix?.source ?? "");
   });
 });
 

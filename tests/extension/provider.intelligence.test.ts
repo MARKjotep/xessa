@@ -740,6 +740,65 @@ describe("completion contexts", () => {
     expect(aliasLabels(typedState.analysis, typed, typedOffset)).toEqual(["$keyframes."]);
   });
 
+  test("accepting a namespace or @group reopens the member list", async () => {
+    const keyframeText = [
+      "@variables { gap: 8px; }",
+      "@keyframes spin { from { opacity: 0; } }",
+      ".card { animation-name: $ }",
+    ].join("\n");
+    const keyframeState = await analyze(keyframeText);
+    const tokenOffset = keyframeText.indexOf("animation-name: $") + "animation-name: $".length;
+    const tokenResult = completionsAt(keyframeText, tokenOffset, {
+      analysis: keyframeState.analysis,
+    });
+    expect(suggestion(tokenResult, "$keyframes.").retriggerSuggest).toBe(true);
+    // Ordinary token items keep the list closed.
+    expect(suggestion(tokenResult, "$gap").retriggerSuggest).toBeUndefined();
+
+    // The member list a retrigger opens is a plain member family.
+    const memberText = [
+      "@keyframes spin { from { opacity: 0; } }",
+      ".card { animation-name: $keyframes. }",
+    ].join("\n");
+    const memberState = await analyze(memberText);
+    const memberOffset = memberText.lastIndexOf("$keyframes.") + "$keyframes.".length;
+    const memberItems = completionsAt(memberText, memberOffset, {
+      analysis: memberState.analysis,
+    }).items;
+    expect(labels(memberItems)).toEqual(["spin"]);
+    expect(memberItems.every((item) => item.retriggerSuggest === undefined)).toBe(true);
+
+    // Imported namespace aliases behave like the built-in one.
+    const canonical = fixture(CANONICAL);
+    const importedText = `${canonical}\n.extra { color: $ }`;
+    const importedState = await analyze(importedText, {}, CANONICAL);
+    const importedItems = completionsAt(importedText, importedText.lastIndexOf("$") + 1, {
+      analysis: importedState.analysis,
+    });
+    expect(suggestion(importedItems, "$theme.").retriggerSuggest).toBe(true);
+    expect(suggestion(importedItems, "$spacing").retriggerSuggest).toBeUndefined();
+
+    // `@group.` has the same acceptance problem and the same repair.
+    const directiveText = "@";
+    const directiveState = await analyze(directiveText);
+    const directiveItems = completionsAt(directiveText, 1, {
+      analysis: directiveState.analysis,
+    });
+    expect(suggestion(directiveItems, "@group").retriggerSuggest).toBe(true);
+    expect(suggestion(directiveItems, "@setup").retriggerSuggest).toBeUndefined();
+
+    // A group member list itself never retriggers.
+    const groupText = ["@group.card { padding: 4px; }", ".a { @group. }"].join("\n");
+    const groupState = await analyze(groupText);
+    const groupItems = completionsAt(
+      groupText,
+      groupText.lastIndexOf("@group.") + "@group.".length,
+      { analysis: groupState.analysis },
+    ).items;
+    expect(labels(groupItems)).toEqual(["card"]);
+    expect(groupItems.every((item) => item.retriggerSuggest === undefined)).toBe(true);
+  });
+
   test("the completion provider registers structural triggers and every digit", () => {
     // The controller imports `vscode`, so the registration list is asserted from
     // its source: `&` is not a word character and needs an explicit trigger, and
@@ -1808,6 +1867,139 @@ function groupNameOffset(text: string, name: string, from = 0): number {
   return text.indexOf(`@group.${name}`, from) + "@group.".length + 1;
 }
 
+describe("media alias continuation after +", () => {
+  function continuationText(chain: string, property = "color: red"): string {
+    return [
+      "@media-types {",
+      "  compact: (max-width: 500px);",
+      "  narrow: not (min-width: 900px);",
+      "}",
+      ".card {",
+      `  ${property} ${chain}`,
+      "}",
+    ].join("\n");
+  }
+
+  test("@lg+ offers bare alias continuations and accepting yields @lg+dark", async () => {
+    const text = continuationText("@lg+");
+    const state = await analyze(text);
+    const offset = text.indexOf("@lg+") + "@lg+".length;
+    expect(contextAt(text, offset, state.analysis)).toEqual({
+      kind: "directive",
+      word: "lg+",
+      inSelector: true,
+    });
+    const result = completionsAt(text, offset, { analysis: state.analysis });
+    const dark = result.items.find((item) => item.label === "@dark");
+    if (dark === undefined) throw new Error(`missing @dark in ${labels(result.items).join(", ")}`);
+    expect(dark.kind).toBe("alias");
+    expect(dark.insertText).toBe("dark");
+    expect(dark.filterText).toBe("dark");
+    expect(dark.replaceStart).toBe(offset);
+    expect(result.items.some((item) => item.label === "@lg")).toBe(false);
+    const applied = accept(text, result, dark);
+    expect(applied).toContain("color: red @lg+dark");
+    expect(applied).not.toContain("@@");
+    expect(applied.split("@lg+dark").length - 1).toBe(1);
+  });
+
+  test("@lg+dark+ hides the aliases already in the chain", async () => {
+    const text = continuationText("@lg+dark+");
+    const state = await analyze(text);
+    const offset = text.indexOf("@lg+dark+") + "@lg+dark+".length;
+    const result = completionsAt(text, offset, { analysis: state.analysis });
+    expect(result.items.some((item) => item.label === "@lg")).toBe(false);
+    expect(result.items.some((item) => item.label === "@dark")).toBe(false);
+    expect(result.items.some((item) => item.label === "@md")).toBe(true);
+    const applied = accept(text, result, suggestion(result, "@md"));
+    expect(applied).toContain("color: red @lg+dark+md");
+  });
+
+  test("incompatible aliases are hidden and a not/only chain has no continuation", async () => {
+    const mediaType = continuationText("@screen+");
+    const mediaState = await analyze(mediaType);
+    const mediaOffset = mediaType.indexOf("@screen+") + "@screen+".length;
+    const mediaItems = completionsAt(mediaType, mediaOffset, {
+      analysis: mediaState.analysis,
+    }).items;
+    expect(mediaItems.some((item) => item.label === "@print")).toBe(false);
+    expect(mediaItems.some((item) => item.label === "@screen")).toBe(false);
+
+    const qualified = continuationText("@lg+");
+    const qualifiedState = await analyze(qualified);
+    const qualifiedItems = completionsAt(qualified, qualified.indexOf("@lg+") + 4, {
+      analysis: qualifiedState.analysis,
+    }).items;
+    expect(qualifiedItems.some((item) => item.label === "@narrow")).toBe(false);
+
+    const usedQualified = continuationText("@lg+narrow+");
+    const usedState = await analyze(usedQualified);
+    const usedOffset = usedQualified.indexOf("@lg+narrow+") + "@lg+narrow+".length;
+    expect(
+      completionsAt(usedQualified, usedOffset, { analysis: usedState.analysis }).items,
+    ).toEqual([]);
+  });
+
+  test("@lg without + keeps the ordinary full alias list", async () => {
+    const text = continuationText("@lg");
+    const state = await analyze(text);
+    const offset = text.indexOf("@lg") + "@lg".length;
+    expect(contextAt(text, offset, state.analysis)).toEqual({
+      kind: "directive",
+      word: "lg",
+      inSelector: true,
+    });
+    const result = completionsAt(text, offset, { analysis: state.analysis });
+    expect(labels(result.items)).toEqual(["@lg"]);
+    expect(result.items[0]?.insertText).toBe("@lg");
+  });
+
+  test("the continuation works in inline variants, conditional headers and nested chains", async () => {
+    const inline = continuationText("@md+", "padding: 1px");
+    const inlineState = await analyze(inline);
+    const inlineOffset = inline.indexOf("@md+") + "@md+".length;
+    const inlineResult = completionsAt(inline, inlineOffset, { analysis: inlineState.analysis });
+    expect(labels(inlineResult.items)).toContain("@dark");
+    expect(accept(inline, inlineResult, suggestion(inlineResult, "@dark"))).toContain(
+      "padding: 1px @md+dark",
+    );
+
+    const header = [".card {", "  @lg+", "}"].join("\n");
+    const headerState = await analyze(header);
+    const headerOffset = header.indexOf("@lg+") + "@lg+".length;
+    expect(contextAt(header, headerOffset, headerState.analysis)).toEqual({
+      kind: "directive",
+      word: "lg+",
+      inSelector: true,
+    });
+    expect(
+      labels(completionsAt(header, headerOffset, { analysis: headerState.analysis }).items),
+    ).toContain("@dark");
+
+    const nested = continuationText("@2xl+");
+    const nestedState = await analyze(nested);
+    const nestedOffset = nested.indexOf("@2xl+") + "@2xl+".length;
+    const nestedResult = completionsAt(nested, nestedOffset, { analysis: nestedState.analysis });
+    expect(accept(nested, nestedResult, suggestion(nestedResult, "@dark"))).toContain("@2xl+dark");
+  });
+  test("a + outside an alias chain never becomes a media state", async () => {
+    const sum = ".card { width: calc(1+2); }";
+    const sumState = await analyze(sum);
+    const sumOffset = sum.indexOf("calc(1+") + "calc(1+".length;
+    expect(contextAt(sum, sumOffset, sumState.analysis).kind).toBe("value");
+    expect(
+      completionsAt(sum, sumOffset, { analysis: sumState.analysis }).items.some((item) =>
+        item.label.startsWith("@"),
+      ),
+    ).toBe(false);
+
+    const selector = ".a + .b { color: red; }";
+    const selectorState = await analyze(selector);
+    const selectorOffset = selector.indexOf(".a +") + ".a +".length;
+    expect(contextAt(selector, selectorOffset, selectorState.analysis).kind).not.toBe("directive");
+  });
+});
+
 describe("group completion", () => {
   test("use-site context lists local groups first and imported ones with their module", async () => {
     const text = [
@@ -1878,6 +2070,31 @@ describe("group completion", () => {
     const items = completionsAt(text, offset, { analysis: state.analysis }).items;
     expect(labels(items)).toEqual(["card"]);
     expect(items[0]?.insertText).toBe("card {\n  \n}");
+  });
+
+  test("a definition body completes composition names; a use-site body does not", async () => {
+    const text = ["@group.card { padding: 1px; }", "@group.derived {", "  @group.", "}"].join("\n");
+    const state = await analyze(text);
+    const offset = text.lastIndexOf("@group.") + "@group.".length;
+    expect(contextAt(text, offset, state.analysis)).toEqual({
+      kind: "group-member",
+      word: "",
+    });
+    expect(labels(completionsAt(text, offset, { analysis: state.analysis }).items)).toEqual([
+      "card",
+      "derived",
+    ]);
+
+    // Composition is definition-only (ADR-0025); a nested `@group.` inside a
+    // use-site block is still invalid, so no names are offered there.
+    const useSite = [".a {", "  @group.card {", "    @group.", "  }", "}"].join("\n");
+    const useState = await analyze(useSite);
+    const useOffset = useSite.lastIndexOf("@group.") + "@group.".length;
+    expect(contextAt(useSite, useOffset, useState.analysis)).toEqual({
+      kind: "group-member",
+      word: "",
+    });
+    expect(completionsAt(useSite, useOffset, { analysis: useState.analysis }).items).toEqual([]);
   });
 
   test("group definition and use-site bodies offer the rule-body property set (bug 25)", async () => {
@@ -1996,6 +2213,58 @@ describe("group hover and outline", () => {
     expect(hover?.markdown).toContain("group definition");
     expect(hover?.markdown).toContain("`padding: $pad`");
     expect(hover?.markdown).toContain("`border: 1px solid #ddd`");
+  });
+
+  test("composition sites and derived definitions show effective composed defaults", async () => {
+    const text = [
+      "@group.base {",
+      "  padding: 4px;",
+      "  color: black;",
+      "}",
+      "@group.derived {",
+      "  @group.base { padding: 8px; }",
+      "  margin: 1px;",
+      "}",
+      ".a { @group.derived { color: red; } }",
+    ].join("\n");
+    const state = await analyze(text);
+
+    const compositionIndex = text.indexOf("@group.base { padding");
+    const composition = hoverAt(text, compositionIndex + "@group.".length + 1, {
+      analysis: state.analysis,
+    });
+    expect(composition?.markdown).toContain("**@group.base** — group composition");
+    expect(composition?.markdown).toContain("**Defaults**");
+    expect(composition?.markdown).toContain("- `padding: 4px`");
+    expect(composition?.markdown).toContain("**Overrides in this composition**\n- `padding`");
+
+    // Derived definition: base defaults, then nested overrides, then own
+    // declarations in authored order (the compiler's expansion order).
+    const derived = hoverAt(text, groupNameOffset(text, "derived"), {
+      analysis: state.analysis,
+    });
+    expect(derived?.markdown).toContain(
+      "- `padding: 4px`\n- `color: black`\n- `padding: 8px`\n- `margin: 1px`",
+    );
+
+    // A use site of the composed group expands to the same effective defaults.
+    const useSite = hoverAt(text, text.lastIndexOf("@group.derived") + "@group.".length + 1, {
+      analysis: state.analysis,
+    });
+    expect(useSite?.markdown).toContain("group use site");
+    expect(useSite?.markdown).toContain(
+      "- `padding: 4px`\n- `color: black`\n- `padding: 8px`\n- `margin: 1px`",
+    );
+    expect(useSite?.markdown).toContain("**Overrides at this use site**\n- `color`");
+  });
+
+  test("cyclic composition hover terminates without recursion", async () => {
+    const text = ["@group.a {", "  @group.b { }", "}", "@group.b {", "  @group.a { }", "}"].join(
+      "\n",
+    );
+    const state = await analyze(text);
+    const hover = hoverAt(text, groupNameOffset(text, "a"), { analysis: state.analysis });
+    expect(hover?.markdown).toContain("**@group.a** — group definition");
   });
 
   test("hover renders defaults as real bullet lines and overrides as their own section", async () => {
@@ -2435,6 +2704,33 @@ describe("keyframe hover", () => {
     expect(hover?.markdown).toContain("Also declared in");
     expect(hover?.markdown).toContain("motion.cssx");
     expect(hover?.markdown).not.toContain("Ambiguous keyframe");
+  });
+
+  test("an exact animation-name value shows the resolved keyframe hover", async () => {
+    const text = [
+      "@keyframes spin { from { opacity: 0; } to { opacity: 1; } }",
+      ".page { animation-name: spin; }",
+      ".other { animation: spin 1s linear; animation-name: spin, fade; }",
+      ".unknown { animation-name: nope; }",
+    ].join("\n");
+    const state = await analyze(text);
+    const valueStart = text.indexOf("animation-name: spin") + "animation-name: ".length;
+    const hover = hoverAt(text, valueStart + 1, { analysis: state.analysis });
+    expect(hover?.markdown).toContain("$keyframes.spin");
+    expect(hover?.markdown).toContain("Defined in this file.");
+    expect(hover?.range).toEqual({
+      start: positionAt(state.analysis.lineStarts, valueStart),
+      end: positionAt(state.analysis.lineStarts, valueStart + "spin".length),
+    });
+
+    // Only the exact value is a cursor: the shorthand, a comma list and an
+    // unknown name have no keyframe hover.
+    const shorthandStart = text.indexOf("animation: spin") + "animation: ".length;
+    expect(hoverAt(text, shorthandStart + 1, { analysis: state.analysis })).toBeUndefined();
+    const listStart = text.indexOf("animation-name: spin,") + "animation-name: ".length;
+    expect(hoverAt(text, listStart + 1, { analysis: state.analysis })).toBeUndefined();
+    const unknownStart = text.indexOf("animation-name: nope") + "animation-name: ".length;
+    expect(hoverAt(text, unknownStart + 1, { analysis: state.analysis })).toBeUndefined();
   });
 });
 

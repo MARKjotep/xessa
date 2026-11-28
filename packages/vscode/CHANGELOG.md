@@ -1,5 +1,16 @@
 # Changelog — Xessa for VS Code
 
+## 0.1.2 — 2026-11-28
+
+- Composed group defaults flow into use sites; hover and derived-definition labels show the
+  effective defaults and composition sites are labelled separately.
+- Definition, references and rename follow composition sites, and definition/references cover
+  `@group.<name>` and `@keyframes <name>` declarations, their references and exact `animation-name`
+  values; keyframe rename works from the `animation-name` value.
+- `@group`, `$keyframes.` and imported `$alias.` completions reopen the member list immediately, and
+  `@lg+` continues a media alias chain.
+- No compiler, CLI or dependency change; local VSIX only, Marketplace publication still deferred.
+
 ## 0.1.1 — 2026-11-28
 
 - `@group` use sites show the overridden default as a dim italic `// <default>` ghost after the

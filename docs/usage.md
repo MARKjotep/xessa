@@ -428,7 +428,10 @@ scope, painted orange/red and distinct from numeric values and the five semantic
 
 A group is a named, non-parametric set of declarations. Definitions are inert: they emit nothing.
 A use site is the same syntax inside a rule body and splices the defaults followed by the use-site
-declarations at the authored position. Overrides win through the ordinary cascade.
+declarations at the authored position. Overrides win through the ordinary cascade. A definition may
+also **compose** another group with a nested `@group.<base> { overrides }` statement
+([ADR-0025](decisions/ADR-0025-group-composition.md)): the base resolves in the defining module,
+its effective declarations expand first, then the composition block's overrides, in authored order.
 
 ```xessa
 @group.card {
@@ -470,18 +473,25 @@ declarations at the authored position. Overrides win through the ordinary cascad
 ```
 
 Rules that always hold ([ADR-0017](decisions/ADR-0017-reusable-declaration-groups.md),
-[SPECIFICATION.md §3.7](../SPECIFICATION.md)):
+[ADR-0025](decisions/ADR-0025-group-composition.md), [SPECIFICATION.md §3.7](../SPECIFICATION.md)):
 
-- Both blocks take **declarations only**. A nested rule, conditional block or native at-rule inside
-  a definition or use site is `XESSA1001`.
+- A definition takes declarations and nested composition statements. A use-site block and a
+  composition block's overrides take **declarations only**. A nested rule, conditional block or
+  native at-rule inside any of them is `XESSA1001`, and a `@group.` statement inside a use-site block
+  is `XESSA1001`, not composition.
 - The use-site **block is required**; a bare `@group.card;` is `XESSA1001`.
-- Groups are not mixins: no parameters, arguments, interpolation, `@apply`, chaining, variant use
-  sites or `$group.<name>` values.
+- Groups are not mixins: no parameters, arguments, interpolation, `@apply`, variant use sites or
+  `$group.<name>` values. Composition is allowed only as a definition-body statement.
+- Composition expands textually on every path: repeated targets and diamonds are not deduplicated.
+  A cycle or a chain deeper than 64 compositions is `XESSA2001` at the offending nested statement;
+  only that statement is omitted. Unused definitions stay inert, so an unreachable broken
+  composition is not diagnosed.
 - A module sees its own groups plus those of `@use "…" styles` modules; token-only imports expose
   none. A local definition shadows an imported one; two visible imported definitions are `XESSA2001`
-  at the use site.
-- Defaults resolve against the defining module's tokens. A `@runtime` reference in a default is
-  `XESSA2001`; author runtime customization in the use-site block instead.
+  at the use site. Composition targets resolve in the defining module, so a consumer cannot rebind
+  the base by defining a same-named group.
+- Defaults and composition overrides resolve against the module that authored them. A `@runtime`
+  reference in either is `XESSA2001`; author runtime customization in the use-site block instead.
 - A default authored `!important` is not beaten by a plain use-site declaration. A use-site base
   declaration beats an earlier inline-variant default at every width — the documented cascade
   consequence, not a bug.

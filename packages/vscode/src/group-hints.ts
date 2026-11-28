@@ -68,6 +68,11 @@ interface HintNode {
  * A use site contributes hints only when its name resolves to exactly one
  * visible definition. Properties that exist only at the use site are ignored,
  * and later duplicates of a hinted property inside the same block are skipped.
+ *
+ * `symbol.defaults` is the **effective** composed list (base composition plus
+ * nested overrides, ADR-0025), so a composed group's ghost matches emitted CSS.
+ * Composition blocks inside definition bodies are never use sites and therefore
+ * never produce hints.
  */
 export function groupHints(source: GroupHintSource): readonly GroupHint[] {
   const resolved = new Map<string, GroupSymbol>();

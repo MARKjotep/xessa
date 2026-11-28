@@ -172,12 +172,17 @@ export interface AliasDeclaration {
  * A top-level `@group.<name> { ... }` reusable declaration group (ADR-0017).
  *
  * A definition is inert: it emits no CSS and only a matching
- * {@link GroupUseSite} splices its declarations into a rule. The block accepts
- * declarations and nothing else; a nested rule, conditional block, native
- * at-rule or further `@group.` statement inside it is a XESSA1001-family
- * diagnostic and that statement is omitted while the rest of the definition
- * survives. Names are plain CSS identifiers matched exactly and
- * case-sensitively, and the dotted form is contiguous only.
+ * {@link GroupUseSite} splices its effective declarations into a rule. The body
+ * mixes declarations and nested composition statements in authored order
+ * (ADR-0025): a nested `@group.<name> { … }` splices the base group's effective
+ * declarations and then its own overrides, exactly like an inline declaration
+ * splice. Composition resolves in the defining module's visibility scope.
+ *
+ * A nested rule, conditional block or native at-rule inside the body is still a
+ * XESSA1001-family diagnostic and only that statement is omitted while the rest
+ * of the definition survives. A composition block's overrides are declarations
+ * only, like a use-site block. Names are plain CSS identifiers matched exactly
+ * and case-sensitively, and the dotted form is contiguous only.
  *
  * An empty or unused definition is legal and produces no diagnostic. Duplicate
  * definitions in one module stay in the AST as separate nodes; the resolver
@@ -187,11 +192,20 @@ export interface GroupDefinition {
   readonly kind: "group-definition";
   /** Group name without the `@group.` prefix, exactly as authored (`card`, `keyframes`). */
   readonly name: string;
-  /** Declarations in authored order, including inline variant segments. */
+  /** Direct declarations in authored order; excludes nested composition blocks. */
   readonly declarations: readonly Declaration[];
+  /**
+   * Declarations and nested composition blocks in authored order (ADR-0025).
+   * Expansion walks this, not {@link declarations}, so composition order is
+   * preserved exactly as authored.
+   */
+  readonly body: readonly GroupDefinitionItem[];
   /** Covers `@group` through the closing `}`. */
   readonly span: Span;
 }
+
+/** One body item of a {@link GroupDefinition}. */
+export type GroupDefinitionItem = Declaration | GroupUseSite;
 
 /** A selector block: the only place declarations, nested rules and conditional blocks live. */
 export interface Rule {

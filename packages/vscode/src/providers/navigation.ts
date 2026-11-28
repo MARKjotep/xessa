@@ -18,8 +18,12 @@ import {
   classAt,
   definitionsAt,
   groupAt,
+  groupDefinitionAt,
   idAt,
   keyframeAt,
+  keyframeDefinitionAt,
+  referencesToGroup,
+  referencesToKeyframe,
   referencesToToken,
   renameAt,
   tokenAt,
@@ -73,7 +77,7 @@ function isInside(path: string, root: string): boolean {
   return path === normalizedRoot || path.startsWith(`${normalizedRoot}/`);
 }
 
-/** Find-all-references for `$tokens`, resolution-based in both directions. */
+/** Find-all-references for `$tokens`, `@group.<name>` and keyframes, resolution-based in both directions. */
 export class XessaReferenceProvider implements vscode.ReferenceProvider {
   constructor(private readonly service: AnalysisService) {}
 
@@ -86,8 +90,23 @@ export class XessaReferenceProvider implements vscode.ReferenceProvider {
     const source = sourceTextOf(document);
     const state = await stateOf(this.service, document);
     if (token.isCancellationRequested) return [];
-    const target = tokenDefinitionAt(source.text, document.offsetAt(position), state.analysis);
-    if (target === undefined) return [];
+    const offset = document.offsetAt(position);
+    const tokenTarget = tokenDefinitionAt(source.text, offset, state.analysis);
+    const groupTarget =
+      tokenTarget === undefined ? groupDefinitionAt(state.analysis, offset) : undefined;
+    const keyframeTarget =
+      tokenTarget === undefined && groupTarget === undefined
+        ? keyframeDefinitionAt(source.text, offset, state.analysis)
+        : undefined;
+    const resolved =
+      tokenTarget !== undefined
+        ? ({ kind: "token", target: tokenTarget } as const)
+        : groupTarget !== undefined
+          ? ({ kind: "group", target: groupTarget } as const)
+          : keyframeTarget !== undefined
+            ? ({ kind: "keyframe", target: keyframeTarget } as const)
+            : undefined;
+    if (resolved === undefined) return [];
 
     const currentPath = normalizePath(state.analysis.path);
     const locations: vscode.Location[] = [];
@@ -107,30 +126,42 @@ export class XessaReferenceProvider implements vscode.ReferenceProvider {
       seen.add(key);
       locations.push(new vscode.Location(uri, editorRange));
     };
+    // Token, group and keyframe references share the same resolution-based
+    // occurrence shape; only the resolver differs (token alias/shadow rules vs
+    // group/keyframe visibility). `includeDeclaration` is preserved in all
+    // three.
+    const occurrencesIn = (text: string, analysis: DocumentState["analysis"]) =>
+      resolved.kind === "token"
+        ? referencesToToken(text, analysis, resolved.target, {
+            includeDeclaration: context.includeDeclaration,
+          })
+        : resolved.kind === "group"
+          ? referencesToGroup(analysis, resolved.target, {
+              includeDeclaration: context.includeDeclaration,
+            })
+          : referencesToKeyframe(analysis, resolved.target, {
+              includeDeclaration: context.includeDeclaration,
+            });
 
     // The open document is already analyzed, so its own occurrences (including
     // the declaration when the cursor is on the definition) need no rescan.
-    for (const occurrence of referencesToToken(source.text, state.analysis, target, {
-      includeDeclaration: context.includeDeclaration,
-    })) {
+    for (const occurrence of occurrencesIn(source.text, state.analysis)) {
       add(occurrence.file, occurrence.range);
     }
 
-    const candidates = await this.referenceCandidates(currentPath, target.file, token);
+    const candidates = await this.referenceCandidates(currentPath, resolved.target.file, token);
     for (const candidate of candidates) {
       if (token.isCancellationRequested) break;
       const open = this.openCandidate(candidate);
       const text = await this.readCandidateText(candidate, open);
-      if (text === undefined || !text.includes(target.name)) continue;
+      if (text === undefined || !text.includes(resolved.target.name)) continue;
       const candidateState = await this.service.analyzeNow({
         text,
         path: candidate,
         version: open?.version ?? 0,
       });
       if (token.isCancellationRequested) break;
-      for (const occurrence of referencesToToken(text, candidateState.analysis, target, {
-        includeDeclaration: context.includeDeclaration,
-      })) {
+      for (const occurrence of occurrencesIn(text, candidateState.analysis)) {
         add(occurrence.file, occurrence.range);
       }
     }

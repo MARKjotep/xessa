@@ -62,6 +62,12 @@ async function run(t) {
       t.ok(by.get("@setup").documentation !== undefined, "directive items carry documentation");
       t.equal(by.get("@md").kind, KIND.EnumMember, "media alias item must map to EnumMember");
       t.match(by.get("@md").detail, /min-width: 768px/);
+      // Accepting `@group` writes `@group.`; the name list reopens immediately.
+      t.equal(
+        by.get("@group").command?.command,
+        "editor.action.triggerSuggest",
+        "the @group directive reopens the member list",
+      );
       t.deepEqual(filterMismatches(items), [], "every `@` item filters on its label");
       const range = host.rangeOf(by.get("@setup"));
       t.equal(range.start.character, 0, "`@` range starts on the typed sigil");
@@ -69,6 +75,70 @@ async function run(t) {
       const applied = await host.applyCompletion(editor, by.get("@md"));
       t.ok(applied.startsWith("@md"), `accepting @md produced ${JSON.stringify(applied)}`);
       t.equal(applied.split("@").length - 1, 1, "accepting an alias replaces the typed sigil");
+    }
+
+    // 1b. `@lg+` — the media alias chain continues after the `+` trigger. Only
+    // the typed segment is replaced and the alias is inserted without a second
+    // `@`, so accepting yields `@lg+dark`.
+    {
+      contexts += 1;
+      const { document, editor } = await workspace.open(
+        "media-chain.cssx",
+        ".card {\n  color: red @lg+\n}\n",
+      );
+      const position = host.positionOf(document, "@lg+", "@lg+".length);
+      const items = await host.completionItems(document, position, "+");
+      const by = host.byLabel(items);
+      t.ok(by.has("@dark"), `no @dark continuation in [${[...by.keys()].join(", ")}]`);
+      t.equal(by.get("@dark").insertText, "dark", "the continuation inserts a bare alias name");
+      t.equal(
+        by.get("@dark").filterText,
+        "dark",
+        "the continuation filters on the bare alias name",
+      );
+      t.equal(by.has("@lg"), false, "an alias already in the chain is not offered again");
+      t.equal(
+        host.rangeOf(by.get("@dark")).start.character,
+        position.character,
+        "the continuation replaces only the typed segment",
+      );
+      const applied = await host.applyCompletion(editor, by.get("@dark"));
+      t.match(applied, /color: red @lg\+dark\n/, "accepting @dark appends it to the chain");
+      t.equal(applied.split("@lg+dark").length - 1, 1, "the chain carries exactly one alias");
+    }
+    {
+      contexts += 1;
+      const { document, editor } = await workspace.open(
+        "media-chain-nested.cssx",
+        ".card {\n  color: red @lg+dark+\n}\n",
+      );
+      const position = host.positionOf(document, "@lg+dark+", "@lg+dark+".length);
+      const items = await host.completionItems(document, position, "+");
+      const by = host.byLabel(items);
+      t.equal(by.has("@lg"), false, "a used alias is filtered from a nested chain");
+      t.equal(by.has("@dark"), false, "the second used alias is filtered too");
+      t.ok(by.has("@md"), `no @md continuation in [${[...by.keys()].join(", ")}]`);
+      const applied = await host.applyCompletion(editor, by.get("@md"));
+      t.match(applied, /@lg\+dark\+md\n/, "a nested chain accepts a third alias");
+    }
+    {
+      // The `+` trigger is guarded: `calc(1+2)` must not open media aliases.
+      contexts += 1;
+      const { document } = await workspace.open("plus-guard.cssx", ".card { width: calc(1+2); }\n");
+      const position = host.positionOf(document, "calc(1+", "calc(1+".length);
+      const items = await host.completionItems(document, position, "+");
+      // Other providers (the word suggester) may answer the same request; the
+      // contract is that no media alias is offered.
+      t.deepEqual(
+        items.map(host.labelOf).filter((label) => label.startsWith("@")),
+        [],
+        `a non-media + must offer no media alias (got [${items.map(host.labelOf).join(", ")}])`,
+      );
+      t.equal(
+        items.some((item) => item.kind === KIND.EnumMember),
+        false,
+        "a non-media + offers no alias-kind item",
+      );
     }
 
     // 2. `$` — compile/runtime tokens, replacing the typed `$`.
@@ -95,6 +165,11 @@ async function run(t) {
       t.equal(by.get("$theme").kind, KIND.Constant, "runtime token must map to Constant");
       t.equal(by.get("$theme").detail, "runtime token (custom property)");
       t.ok(by.has("$keyframes."), "the built-in keyframes namespace is offered");
+      t.equal(
+        by.get("$keyframes.").command?.command,
+        "editor.action.triggerSuggest",
+        "the keyframe namespace reopens the member list",
+      );
       t.deepEqual(filterMismatches(items), [], "every `$` item filters on its label");
       const range = host.rangeOf(by.get("$brand"));
       t.equal(range.end.character, position.character, "`$` range ends at the caret");
@@ -128,6 +203,11 @@ async function run(t) {
       const applied = await host.applyCompletion(editor, namespace);
       t.match(applied, /color: \$theme\.\n/, "accepting the namespace keeps the `$`");
       t.equal(applied.split("$").length - 1, 1, "accepting the namespace never doubles the `$`");
+      t.equal(
+        namespace.command?.command,
+        "editor.action.triggerSuggest",
+        "the imported namespace reopens the member list",
+      );
     }
 
     // 3/6. `.` and `&` — selector contexts over generated classes.
@@ -672,16 +752,37 @@ async function run(t) {
       contexts += 1;
       const source = [
         "@keyframes spin { from { opacity: 0; } to { opacity: 1; } }",
-        ".card { animation: $keyframes.",
+        ".card { animation-name: $",
         "}",
         "",
       ].join("\n");
-      const { document } = await workspace.open("keyframe-member.cssx", source);
-      const position = host.positionOf(document, "$keyframes.", "$keyframes.".length);
-      const items = await host.completionItems(document, position, ".");
+      const { document, editor } = await workspace.open("keyframe-member.cssx", source);
+      const position = host.positionOf(document, "animation-name: $", "animation-name: $".length);
+      const namespaceItems = await host.completionItems(document, position, "$");
+      const keyframes = host.byLabel(namespaceItems).get("$keyframes.");
+      t.ok(keyframes, "the built-in keyframe namespace is offered in a value position");
+      t.equal(
+        keyframes.command?.command,
+        "editor.action.triggerSuggest",
+        "the keyframe namespace reopens the member list",
+      );
+      // Accepting writes `$keyframes.`; one request at the new cursor sees the
+      // member, exactly what the host retrigger command does.
+      const applied = await host.applyCompletion(editor, keyframes);
+      t.match(
+        applied,
+        /animation-name: \$keyframes\.\n/,
+        "accepting the keyframe namespace keeps one sigil and writes the dot",
+      );
+      const caret = editor.document.positionAt(
+        editor.document.getText().indexOf("$keyframes.") + "$keyframes.".length,
+      );
+      const items = await host.completionItems(editor.document, caret, ".");
       t.equal(items.length, 1, `expected the single keyframe, got ${items.length}`);
       t.equal(host.labelOf(items[0]), "spin");
       t.equal(items[0].kind, KIND.Field, "keyframe members must map to Field");
+      const accepted = await host.applyCompletion(editor, items[0]);
+      t.match(accepted, /animation-name: \$keyframes\.spin\n/, "the member completes in place");
     }
 
     // 13. `!` — `!important` after a declaration value word.
@@ -713,7 +814,7 @@ async function run(t) {
       t.equal(filteredApplied, ".card { color: red!important }\n", "the typed suffix is replaced");
     }
 
-    t.equal(contexts, 25, "every suggest-widget context of the U0 table was driven");
+    t.equal(contexts, 28, "every suggest-widget context of the U0 table was driven");
     return `${contexts} completion states driven (suggest widget)`;
   } finally {
     await settings.update(

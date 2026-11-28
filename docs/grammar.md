@@ -81,12 +81,15 @@ rule          = selector "{" { declaration | rule | conditionalBlock | nativeAtR
 declaration   = property ":" cssValue { modifier cssValue } ";" ;
 modifier      = "@" alias { "+" alias } ;
 conditionalBlock = modifier "{" { declaration | rule | conditionalBlock } "}" ;
-groupDefinition = "@group" "." groupName "{" { declaration } "}" ;
+groupDefinition = "@group" "." groupName "{" { declaration | groupComposition } "}" ;
+groupComposition = "@group" "." groupName "{" { declaration } "}" ;
 groupUseSite    = "@group" "." groupName "{" { declaration } "}" ;
 ```
 
-`groupDefinition` is top level only and `groupUseSite` is a block item inside a rule; the two
-productions are textually identical, because position decides which one a `@group.<name>` block is.
+`groupDefinition` is top level only and `groupUseSite` is a block item inside a rule; a use site is
+textually the same block, because position decides which one a `@group.<name>` block is. Only a
+definition body may contain a `groupComposition` (ADR-0025); a use-site block and a composition
+block's overrides accept declarations only.
 
 This is **structural** grammar. CSS values and selectors are parsed as balanced token sequences:
 `calc(100% - 2rem)`, `url(a(b).png)`, quoted strings, comments and escaped braces are not structural
@@ -104,7 +107,7 @@ setting key — within one block or across blocks — is rejected.
 | `@variables { name: tokens; }` | top level | Compile-time token definitions. Values substitute token sequences, not JavaScript. |
 | `@runtime { name: value [@alias value]; }` | top level | Native custom properties with optional conditional values. |
 | `@media-types { alias: condition; }` | top level | File-local media aliases, merged over built-ins and project config. |
-| `@group.<name> { declaration; }` | top level (definition), rule body (use site) | Reusable declaration defaults (ADR-0017). A definition emits nothing; a use site splices the defaults and then its overrides. |
+| `@group.<name> { declaration; }` | top level (definition), rule body (use site) | Reusable declaration defaults (ADR-0017, ADR-0025). A definition emits nothing and may compose another group; a use site splices the effective defaults and then its overrides. |
 
 `@use` imports compile-time tokens by default; without the `styles` clause it never imports rules.
 The optional `styles` clause makes the import rule-bearing (ADR-0014): the module's rules are merged
@@ -120,7 +123,9 @@ and no network or executable import.
 ### Reusable declaration groups (`@group.<name>`)
 
 A group is a named, non-parametric set of declarations, written once and spliced into rules with
-per-use-site overrides. See [ADR-0017](decisions/ADR-0017-reusable-declaration-groups.md) and
+per-use-site overrides. A definition may also compose another group. See
+[ADR-0017](decisions/ADR-0017-reusable-declaration-groups.md),
+[ADR-0025](decisions/ADR-0025-group-composition.md) and
 [SPECIFICATION.md](../SPECIFICATION.md) §3.7.
 
 ```xessa
@@ -140,18 +145,23 @@ per-use-site overrides. See [ADR-0017](decisions/ADR-0017-reusable-declaration-g
 ```
 
 - A **definition** (`@group.<name> { declaration… }`) is top level only, beside the other
-  directives. The block accepts declarations and nothing else; the dotted form is contiguous
-  (`@group.card`, never `@group .card`); and the name matches exactly and case-sensitively. A
-  definition **emits nothing**: an unused group has no output, and an empty definition is legal and
-  inert.
-- A **use site** is the identical syntax inside a rule body at any nesting depth. The block is
-  required — a bare `@group.card;` is `XESSA1001` — and accepts declarations only. Nested rules,
-  conditional blocks and native at-rules inside either block are `XESSA1001`; the v1 exclusions are
-  listed in [known-limitations.md](known-limitations.md).
-- **Expansion** splices the group's defaults in definition order, followed by the use-site
-  declarations in authored order, at the authored position, as one declaration run. Nothing is
-  filtered, reordered, deduplicated or rewritten: overrides win through the ordinary cascade, as
-  [cascade.md](cascade.md#2-precedence) shows.
+  directives. The block accepts declarations and nested composition statements; the dotted form is
+  contiguous (`@group.card`, never `@group .card`); and the name matches exactly and case-sensitively.
+  A definition **emits nothing**: an unused group has no output, and an empty definition is legal and
+  inert. Nested rules, conditional blocks and native at-rules inside it are `XESSA1001`.
+- **Composition** is a nested `@group.<base> { overrides }` statement in a definition body. The base
+  resolves in the **defining module's** scope, expands its effective declarations, then the block's
+  overrides, in authored order. Diamonds and repeated composition expand textually and are never
+  deduplicated. A `@group.` statement inside a use-site block is `XESSA1001`, not composition. Cycles
+  and an over-64 composition depth are `XESSA2001` at the offending statement; only that statement is
+  omitted.
+- A **use site** is the same syntax inside a rule body at any nesting depth. The block is required —
+  a bare `@group.card;` is `XESSA1001` — and accepts declarations only. The v1 exclusions are listed
+  in [known-limitations.md](known-limitations.md).
+- **Expansion** splices the definition's effective declarations (composition included) at the
+  authored position, followed by the use-site declarations in authored order, as one declaration run.
+  Nothing is filtered, reordered, deduplicated or rewritten: overrides win through the ordinary
+  cascade, as [cascade.md](cascade.md#2-precedence) shows.
 - A module sees its own groups and those of `@use "…" styles` modules, mirroring
   `$keyframes.<name>`; a token-only import exposes none. `group` is a reserved directive name, so
   `@use "…" as group` is `XESSA2001`, and groups are not values — `$group.<name>` is

@@ -182,7 +182,12 @@ function embeddedCommentRanges(
         for (const alias of item.aliases) ranges.push(alias.span);
         break;
       case "group-definition":
-        for (const declaration of item.declarations) visitDeclaration(declaration);
+        // A definition body mixes declarations and nested composition blocks
+        // (ADR-0025); both carry authored declaration slices.
+        for (const entry of item.body) {
+          if (entry.kind === "declaration") visitDeclaration(entry);
+          else for (const declaration of entry.declarations) visitDeclaration(declaration);
+        }
         break;
       case "rule":
         ranges.push({ start: item.selectorSpan.start, end: item.selectorSpan.end });
@@ -344,30 +349,32 @@ class Printer {
   }
 
   /**
-   * Print a `@group.<name>` definition or use site (ADR-0017).
+   * Print a `@group.<name>` definition or use site (ADR-0017, ADR-0025).
    *
    * Both node kinds are the same authored construct at different positions, so
-   * they share one layout: the `@group` header, then one declaration per line at
-   * the next depth. Declarations are ordinary {@link Declaration} nodes, so
-   * inline variants and per-segment `!important` print exactly as they do in a
-   * rule body; only the block's own comments and trailing comments are printed
-   * here. Omitting either node would delete an authored group on format-on-save
-   * (ADR-0017 item 8), which is why the printer handles both kinds explicitly.
+   * they share one layout: the `@group` header, then one declaration or nested
+   * composition block per entry at the next depth. Declarations are ordinary
+   * {@link Declaration} nodes, so inline variants and per-segment `!important`
+   * print exactly as they do in a rule body; a composition block prints through
+   * the same use-site layout. Only the block's own comments and trailing
+   * comments are printed here. Omitting either node would delete an authored
+   * group on format-on-save (ADR-0017 item 8), which is why the printer handles
+   * both kinds explicitly.
    */
   private printGroup(
     name: string,
-    declarations: readonly Declaration[],
+    items: readonly (Declaration | GroupUseSite)[],
     endOffset: number,
     level: number,
   ): Chunk {
     const lines = [`${pad(level)}@group.${name} {`];
-    lines.push(...this.printBlockItems(declarations, level + 1, endOffset));
+    lines.push(...this.printBlockItems(items, level + 1, endOffset));
     lines.push(`${pad(level)}}`);
     return { lines, block: true };
   }
 
   private printGroupDefinition(block: GroupDefinition, level: number): Chunk {
-    return this.printGroup(block.name, block.declarations, block.span.end, level);
+    return this.printGroup(block.name, block.body, block.span.end, level);
   }
 
   private printGroupUseSite(block: GroupUseSite, level: number): Chunk {

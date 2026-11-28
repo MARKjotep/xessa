@@ -5,6 +5,10 @@
 Accepted (owner sign-off 2026-11-25; decisions (a) styles-only, (b) compile-time-only defaults, (c) reuse XESSA2001) — project owner decision, normative for v0.1. Implementation starts with G1 of
 `.ai/plans/CSSX-PLAN-GROUPS.md` and may not precede this ADR.
 
+**Amendment (2026-11-28):** [ADR-0025](ADR-0025-group-composition.md) allows nested composition
+inside definition bodies; the "group chaining is a v2 candidate" note in item 1 and exclusion 9.5 are
+superseded. Use-site blocks remain declarations-only.
+
 Related: SPECIFICATION.md §3.2, §3.6, §3.7, §5.1, §5.2, §5.4, §6.1, §6.3, §12, §13; ADR-0003,
 ADR-0005, ADR-0011, ADR-0014, ADR-0015; `.ai/plans/CSSX-PLAN-GROUPS.md` (design and phases G0–G6),
 `.ai/reports/CSSX-A23.md` (the plan), `.ai/reports/CSSX-A30.md` (this ADR and the spec integration),

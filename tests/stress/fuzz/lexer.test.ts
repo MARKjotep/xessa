@@ -114,7 +114,7 @@ describe("TT1 lexer: unicode and encoding cases (row #8)", () => {
 
   test("every unicode injection over every fixture keeps the invariants", () => {
     const fixtures = loadCorpus().fixtures;
-    expect(fixtures).toHaveLength(67);
+    expect(fixtures).toHaveLength(68);
     for (const fixture of fixtures) {
       for (const mutant of unicodeMutants(fixture)) {
         const input = `${mutant.fixtureId} ${mutant.description}`;

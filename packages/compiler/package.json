@@ -1,6 +1,6 @@
 {
   "name": "@xessa/compiler",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Xessa lexer, parser, resolver, transformer and CSS/JS generators. Zero runtime dependencies.",
   "type": "module",
   "license": "MIT",

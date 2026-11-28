@@ -194,7 +194,7 @@ function compileFixture(fixture: Fixture): CompileOutput {
 describe("golden fixture catalog", () => {
   test("every fixture is classified as plain or deferred by its dollar-ref tokens", () => {
     const all = fixtures.map((fixture) => fixture.id);
-    expect(all).toHaveLength(67);
+    expect(all).toHaveLength(68);
 
     const plain = ungroupedFixtures
       .filter((fixture) => !fixture.deferred)
@@ -265,6 +265,7 @@ describe("golden fixture catalog", () => {
     // Group fixtures are compiled with expansion by groups.golden.test.ts.
     expect(groupFixtures.map((fixture) => fixture.id)).toEqual([
       "groups/alias-group",
+      "groups/composed",
       "groups/conditional-use-site",
       "groups/duplicate-definition",
       "groups/empty-group",

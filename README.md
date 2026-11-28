@@ -16,7 +16,7 @@ Xessa is at **v0.1** — implementation complete. **`0.1.2` is live on npm** for
 aliases and the formatter/completion fixes — see [docs/release.md](docs/release.md). The full release
 gate (`bun run release:check`) is green and a clean registry install of `@xessa/cli@0.1.2` was verified
 (see `.ai/reports/XESSA-0.1.2-PUBLISHED.md`). The VS Code extension
-is **not on the Marketplace yet**: it stays at `0.1.0` and ships as the local VSIX
+is **not on the Marketplace yet**: it stays at `0.1.2` and ships as the local VSIX
 produced by `bun run release:check` (PP4b deferred). It is an MVP with a deliberately small, honest
 feature set — read [compatibility](docs/compatibility.md) and
 [known limitations](docs/known-limitations.md) before adopting it. The normative language definition
@@ -128,7 +128,7 @@ The VS Code extension is **not published to the Marketplace yet** (PP4b deferred
 VSIX from this checkout and install it by hand:
 
 ```sh
-bun run release:check      # also produces packages/vscode/xessa-0.1.0.vsix
+bun run release:check      # also produces packages/vscode/xessa-0.1.2.vsix
 # Extensions view → … → Install from VSIX
 ```
 

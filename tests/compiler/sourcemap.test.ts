@@ -349,7 +349,7 @@ function fixtureIr(fixture: FixtureCase): StylesheetIr {
 
 describe("maps-off golden stability", () => {
   test("the 54 golden CSS files are unchanged with source maps off", () => {
-    expect(fixtures).toHaveLength(67);
+    expect(fixtures).toHaveLength(68);
     const sentinel = "/* no css: see expected/diagnostics.json */";
     // `@group.<name>` fixtures are asserted by groups.golden.test.ts through the
     // expansion pre-pass, which this chain does not run (ADR-0017, plan G4a).

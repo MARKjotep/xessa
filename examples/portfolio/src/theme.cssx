@@ -36,3 +36,13 @@
   amber-soft: #f6e7cd @dark #3a2a12;
   shadow: 0 18px 50px -30px rgb(20 30 24 / 0.35) @dark 0 18px 50px -28px rgb(0 0 0 / 0.7);
 }
+
+@keyframes ad {
+  from {
+    color: #10b981;
+  }
+
+  to {
+    color: #111827;
+  }
+}

@@ -60,9 +60,20 @@ export interface GroupSymbol {
   readonly declaration: Range;
   /** Whole `@group.<name>` keyword range in the defining module. */
   readonly keyword: Range;
-  /** Default declarations in authored order. */
+  /**
+   * Effective default declarations in composed, authored order (ADR-0025).
+   *
+   * A declaration contributes itself; a nested `@group.<base> { … }` expands
+   * the base's effective defaults using the **defining** module's scope, then
+   * the nested block's overrides, then the walk continues. This is exactly the
+   * compiler's expansion order, so hover, completion and override hints agree
+   * with emitted CSS. A cyclic composition stops at the repeated frame (the
+   * compiler owns the XESSA2001 diagnostic).
+   */
   readonly defaults: readonly GroupDefault[];
-  /** Use sites whose own module resolves this name to this definition. */
+  /** Direct declarations only, in authored order; excludes composition expansion. */
+  readonly declarations: readonly GroupDefault[];
+  /** Use sites and composition sites that resolve to this definition. */
   readonly references: readonly GroupReference[];
 }
 
@@ -90,7 +101,14 @@ interface MutableGroupSymbol {
   readonly file: string;
   readonly declaration: Range;
   readonly keyword: Range;
-  readonly defaults: readonly GroupDefault[];
+  /** Direct declarations, projected once from the authored node. */
+  readonly declarations: readonly GroupDefault[];
+  /** Effective defaults, resolved after every module scope exists. */
+  defaults: readonly GroupDefault[];
+  /** Authored definition node, the source of the composition walk. */
+  readonly definition: GroupDefinition;
+  /** Line starts of the **defining** module, used for nested default ranges. */
+  readonly lineStarts: readonly number[];
   readonly references: GroupReference[];
 }
 
@@ -234,6 +252,43 @@ export function collectGroupVisibility(
     }
   }
 
+  // Effective defaults need every scope, so they are resolved last. A symbol
+  // on the active path stops the walk (cycle safety only; the compiler reports
+  // the XESSA2001 at the closing composition statement).
+  const effectiveMemo = new Map<MutableGroupSymbol, readonly GroupDefault[]>();
+  const expanding = new Set<MutableGroupSymbol>();
+  const effectiveOf = (symbol: MutableGroupSymbol): readonly GroupDefault[] => {
+    const cached = effectiveMemo.get(symbol);
+    if (cached !== undefined) return cached;
+    if (expanding.has(symbol)) return [];
+    expanding.add(symbol);
+    const defaults: GroupDefault[] = [];
+    for (const item of symbol.definition.body) {
+      if (item.kind === "declaration") {
+        defaults.push(groupDefaultOf(item, symbol.lineStarts));
+        continue;
+      }
+      // Composition resolves in the defining module's scope, mirroring the
+      // compiler (`scopeFor(group.module)`), never the consumer's.
+      const resolution = scopeOf(symbol.file).get(item.name);
+      if (resolution === undefined || resolution.kind !== "resolved") continue;
+      const target = resolution.symbol;
+      // A repeated frame omits the whole statement, overrides included.
+      if (expanding.has(target)) continue;
+      defaults.push(...effectiveOf(target));
+      for (const declaration of item.declarations) {
+        defaults.push(groupDefaultOf(declaration, symbol.lineStarts));
+      }
+    }
+    expanding.delete(symbol);
+    const frozen = Object.freeze(defaults);
+    effectiveMemo.set(symbol, frozen);
+    return frozen;
+  };
+  for (const source of modules.values()) {
+    for (const symbol of source.own.values()) symbol.defaults = effectiveOf(symbol);
+  }
+
   return [...scopeOf(rootFile).values()];
 }
 
@@ -293,6 +348,20 @@ function authoredValue(declaration: Declaration): string {
   return segments.join(" ");
 }
 
+/** One default declaration of a symbol's defining module. */
+function groupDefaultOf(declaration: Declaration, lineStarts: readonly number[]): GroupDefault {
+  return {
+    property: declaration.property,
+    value: declaration.value,
+    authored: authoredValue(declaration),
+    range: rangeAt(
+      lineStarts,
+      declaration.span.start,
+      declaration.span.start + declaration.property.length,
+    ),
+  };
+}
+
 /** One definition node → editor symbol, with name/keyword and default ranges. */
 function symbolOf(
   definition: GroupDefinition,
@@ -306,16 +375,12 @@ function symbolOf(
     file,
     declaration: rangeAt(lineStarts, nameStart, nameEnd),
     keyword: rangeAt(lineStarts, definition.span.start, nameEnd),
-    defaults: definition.declarations.map((declaration) => ({
-      property: declaration.property,
-      value: declaration.value,
-      authored: authoredValue(declaration),
-      range: rangeAt(
-        lineStarts,
-        declaration.span.start,
-        declaration.span.start + declaration.property.length,
-      ),
-    })),
+    declarations: definition.declarations.map((declaration) =>
+      groupDefaultOf(declaration, lineStarts),
+    ),
+    defaults: [],
+    definition,
+    lineStarts,
     references: [],
   };
 }
@@ -327,7 +392,15 @@ function comparePaths(left: string, right: string): number {
   return 0;
 }
 
-/** Visit every `@group.<name>` use site inside rule, conditional and native blocks. */
+/**
+ * Visit every `@group.<name>` use site inside rule, conditional and native
+ * blocks, plus composition sites inside definition bodies (ADR-0025).
+ *
+ * A composition statement parses as the same `group-use-site` node, so
+ * collecting it here makes it a rename/reference site of its base. Which scope
+ * it resolves in is decided by the owning module: attribution always uses the
+ * scope of the file that authored the site.
+ */
 function walkUseSites(
   items: readonly unknown[],
   visit: (node: {
@@ -339,6 +412,10 @@ function walkUseSites(
     const node = raw as GroupNode;
     if (node.kind === "group-use-site" && node.name !== undefined && node.span !== undefined) {
       visit({ name: node.name, span: node.span });
+      continue;
+    }
+    if (node.kind === "group-definition") {
+      if (node.body !== undefined) walkUseSites(node.body, visit);
       continue;
     }
     if (node.kind === "rule" || node.kind === "conditional-block") {

@@ -2,12 +2,12 @@
  * TT1 parser stress — weakness row #7 of `tests/stress/README.md`.
  *
  * The existing `parser.test.ts:1136` / `pipeline.test.ts:186` truncation fuzz
- * covers **one** source (TT0 report). This file extends it to all 67 fixtures
+ * covers **one** source (TT0 report). This file extends it to all 68 fixtures
  * (character *and* token prefixes, exhaustively), adds 10 000-deep `{` and
  * at-rule nesting, unbalanced quote/comment/bracket at every depth level 1–64 and
  * a diagnostic-count bound per nesting depth.
  *
- * Measured cost on this machine: 7 602 character prefixes and 3 197 token
+ * Measured cost on this machine: 7 779 character prefixes and 3 268 token
  * prefixes over the whole corpus in ~45 ms and ~35 ms, so both sweeps run
  * exhaustively rather than sampled.
  */
@@ -166,10 +166,10 @@ describe("TT1 parser: unbalanced input at every depth (row #7b)", () => {
   });
 });
 
-describe("TT1 parser: prefix truncation over all 67 fixtures (row #7c)", () => {
+describe("TT1 parser: prefix truncation over all 68 fixtures (row #7c)", () => {
   test("every character prefix of every fixture parses totally", () => {
     const fixtures = loadCorpus().fixtures;
-    expect(fixtures).toHaveLength(67);
+    expect(fixtures).toHaveLength(68);
     let cases = 0;
     for (const fixture of fixtures) {
       for (const prefix of characterPrefixes(fixture.source)) {
@@ -182,8 +182,8 @@ describe("TT1 parser: prefix truncation over all 67 fixtures (row #7c)", () => {
         cases += 1;
       }
     }
-    // 67 fixtures / 7 535 code units ⇒ 7 602 prefixes, plus one per fixture.
-    expect(cases).toBe(7_602);
+    // 68 fixtures / 7 711 code units ⇒ 7 779 prefixes, plus one per fixture.
+    expect(cases).toBe(7_779);
   }, 60_000);
 
   test("every token prefix of every fixture parses totally", () => {
@@ -199,7 +199,7 @@ describe("TT1 parser: prefix truncation over all 67 fixtures (row #7c)", () => {
         cases += 1;
       }
     }
-    expect(cases).toBe(3_197);
+    expect(cases).toBe(3_268);
   }, 60_000);
 
   test("truncations produced by the mutation operator also parse totally", () => {

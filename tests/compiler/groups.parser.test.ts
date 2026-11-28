@@ -216,19 +216,18 @@ describe("declarations-only recovery inside a group block", () => {
     expect(source.slice(definition.span.start, definition.span.end)).toBe(source);
   });
 
-  test("conditional, native and group statements inside a definition are one diagnostic each", () => {
+  test("conditional and native statements inside a definition are one diagnostic each", () => {
     const source = [
       "@group.card {",
       "  color: black;",
       "  @md { color: red; }",
       "  @media screen { color: blue; }",
-      "  @group.other { color: green; }",
       "  padding: 1px;",
       "}",
     ].join("\n");
     const { ast, diagnostics } = parseSource(source);
 
-    expect(codes(diagnostics)).toEqual(["XESSA1001", "XESSA1001", "XESSA1001"]);
+    expect(codes(diagnostics)).toEqual(["XESSA1001", "XESSA1001"]);
     for (const diagnostic of diagnostics) {
       expect(diagnostic.message).toContain("@group.card");
       expect(diagnostic.message).toContain("declarations only");
@@ -236,6 +235,41 @@ describe("declarations-only recovery inside a group block", () => {
     const definition = onlyDefinition(ast);
     expect(properties(definition.declarations)).toEqual(["color", "padding"]);
     expect(definition.declarations[1]?.value).toBe("1px");
+  });
+
+  test("a well-formed nested group composition parses into definition.body in authored order", () => {
+    const source = [
+      "@group.base {",
+      "  padding: 12px;",
+      "}",
+      "@group.card {",
+      "  color: black;",
+      "  @group.base {",
+      "    padding: 20px;",
+      "  }",
+      "  margin: 0;",
+      "}",
+      "",
+    ].join("\n");
+    const { ast, diagnostics } = parseSource(source);
+
+    expect(diagnostics).toEqual([]);
+    const definition = definitions(ast)[1] as GroupDefinition;
+    expect(definition.name).toBe("card");
+    // `declarations` stays the direct declarations for compatibility.
+    expect(properties(definition.declarations)).toEqual(["color", "margin"]);
+    expect(definition.body.map((item) => item.kind)).toEqual([
+      "declaration",
+      "group-use-site",
+      "declaration",
+    ]);
+    const composition = definition.body[1] as GroupUseSite;
+    expect(composition.name).toBe("base");
+    expect(properties(composition.declarations)).toEqual(["padding"]);
+    expect(composition.declarations[0]?.value).toBe("20px");
+    expect(source.slice(composition.span.start, composition.span.end)).toBe(
+      "@group.base {\n    padding: 20px;\n  }",
+    );
   });
 
   test("the same rejections apply inside a use-site block", () => {
@@ -246,13 +280,14 @@ describe("declarations-only recovery inside a group block", () => {
       "    .nested { color: red; }",
       "    @md { color: blue; }",
       "    @font-face { font-family: x; }",
+      "    @group.other { color: green; }",
       "    color: black;",
       "  }",
       "}",
     ].join("\n");
     const { ast, diagnostics } = parseSource(source);
 
-    expect(codes(diagnostics)).toEqual(["XESSA1001", "XESSA1001", "XESSA1001"]);
+    expect(codes(diagnostics)).toEqual(["XESSA1001", "XESSA1001", "XESSA1001", "XESSA1001"]);
     for (const diagnostic of diagnostics) {
       expect(diagnostic.message).toContain("@group.card");
     }

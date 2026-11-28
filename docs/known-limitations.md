@@ -26,9 +26,9 @@ same file. `.vscodeignore` keeps `src/`, `test/` and `tsconfig.json` out of the 
 carries the runtime payload — `out/`, `dist/`, `syntaxes/`, `media/`, `language-configuration.json`,
 `LICENSE` and `README.md` — at 18 files / 140.6 KB instead of 84 files / 309.78 KB.
 
-Package versions (`0.1.2` live on npm for `@xessa/compiler`/`@xessa/cli`; `0.1.0` for the VS Code
-extension), package-level `README.md`/`LICENSE` copies and the unscoped extension name (`xessa`) were
-resolved for v0.1; `bun run release:check` asserts all three.
+Package versions (`0.1.2` live on npm for `@xessa/compiler`/`@xessa/cli`; `0.1.2` for the local VS
+Code extension VSIX), package-level `README.md`/`LICENSE` copies and the unscoped extension name
+(`xessa`) were resolved for v0.1; `bun run release:check` asserts all three.
 
 ## 2a. Source extension
 
@@ -59,7 +59,7 @@ is no legacy extension alias, dual registration or migration path in v0.1.
 
 | Limitation | Detail |
 |---|---|
-| `@group` v1 exclusions | Groups ship only in the narrow form of [ADR-0017](decisions/ADR-0017-reusable-declaration-groups.md) and [SPECIFICATION.md](../SPECIFICATION.md) §3.7. Use sites are **unconditional**: `@group.x @md+dark { … }` and conditional definitions are `XESSA1001`. Both blocks take **declarations only**; a nested rule, conditional block or native at-rule inside a definition or use site is `XESSA1001`. There is **no `@apply`**, groups take **no parameters, arguments or interpolation** (they are not mixins), and a group **cannot reference another group**. `@use … as` never addresses groups, and groups are not re-exported: visibility is exactly the module's own top-level definitions plus the transitive `styles` closure. The **bare include `@group.<name>;`** does not exist (`XESSA1001`), and **`$group.<name>` is not a value** (`XESSA2001`). Defaults are compile-time only: a `@runtime` reference in a default is `XESSA2001`, so runtime customization is authored at the use site. |
+| `@group` v1 exclusions | Groups ship in the form of [ADR-0017](decisions/ADR-0017-reusable-declaration-groups.md), [ADR-0025](decisions/ADR-0025-group-composition.md) and [SPECIFICATION.md](../SPECIFICATION.md) §3.7. Use sites are **unconditional**: `@group.x @md+dark { … }` and conditional definitions are `XESSA1001`. A definition takes declarations plus nested `@group.<base> { … }` **composition**; a use-site block and a composition block's overrides take declarations only, so composition in a use site and a nested rule, conditional block or native at-rule anywhere inside a group block are `XESSA1001`. Composition expands textually (no deduplication) and resolves in the defining module; a cycle or a chain deeper than 64 compositions is `XESSA2001` at the offending statement. There is **no `@apply`** and groups take **no parameters, arguments or interpolation** (they are not mixins). `@use … as` never addresses groups, and groups are not re-exported: visibility is exactly the module's own top-level definitions plus the transitive `styles` closure. The **bare include `@group.<name>;`** does not exist (`XESSA1001`), and **`$group.<name>` is not a value** (`XESSA2001`). Defaults and composition overrides are compile-time only: a `@runtime` reference there is `XESSA2001`, so runtime customization is authored at the use site. An unused definition stays inert, so a broken composition it contains is not diagnosed until something expands it. |
 | No mixins / `@apply` | `@apply` and parameterised mixins are deferred; `@group.<name>` is the shipped, non-parametric form. |
 | No arbitrary expressions | Variables substitute token sequences; there is no computation. |
 | No container aliases | Native `@container` passes through, but Xessa aliases for container queries do not exist. |

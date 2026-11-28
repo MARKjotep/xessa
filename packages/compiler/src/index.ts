@@ -57,6 +57,7 @@ export type {
   ConditionalBlockItem,
   Declaration,
   GroupDefinition,
+  GroupDefinitionItem,
   GroupUseSite,
   MediaTypesBlock,
   Modifier,
@@ -403,6 +404,10 @@ function compileEntry(input: CompileEntryInput): CompileResult {
   const moduleDiagnostics: Diagnostic[] = [];
   const moduleIr: StylesheetIr[] = [];
   const tables: ClassTableSource[] = [];
+  // Nested group composition resolves in the defining module's scope, so build
+  // one module → visible-scope map and reuse it for every expansion (ADR-0025).
+  const groupScopes = new Map<string, ReadonlyMap<string, GroupResolution>>();
+  for (const [file, record] of input.graph.modules) groupScopes.set(file, record.groups);
 
   // Rule-merge imports (ADR-0014): each module is expanded, lowered,
   // substituted and renamed on its own, with its own setup prefix. Imported
@@ -413,7 +418,11 @@ function compileEntry(input: CompileEntryInput): CompileResult {
     if (record === undefined) continue;
     const decoded = decodeSetup(record.ast);
     const prefix = modulePrefix(input.options, decoded);
-    const expanded = expandGroupUseSites(record.ast, { module: file, groups: record.groups });
+    const expanded = expandGroupUseSites(record.ast, {
+      module: file,
+      groups: record.groups,
+      scopes: groupScopes,
+    });
     const lowered = lower(expanded.ast, input.options);
     const substituted = substitute(lowered.ir, input.graph, file, { prefix: input.prefix });
     const renamed = renameClasses(substituted.ir, { prefix });
@@ -436,6 +445,7 @@ function compileEntry(input: CompileEntryInput): CompileResult {
   const expandedEntry = expandGroupUseSites(input.ast, {
     module: input.entryKey,
     groups: entryGroups,
+    scopes: groupScopes,
   });
   const lowered = lower(expandedEntry.ast, input.options);
   const substituted = substitute(lowered.ir, input.graph, input.entryKey, {

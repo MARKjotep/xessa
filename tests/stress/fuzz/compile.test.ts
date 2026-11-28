@@ -53,7 +53,7 @@ describe("TT1 compile: seeded mutation corpus (row #6a)", () => {
 describe("TT1 compile: whole fixture corpus (row #6a)", () => {
   test("every fixture compiles through the public entry point", async () => {
     const fixtures = loadCorpus().fixtures;
-    expect(fixtures).toHaveLength(67);
+    expect(fixtures).toHaveLength(68);
     for (const fixture of fixtures) {
       await expectCompileOk(fixture.source, fixture.file);
       const result = await compile(fixture.source, {

@@ -1,4 +1,9 @@
-import type { Declaration, GroupDefinition, GroupUseSite } from "../types/ast.js";
+import type {
+  Declaration,
+  GroupDefinition,
+  GroupDefinitionItem,
+  GroupUseSite,
+} from "../types/ast.js";
 import type { Span } from "../types/span.js";
 import type { Token } from "../types/token.js";
 import { skipTriviaAt, tokenAt } from "./cursor.js";
@@ -18,11 +23,13 @@ import { classifyStatement } from "./statement.js";
  * {@link GroupDefinition}, the same statement inside a rule body is a
  * {@link GroupUseSite} (§3.2 grammar).
  *
- * Both blocks accept declarations and nothing else. A nested rule, conditional
- * block, native at-rule or further `@group.` statement is one XESSA1001 per
- * offending statement, the statement is omitted and the rest of the block
- * survives. No expansion, printing or symbol resolution happens here — that is
- * plan G3/G5/G2 work.
+ * A definition accepts declarations plus nested composition blocks
+ * (`@group.base { … }`, ADR-0025): a well-formed nested group is a
+ * {@link GroupUseSite} body item whose overrides are declarations only. A
+ * use-site block still accepts declarations only. A nested rule, conditional
+ * block or native at-rule is one XESSA1001 per offending statement, the
+ * statement is omitted and the rest of the block survives. No expansion,
+ * printing or symbol resolution happens here — that is plan G3/G5/G2 work.
  */
 
 /** A well-formed `@group.<name>` header. */
@@ -53,6 +60,8 @@ interface MalformedGroupHeader {
 /** Declarations and bounds parsed from one group block. */
 interface GroupBody {
   readonly declarations: readonly Declaration[];
+  /** Declarations and nested composition statements in authored order. */
+  readonly body: readonly GroupDefinitionItem[];
   /** Covers the closing `}`, or end of input when the block is unclosed. */
   readonly end: number;
 }
@@ -156,7 +165,11 @@ function requireGroupHeader(ctx: ParseContext): GroupHeader | undefined {
  * site (`@group.x @md { ... }`) is reported as unsupported and skipped as one
  * statement so the enclosing rule keeps parsing.
  */
-function parseGroupBlock(ctx: ParseContext, header: GroupHeader): GroupBody | undefined {
+function parseGroupBlock(
+  ctx: ParseContext,
+  header: GroupHeader,
+  allowComposition: boolean,
+): GroupBody | undefined {
   const { cursor, bag } = ctx;
   const tokens = cursor.tokens;
   const startIndex = cursor.index;
@@ -186,14 +199,27 @@ function parseGroupBlock(ctx: ParseContext, header: GroupHeader): GroupBody | un
   }
 
   cursor.index++;
-  return parseGroupBody(ctx, header.name, header.span.start);
+  return parseGroupBody(ctx, header.name, header.span.start, allowComposition);
 }
 
-/** Parse declarations only, reporting and skipping every other statement. */
-function parseGroupBody(ctx: ParseContext, name: string, startOffset: number): GroupBody {
+/**
+ * Parse a group block body.
+ *
+ * With `allowComposition` (definitions only) a well-formed nested
+ * `@group.<name> { … }` becomes an ordered composition item; its own body is a
+ * use-site body and therefore declarations only. Every other non-declaration
+ * statement is reported and skipped with statement-scoped recovery.
+ */
+function parseGroupBody(
+  ctx: ParseContext,
+  name: string,
+  startOffset: number,
+  allowComposition: boolean,
+): GroupBody {
   const { cursor, bag } = ctx;
   const tokens = cursor.tokens;
   const declarations: Declaration[] = [];
+  const body: GroupDefinitionItem[] = [];
   let end = cursor.endOffset;
 
   while (true) {
@@ -205,14 +231,23 @@ function parseGroupBody(ctx: ParseContext, name: string, startOffset: number): G
     if (token.kind === "rbrace") {
       end = token.end;
       cursor.index++;
-      return { declarations: Object.freeze(declarations), end };
+      return {
+        declarations: Object.freeze(declarations),
+        body: Object.freeze(body),
+        end,
+      };
     }
     if (token.kind === "semicolon") {
       cursor.index++;
       continue;
     }
 
-    if (token.kind === "at-keyword" || token.kind === "modifier") {
+    if (allowComposition && isGroupAtKeyword(token)) {
+      // Well-formed composition parses like a use site; a malformed header or
+      // missing block is already reported and skipped by `parseGroupUseSite`.
+      const composition = parseGroupUseSite(ctx);
+      if (composition !== undefined) body.push(composition);
+    } else if (token.kind === "at-keyword" || token.kind === "modifier") {
       bag.add("XESSA1001", messages.groupDeclarationsOnly(groupText(name)), cursor.span(token));
       cursor.index = Math.min(skipAtRule(tokens, cursor.index, cursor.endOffset), tokens.length);
     } else if (token.kind === "lbrace") {
@@ -229,7 +264,10 @@ function parseGroupBody(ctx: ParseContext, name: string, startOffset: number): G
       );
     } else {
       const declaration = parseDeclaration(ctx);
-      if (declaration !== undefined) declarations.push(declaration);
+      if (declaration !== undefined) {
+        declarations.push(declaration);
+        body.push(declaration);
+      }
     }
 
     if (cursor.index === guard) cursor.index++;
@@ -240,7 +278,7 @@ function parseGroupBody(ctx: ParseContext, name: string, startOffset: number): G
     end: cursor.endOffset,
     file: cursor.file,
   });
-  return { declarations: Object.freeze(declarations), end };
+  return { declarations: Object.freeze(declarations), body: Object.freeze(body), end };
 }
 
 /**
@@ -253,13 +291,14 @@ export function parseGroupDefinition(ctx: ParseContext): GroupDefinition | undef
   const { cursor } = ctx;
   const header = requireGroupHeader(ctx);
   if (header === undefined) return undefined;
-  const body = parseGroupBlock(ctx, header);
+  const body = parseGroupBlock(ctx, header, true);
   if (body === undefined) return undefined;
 
   return Object.freeze({
     kind: "group-definition",
     name: header.name,
     declarations: body.declarations,
+    body: body.body,
     span: { start: header.span.start, end: body.end, file: cursor.file },
   });
 }
@@ -273,7 +312,9 @@ export function parseGroupUseSite(ctx: ParseContext): GroupUseSite | undefined {
   const { cursor } = ctx;
   const header = requireGroupHeader(ctx);
   if (header === undefined) return undefined;
-  const body = parseGroupBlock(ctx, header);
+  // Use-site bodies (including a composition block's overrides) are
+  // declarations only: composition is a definition-body statement.
+  const body = parseGroupBlock(ctx, header, false);
   if (body === undefined) return undefined;
 
   return Object.freeze({

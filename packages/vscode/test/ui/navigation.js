@@ -1,6 +1,7 @@
 /**
  * Navigation scenarios — definition, references and rename for `$tokens`,
- * namespace members and cross-module groups, all through the public commands.
+ * namespace members, cross-module groups and keyframes, all through the public
+ * commands.
  *
  * The fixture set is copied into a temp workspace first so the rename cases can
  * apply real `WorkspaceEdit`s without ever dirtying a committed fixture.
@@ -150,11 +151,147 @@ async function run(t) {
       "both token references were renamed",
     );
 
-    // Cross-module group rename: edits in two files, applied as one edit.
+    // Cross-module group navigation: definition and references resolve through
+    // the same `analysis.groups` visibility hover and rename use.
     const groups = await workspace.open(
       "navigation-groups.cssx",
       await host.readFixture("ui/navigation-groups.cssx"),
     );
+    const groupDefinitionPosition = host.positionOf(
+      groups.document,
+      "@group.card-base",
+      "@group.".length + 1,
+    );
+    const groupUsePosition = host.positionOf(document, "@group.card-base", "@group.".length + 1);
+    const secondGroupUsePosition = lastPositionOf(
+      document,
+      "@group.card-base",
+      "@group.".length + 1,
+    );
+    const definitionShape = {
+      file: groups.document.uri.fsPath,
+      line: 0,
+      start: "@group.".length,
+      end: "@group.".length + "card-base".length,
+    };
+    const firstUseShape = {
+      file: document.uri.fsPath,
+      line: 13,
+      start: 2 + "@group.".length,
+      end: 2 + "@group.".length + "card-base".length,
+    };
+    const secondUseShape = {
+      file: document.uri.fsPath,
+      line: 19,
+      start: 2 + "@group.".length,
+      end: 2 + "@group.".length + "card-base".length,
+    };
+    function navigationShapes(locations) {
+      return locations
+        .map((location) => ({
+          file: location.uri.fsPath,
+          line: location.range.start.line,
+          start: location.range.start.character,
+          end: location.range.end.character,
+        }))
+        .sort(
+          (left, right) =>
+            left.file.localeCompare(right.file) ||
+            left.line - right.line ||
+            left.start - right.start ||
+            left.end - right.end,
+        );
+    }
+    /** Shape of `length` bytes starting `delta` characters into `needle`. */
+    function nameShape(target, needle, delta, length) {
+      const offset = host.offsetOf(target.document, needle) + delta;
+      const start = target.document.positionAt(offset);
+      const end = target.document.positionAt(offset + length);
+      return {
+        file: target.document.uri.fsPath,
+        line: start.line,
+        start: start.character,
+        end: end.character,
+      };
+    }
+    function sortShapes(shapes) {
+      return [...shapes].sort(
+        (left, right) =>
+          left.file.localeCompare(right.file) ||
+          left.line - right.line ||
+          left.start - right.start ||
+          left.end - right.end,
+      );
+    }
+    const expectedGroupReferences = [definitionShape, firstUseShape, secondUseShape].sort(
+      (left, right) =>
+        left.file.localeCompare(right.file) ||
+        left.line - right.line ||
+        left.start - right.start ||
+        left.end - right.end,
+    );
+
+    const fromGroupUse = await vscode.commands.executeCommand(
+      "vscode.executeDefinitionProvider",
+      document.uri,
+      groupUsePosition,
+    );
+    t.deepEqual(
+      navigationShapes(fromGroupUse),
+      [definitionShape],
+      "a group use site jumps to the definition name in the styles module",
+    );
+    const fromGroupDefinition = await vscode.commands.executeCommand(
+      "vscode.executeDefinitionProvider",
+      groups.document.uri,
+      groupDefinitionPosition,
+    );
+    t.deepEqual(
+      navigationShapes(fromGroupDefinition),
+      [definitionShape],
+      "a group definition header resolves to its own name bytes",
+    );
+
+    const groupReferences = await vscode.commands.executeCommand(
+      "vscode.executeReferenceProvider",
+      groups.document.uri,
+      groupDefinitionPosition,
+      { includeDeclaration: true },
+    );
+    t.equal(
+      groupReferences.length,
+      3,
+      `expected 3 group references, got ${groupReferences.length}`,
+    );
+    t.deepEqual(
+      navigationShapes(groupReferences),
+      expectedGroupReferences,
+      "the definition returns itself plus both use sites (exact URIs/ranges)",
+    );
+    const groupReferencesFromUse = await vscode.commands.executeCommand(
+      "vscode.executeReferenceProvider",
+      document.uri,
+      groupUsePosition,
+      { includeDeclaration: true },
+    );
+    t.deepEqual(
+      navigationShapes(groupReferencesFromUse),
+      expectedGroupReferences,
+      "a group use site returns the same bidirectional 3-location set",
+    );
+    const groupReferencesFromSecondUse = await vscode.commands.executeCommand(
+      "vscode.executeReferenceProvider",
+      document.uri,
+      secondGroupUsePosition,
+      { includeDeclaration: true },
+    );
+    t.deepEqual(
+      navigationShapes(groupReferencesFromSecondUse),
+      expectedGroupReferences,
+      "the second group use site returns the same set",
+    );
+
+    // Cross-module group rename: edits in two files, applied as one edit.
     const groupRename = await vscode.commands.executeCommand(
       "vscode.executeDocumentRenameProvider",
       document.uri,
@@ -175,6 +312,365 @@ async function run(t) {
       "both use sites were renamed",
     );
     t.match(groups.document.getText(), /@group\.card-common \{/, "the definition was renamed");
+
+    // Composition navigation (ADR-0025): a nested `@group.base` inside a
+    // definition body is a reference of the base, and rename edits it.
+    const composition = await workspace.open(
+      "navigation-composition.cssx",
+      [
+        "@group.base { padding: 4px; }",
+        "@group.derived {",
+        "  @group.base { padding: 8px; }",
+        "  color: black;",
+        "}",
+        ".use { @group.base { margin: 0; } }",
+        "",
+      ].join("\n"),
+    );
+    const compositionDefinition = nameShape(
+      composition,
+      "@group.base { padding: 4px",
+      "@group.".length,
+      "base".length,
+    );
+    const compositionSite = nameShape(
+      composition,
+      "  @group.base { padding: 8px",
+      "  @group.".length,
+      "base".length,
+    );
+    const compositionUse = nameShape(
+      composition,
+      ".use { @group.base",
+      ".use { @group.".length,
+      "base".length,
+    );
+    const compositionCursor = host.positionOf(
+      composition.document,
+      "  @group.base { padding: 8px",
+      "  @group.".length + 1,
+    );
+    const compositionDefinitionCursor = host.positionOf(
+      composition.document,
+      "@group.base { padding: 4px",
+      "@group.".length + 1,
+    );
+    const compositionDefinitionTarget = await vscode.commands.executeCommand(
+      "vscode.executeDefinitionProvider",
+      composition.document.uri,
+      compositionCursor,
+    );
+    t.deepEqual(
+      navigationShapes(compositionDefinitionTarget),
+      [compositionDefinition],
+      "a composition site jumps to the base definition name",
+    );
+    const expectedCompositionReferences = sortShapes([
+      compositionDefinition,
+      compositionSite,
+      compositionUse,
+    ]);
+    for (const [label, cursor] of [
+      ["the base definition", compositionDefinitionCursor],
+      ["the composition site", compositionCursor],
+    ]) {
+      const found = await vscode.commands.executeCommand(
+        "vscode.executeReferenceProvider",
+        composition.document.uri,
+        cursor,
+        { includeDeclaration: true },
+      );
+      t.deepEqual(
+        navigationShapes(found),
+        expectedCompositionReferences,
+        `${label} returns the base, composition site and selector use site`,
+      );
+    }
+    const preparedComposition = await vscode.commands.executeCommand(
+      "vscode.prepareRename",
+      composition.document.uri,
+      compositionCursor,
+    );
+    t.deepEqual(
+      {
+        placeholder: preparedComposition.placeholder,
+        line: preparedComposition.range.start.line,
+        start: preparedComposition.range.start.character,
+        end: preparedComposition.range.end.character,
+      },
+      {
+        placeholder: "base",
+        line: compositionSite.line,
+        start: compositionSite.start,
+        end: compositionSite.end,
+      },
+      "prepareRename from the composition site reports the base name",
+    );
+    const compositionRename = await vscode.commands.executeCommand(
+      "vscode.executeDocumentRenameProvider",
+      composition.document.uri,
+      compositionCursor,
+      "root",
+    );
+    const compositionFiles = editEntries(compositionRename);
+    t.equal(compositionFiles.length, 1, "a local composition rename touches one file");
+    t.equal(
+      compositionFiles[0].edits.length,
+      3,
+      "the composition rename edits the base, the composition site and the use site",
+    );
+    t.equal(
+      await vscode.workspace.applyEdit(compositionRename),
+      true,
+      "the composition rename was rejected",
+    );
+    t.equal(
+      composition.document.getText().split("@group.root").length - 1,
+      3,
+      "all three base occurrences were renamed",
+    );
+
+    // Keyframe navigation mirrors the group contract: the definition header,
+    // `$keyframes.<name>` references and exact `animation-name: <name>` values
+    // resolve through `analysis.keyframes`, locally and across a styles import.
+    const localKeyframes = await workspace.open(
+      "navigation-keyframes.cssx",
+      [
+        "@keyframes pulse { from { opacity: 0; } to { opacity: 1; } }",
+        ".local-uses {",
+        "  animation-name: $keyframes.pulse;",
+        "  animation-name: pulse;",
+        "}",
+        ".shorthand { animation: pulse 1s linear infinite; }",
+        "",
+      ].join("\n"),
+    );
+    const localDefinition = nameShape(
+      localKeyframes,
+      "@keyframes pulse",
+      "@keyframes ".length,
+      "pulse".length,
+    );
+    const localValue = nameShape(
+      localKeyframes,
+      "animation-name: pulse",
+      "animation-name: ".length,
+      "pulse".length,
+    );
+    const localDefinitionPosition = host.positionOf(
+      localKeyframes.document,
+      "@keyframes pulse",
+      "@keyframes ".length + 1,
+    );
+    const localReferencePosition = host.positionOf(
+      localKeyframes.document,
+      "$keyframes.pulse",
+      "$keyframes.".length + 1,
+    );
+    const localValuePosition = host.positionOf(
+      localKeyframes.document,
+      "animation-name: pulse",
+      "animation-name: ".length + 1,
+    );
+    const localCursors = [
+      ["the definition header", localDefinitionPosition],
+      ["the $keyframes reference", localReferencePosition],
+      ["the exact animation-name value", localValuePosition],
+    ];
+    for (const [label, position] of localCursors) {
+      const found = await vscode.commands.executeCommand(
+        "vscode.executeDefinitionProvider",
+        localKeyframes.document.uri,
+        position,
+      );
+      t.deepEqual(
+        navigationShapes(found),
+        [localDefinition],
+        `${label} jumps to the local definition name`,
+      );
+    }
+    const localReferences = sortShapes([
+      localDefinition,
+      nameShape(localKeyframes, "$keyframes.pulse", "$keyframes.".length, "pulse".length),
+      localValue,
+    ]);
+    for (const [label, position] of localCursors) {
+      const found = await vscode.commands.executeCommand(
+        "vscode.executeReferenceProvider",
+        localKeyframes.document.uri,
+        position,
+        { includeDeclaration: true },
+      );
+      t.deepEqual(
+        navigationShapes(found),
+        localReferences,
+        `${label} returns the declaration, $keyframes reference and animation-name value`,
+      );
+    }
+
+    // Rename from the exact animation-name value: prepareRename reports the
+    // value bytes and the edit plan matches the definition path exactly.
+    const preparedValue = await vscode.commands.executeCommand(
+      "vscode.prepareRename",
+      localKeyframes.document.uri,
+      localValuePosition,
+    );
+    t.deepEqual(
+      {
+        placeholder: preparedValue.placeholder,
+        line: preparedValue.range.start.line,
+        start: preparedValue.range.start.character,
+        end: preparedValue.range.end.character,
+      },
+      {
+        placeholder: "pulse",
+        line: localValue.line,
+        start: localValue.start,
+        end: localValue.end,
+      },
+      "prepareRename from the animation-name value reports the value bytes",
+    );
+    function renameShapes(edit) {
+      return editEntries(edit)
+        .map(({ uri, edits }) => ({
+          file: uri.fsPath,
+          edits: edits
+            .map((change) => ({
+              line: change.range.start.line,
+              start: change.range.start.character,
+              end: change.range.end.character,
+              newText: change.newText,
+            }))
+            .sort(
+              (left, right) =>
+                left.line - right.line || left.start - right.start || left.end - right.end,
+            ),
+        }))
+        .sort((left, right) => left.file.localeCompare(right.file));
+    }
+    const renameFromDefinition = await vscode.commands.executeCommand(
+      "vscode.executeDocumentRenameProvider",
+      localKeyframes.document.uri,
+      localDefinitionPosition,
+      "beat",
+    );
+    const renameFromValue = await vscode.commands.executeCommand(
+      "vscode.executeDocumentRenameProvider",
+      localKeyframes.document.uri,
+      localValuePosition,
+      "beat",
+    );
+    t.deepEqual(
+      renameShapes(renameFromValue),
+      renameShapes(renameFromDefinition),
+      "rename from the animation-name value matches the definition plan",
+    );
+    t.equal(
+      renameShapes(renameFromValue).reduce((total, file) => total + file.edits.length, 0),
+      3,
+      "the animation-name rename edits the declaration, $keyframes reference and value",
+    );
+
+    // Cross-module: the definition and an imported `animation-name` value join
+    // the importer's `$keyframes` reference and value in both directions.
+    const motion = await workspace.open(
+      "navigation-motion.cssx",
+      [
+        "@keyframes spin {",
+        "  from { transform: rotate(0deg); }",
+        "  to { transform: rotate(360deg); }",
+        "}",
+        ".spinner { animation-name: spin; }",
+        "",
+      ].join("\n"),
+    );
+    const importedKeyframes = await workspace.open(
+      "navigation-keyframe-entry.cssx",
+      [
+        '@use "./navigation-motion.cssx" styles;',
+        ".page {",
+        "  animation-name: $keyframes.spin;",
+        "}",
+        ".literal { animation-name: spin; }",
+        "",
+      ].join("\n"),
+    );
+    const motionDefinition = nameShape(
+      motion,
+      "@keyframes spin",
+      "@keyframes ".length,
+      "spin".length,
+    );
+    const motionValue = nameShape(
+      motion,
+      "animation-name: spin",
+      "animation-name: ".length,
+      "spin".length,
+    );
+    const importedReference = nameShape(
+      importedKeyframes,
+      "$keyframes.spin",
+      "$keyframes.".length,
+      "spin".length,
+    );
+    const importedValue = nameShape(
+      importedKeyframes,
+      "animation-name: spin",
+      "animation-name: ".length,
+      "spin".length,
+    );
+    const importedCursors = [
+      [
+        "the definition header",
+        motion.document.uri,
+        host.positionOf(motion.document, "@keyframes spin", "@keyframes ".length + 1),
+      ],
+      [
+        "the imported $keyframes reference",
+        importedKeyframes.document.uri,
+        host.positionOf(importedKeyframes.document, "$keyframes.spin", "$keyframes.".length + 1),
+      ],
+      [
+        "the imported animation-name value",
+        importedKeyframes.document.uri,
+        host.positionOf(
+          importedKeyframes.document,
+          "animation-name: spin",
+          "animation-name: ".length + 1,
+        ),
+      ],
+    ];
+    for (const [label, uri, position] of importedCursors) {
+      const found = await vscode.commands.executeCommand(
+        "vscode.executeDefinitionProvider",
+        uri,
+        position,
+      );
+      t.deepEqual(
+        navigationShapes(found),
+        [motionDefinition],
+        `${label} jumps into the defining module`,
+      );
+    }
+    const importedReferences = sortShapes([
+      motionDefinition,
+      motionValue,
+      importedReference,
+      importedValue,
+    ]);
+    for (const [label, uri, position] of importedCursors) {
+      const found = await vscode.commands.executeCommand(
+        "vscode.executeReferenceProvider",
+        uri,
+        position,
+        { includeDeclaration: true },
+      );
+      t.deepEqual(
+        navigationShapes(found),
+        importedReferences,
+        `${label} returns the full cross-module reference set`,
+      );
+    }
 
     // Renaming a token onto an existing name is refused before any edit
     // (CSSX-U04): the name `gap` is already declared, so no WorkspaceEdit is
@@ -497,7 +993,7 @@ async function run(t) {
       "an @runtime token resolves across both direct importers too",
     );
 
-    return "definition/references/rename incl. cross-module group, single-file class/id rename, bidirectional reverse references and 5 refusal paths";
+    return "definition/references/rename incl. cross-module group and keyframe navigation, single-file class/id rename, bidirectional reverse references and 5 refusal paths";
   } finally {
     await workspace.dispose();
   }

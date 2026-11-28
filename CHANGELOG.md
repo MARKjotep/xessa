@@ -4,6 +4,34 @@ All notable changes to Xessa are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). Pre-1.0 syntax changes are called out explicitly.
 
+## [0.1.4] - 2026-11-28
+
+`@xessa/compiler` and `@xessa/cli` `0.1.4` — **not yet published**. The VS Code extension moves to
+`0.1.2` (local VSIX; Marketplace publication still deferred).
+
+### Compiler
+
+- A group definition can compose another group (`@group.base { … }` inside a definition), so shared
+  defaults are written once and flattened into every use site. Composition resolves in the defining
+  module's scope, and selector use sites stay declarations-only
+  ([ADR-0025](docs/decisions/ADR-0025-group-composition.md)).
+- Composition cycles and composition deeper than 64 levels report `XESSA2001` at the offending
+  statement; diamonds and repeated compositions expand in authored order. The canonical formatter
+  round-trips composition blocks and keeps their comments.
+
+### Editor
+
+- Composed group defaults reach use sites: ghost override hints, hover and derived-definition labels
+  compare against the effective composed defaults, and composition sites are labelled separately.
+- Go to Definition, Find All References and rename follow composition sites, so a composed member
+  navigates to its base definition. Completion offers group names inside definition bodies and stays
+  definition-only (no members inside a use-site block).
+- Go to Definition and Find All References work on `@group.<name>` and `@keyframes <name>`
+  declarations, their references and exact `animation-name` values, locally and across `styles`
+  imports; keyframe rename works from an `animation-name` value.
+- Accepting `@group`, `$keyframes.` or an imported `$alias.` reopens the member list immediately, and
+  `@lg+` continues a media alias chain (`@lg+dark`) instead of resetting the value list.
+
 ## [0.1.3] - 2026-11-28
 
 `@xessa/compiler` and `@xessa/cli` `0.1.3` — **not yet published**. The VS Code extension moves to

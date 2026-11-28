@@ -133,6 +133,7 @@ export class XessaController {
         "(",
         "#",
         "!",
+        "+",
         "0",
         "1",
         "2",

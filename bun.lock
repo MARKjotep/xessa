@@ -12,17 +12,17 @@
     },
     "packages/cli": {
       "name": "@xessa/cli",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "bin": {
         "xessa": "./dist/index.js",
       },
       "dependencies": {
-        "@xessa/compiler": "0.1.3",
+        "@xessa/compiler": "0.1.4",
       },
     },
     "packages/compiler": {
       "name": "@xessa/compiler",
-      "version": "0.1.3",
+      "version": "0.1.4",
     },
     "packages/language-service": {
       "name": "@xessa/language-service",
@@ -30,7 +30,7 @@
     },
     "packages/vscode": {
       "name": "xessa",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "devDependencies": {
         "@types/node": "^22",
         "@types/vscode": "^1.85.0",

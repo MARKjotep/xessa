@@ -83,16 +83,24 @@ export function segmentValueTokens(ast: Stylesheet | undefined): Map<number, rea
  * instead of rewritten to `var(--...)` with the consuming build's prefix.
  *
  * Both the base segment and every inline-variant segment are included, matching
- * the IR's per-segment spans.
+ * the IR's per-segment spans. Nested composition overrides (ADR-0025) are
+ * authored inside a definition too, so they are defaults as well and a
+ * `@runtime` reference there is rejected exactly like a direct default.
  */
 export function groupDefaultSegments(ast: Stylesheet | undefined): Set<number> {
   const starts = new Set<number>();
   if (ast === undefined) return starts;
+
+  const addDeclaration = (declaration: Declaration): void => {
+    starts.add(declaration.span.start);
+    for (const variant of declaration.variants) starts.add(variant.span.start);
+  };
+
   for (const item of ast.items) {
     if (item.kind !== "group-definition") continue;
-    for (const declaration of item.declarations) {
-      starts.add(declaration.span.start);
-      for (const variant of declaration.variants) starts.add(variant.span.start);
+    for (const entry of item.body) {
+      if (entry.kind === "declaration") addDeclaration(entry);
+      else for (const declaration of entry.declarations) addDeclaration(declaration);
     }
   }
   return starts;

@@ -29,7 +29,11 @@ import {
 import type { GroupSymbol, GroupVisibility } from "./groups.js";
 import { GROUP_KEYWORD } from "./groups.js";
 import type { KeyframeSymbol } from "./keyframes.js";
-import { KEYFRAMES_KEYWORD, KEYFRAMES_NAMESPACE, keyframeDefinitionAt } from "./keyframes.js";
+import {
+  KEYFRAMES_KEYWORD,
+  KEYFRAMES_NAMESPACE,
+  keyframeDefinitionAt as keyframeHeaderAt,
+} from "./keyframes.js";
 import { dirnamePath, isAbsolutePath, normalizePath, relativeTo } from "./paths.js";
 import { propertyDoc } from "./property-docs.js";
 
@@ -87,10 +91,11 @@ export interface CompletionSuggestion {
    *
    * Accepting a property inserts `property: ` (or `property: ;` with the caret
    * before the semicolon), so the value position is ready for a second list.
-   * The editor adapter maps this to the `editor.action.triggerSuggest` command,
-   * which VS Code runs after the insert or snippet has been applied. Only the
-   * property family sets it: a value, unit, function, colour, selector or setup
-   * item must leave the list closed.
+   * Accepting a namespace item (`$theme.`, `$keyframes.`) or the `@group`
+   * directive writes a member position, so the same list reopens for it. The
+   * editor adapter maps this to the `editor.action.triggerSuggest` command,
+   * which VS Code runs after the insert or snippet has been applied. A value,
+   * unit, function, colour, selector, setup or member item never sets it.
    */
   readonly retriggerSuggest?: boolean;
 }
@@ -2037,6 +2042,39 @@ function findEnclosingGroupBody(analysis: AnalyzeResult, offset: number): SpanLi
   return found;
 }
 
+/**
+ * Whether `offset` sits inside a `@group.<name>` use-site block.
+ *
+ * Composition is a definition-body statement only (ADR-0025), so a `@group.`
+ * name typed inside a use-site block is still invalid and must not offer group
+ * names. A definition body has no enclosing use-site node, so it keeps them.
+ */
+function findEnclosingGroupUseSite(analysis: AnalyzeResult, offset: number): boolean {
+  let found = false;
+  const visit = (node: unknown): void => {
+    if (found) return;
+    const candidate = node as {
+      kind?: string;
+      span?: SpanLike;
+      body?: readonly unknown[];
+      block?: readonly unknown[];
+    };
+    if (
+      candidate.kind === "group-use-site" &&
+      candidate.span !== undefined &&
+      offset >= candidate.span.start &&
+      offset <= candidate.span.end
+    ) {
+      found = true;
+      return;
+    }
+    for (const child of candidate.body ?? []) visit(child);
+    for (const child of candidate.block ?? []) visit(child);
+  };
+  for (const item of analysis.ast.items) visit(item);
+  return found;
+}
+
 function findEnclosingSetup(analysis: AnalyzeResult, offset: number): SpanLike | undefined {
   for (const item of analysis.ast.items) {
     if (item.kind === "setup" && offset >= item.span.start && offset <= item.span.end)
@@ -2184,16 +2222,21 @@ function keyframeCompletion(
   };
 }
 
-/** Cursor result for a `@group.<name>` definition or use site. */
+/** Cursor result for a `@group.<name>` definition, use site or composition site. */
 export interface GroupCursor {
-  readonly site: "definition" | "use-site";
+  /**
+   * `definition` is a top-level header, `use-site` a block inside a rule, and
+   * `composition` a nested `@group.<base> { … }` inside a definition body
+   * (ADR-0025). The latter two share {@link useSite}.
+   */
+  readonly site: "definition" | "use-site" | "composition";
   readonly name: string;
   readonly nameRange: Range;
   /** Whole `@group.<name>` keyword, the hover range. */
   readonly keywordRange: Range;
   /** Authored definition node when the cursor is on a definition name. */
   readonly definition?: GroupDefinition;
-  /** Authored use-site node when the cursor is on a use-site member. */
+  /** Authored use-site or composition node for the non-definition sites. */
   readonly useSite?: GroupUseSite;
 }
 
@@ -2204,6 +2247,10 @@ export interface GroupCursor {
  * `includeKeyword` so the whole `@group.<name>` span (the `@group` word and the
  * dot included) resolves to the construct instead of falling through to the
  * media-alias scanner.
+ *
+ * A nested `@group.<base> { … }` inside a definition body (ADR-0025) reports
+ * `site: "composition"` so hover can label it as such. The definition header is
+ * checked first, so a cursor on `@group.derived` never resolves to a body.
  */
 export function groupAt(
   analysis: AnalyzeResult,
@@ -2218,7 +2265,7 @@ export function groupAt(
   const cursorOf = (
     span: SpanLike,
     name: string,
-    site: "definition" | "use-site",
+    site: "definition" | "use-site" | "composition",
     node: GroupDefinition | GroupUseSite,
   ): GroupCursor => {
     const start = span.start + GROUP_KEYWORD.length;
@@ -2240,7 +2287,7 @@ export function groupAt(
   }
 
   let found: GroupCursor | undefined;
-  const visit = (node: unknown): void => {
+  const visit = (node: unknown, inDefinition: boolean): void => {
     if (found !== undefined) return;
     const candidate = node as {
       kind?: string;
@@ -2249,21 +2296,50 @@ export function groupAt(
       body?: readonly unknown[];
       block?: readonly unknown[];
     };
+    if (candidate.kind === "group-definition") {
+      for (const child of candidate.body ?? []) visit(child, true);
+      return;
+    }
     if (
       candidate.kind === "group-use-site" &&
       candidate.name !== undefined &&
       candidate.span !== undefined
     ) {
       if (inName(candidate.span, candidate.name)) {
-        found = cursorOf(candidate.span, candidate.name, "use-site", node as GroupUseSite);
+        found = cursorOf(
+          candidate.span,
+          candidate.name,
+          inDefinition ? "composition" : "use-site",
+          node as GroupUseSite,
+        );
       }
       return;
     }
-    for (const child of candidate.body ?? []) visit(child);
-    for (const child of candidate.block ?? []) visit(child);
+    for (const child of candidate.body ?? []) visit(child, inDefinition);
+    for (const child of candidate.block ?? []) visit(child, inDefinition);
   };
-  for (const item of analysis.ast.items) visit(item);
+  for (const item of analysis.ast.items) visit(item, false);
   return found;
+}
+
+/**
+ * Definition target for a `@group.<name>` definition or use site.
+ *
+ * Resolution goes through `analysis.groups` exactly like hover and rename, so a
+ * use site in a `styles`-imported module jumps into the defining module, a
+ * shadowed name jumps to the local definition and an ambiguous or unknown name
+ * produces no target. Name ranges are the rename-addressable bytes (`card` in
+ * `@group.card`), never the whole keyword.
+ */
+export function groupDefinitionAt(
+  analysis: AnalyzeResult,
+  offset: number,
+): DefinitionTarget | undefined {
+  const cursor = groupAt(analysis, offset);
+  if (cursor === undefined) return undefined;
+  const entry = analysis.groups.find((candidate) => candidate.name === cursor.name);
+  if (entry === undefined || entry.kind !== "resolved") return undefined;
+  return { file: entry.symbol.file, name: entry.symbol.name, range: entry.symbol.declaration };
 }
 
 /** Base property names the use-site block repeats from the definition. */
@@ -2278,12 +2354,20 @@ function groupOverrides(useSite: GroupUseSite, symbol: GroupSymbol): readonly st
   return overrides;
 }
 
-/** Hover markdown for a group definition or use site (analysis, never compilation). */
+/** Hover markdown for a group definition, use site or composition site. */
 function groupHover(analysis: AnalyzeResult, cursor: GroupCursor): HoverContent {
   const range = cursor.keywordRange;
   const title = `@group.${cursor.name}`;
   if (cursor.site === "definition") {
-    const declarations = cursor.definition?.declarations ?? [];
+    // Effective defaults include composition (ADR-0025). A duplicate later
+    // definition is not the resolve target, so it keeps its authored direct
+    // declarations instead of borrowing the first definition's expansion.
+    const entry = analysis.groups.find((candidate) => candidate.name === cursor.name);
+    const composed =
+      entry !== undefined &&
+      entry.kind === "resolved" &&
+      sameRange(entry.symbol.declaration, cursor.nameRange);
+    const declarations = composed ? entry.symbol.defaults : (cursor.definition?.declarations ?? []);
     const lines = [`**${title}** — group definition`, ""];
     if (declarations.length === 0) {
       lines.push("_No default declarations; the group is inert._");
@@ -2316,17 +2400,22 @@ function groupHover(analysis: AnalyzeResult, cursor: GroupCursor): HoverContent 
     };
   }
 
+  const composition = cursor.site === "composition";
   const overrides =
     cursor.useSite === undefined ? [] : groupOverrides(cursor.useSite, entry.symbol);
   const lines = [
-    `**${title}** — group use site`,
+    `**${title}** — ${composition ? "group composition" : "group use site"}`,
     "",
     `Defined in ${groupModuleLabel(analysis, entry.symbol.file)}.`,
     "",
     ...groupDefaultSection(entry.symbol.defaults),
   ];
   if (overrides.length > 0) {
-    lines.push("", "**Overrides at this use site**", ...overrides.map((name) => `- \`${name}\``));
+    lines.push(
+      "",
+      composition ? "**Overrides in this composition**" : "**Overrides at this use site**",
+      ...overrides.map((name) => `- \`${name}\``),
+    );
   }
   return { markdown: lines.join("\n"), range };
 }
@@ -2383,7 +2472,7 @@ function renameGroup(cursor: GroupCursor, newName: string, analysis: AnalyzeResu
   };
 }
 
-/** Cursor result for a `@keyframes <name>` definition or `$keyframes.<name>` reference. */
+/** Cursor result for a `@keyframes <name>` definition, `$keyframes.<name>` reference or exact `animation-name: <name>` value. */
 export interface KeyframeCursor {
   readonly site: "definition" | "reference";
   readonly name: string;
@@ -2395,12 +2484,15 @@ export interface KeyframeCursor {
 }
 
 /**
- * `@keyframes <name>` definition or `$keyframes.<name>` reference under the cursor.
+ * `@keyframes <name>` definition, `$keyframes.<name>` reference or exact
+ * `animation-name: <name>` value under the cursor.
  *
  * Definitions come from top-level native at-rule spans; references come from the
  * same `$` scanner the token intelligence uses, filtered to the built-in
- * `keyframes` namespace. Only the current document is scanned here; rename also
- * edits references attributed in other visible modules.
+ * `keyframes` namespace. An exact `animation-name` value is resolved through
+ * `analysis.keyframes` attribution, not by name text. Only the current document
+ * is scanned here; rename also edits references attributed in other visible
+ * modules.
  */
 export function keyframeAt(
   text: string,
@@ -2413,7 +2505,7 @@ export function keyframeAt(
 
   for (const item of analysis.ast.items) {
     if (item.kind !== "native-at-rule") continue;
-    const definition = keyframeDefinitionAt(item, text, analysis.lineStarts);
+    const definition = keyframeHeaderAt(item, text, analysis.lineStarts);
     if (definition === undefined || !contains(definition.range)) continue;
     return {
       site: "definition",
@@ -2448,13 +2540,15 @@ export function keyframeAt(
   // Match the whole authored construct from raw text so the `keyframes`
   // namespace word itself resolves exactly like the `$` and name parts.
   const textual = keyframeReferenceFromText(text, offset);
-  if (textual === undefined) return undefined;
-  return {
-    site: "reference",
-    name: textual.name,
-    nameRange: rangeAt(analysis.lineStarts, textual.nameStart, textual.end),
-    keywordRange: rangeAt(analysis.lineStarts, textual.start, textual.end),
-  };
+  if (textual !== undefined) {
+    return {
+      site: "reference",
+      name: textual.name,
+      nameRange: rangeAt(analysis.lineStarts, textual.nameStart, textual.end),
+      keywordRange: rangeAt(analysis.lineStarts, textual.start, textual.end),
+    };
+  }
+  return animationNameKeyframeAt(analysis, offset);
 }
 
 /** Plain-identifier keyframe names, matching the compiler's registration rule. */
@@ -2512,7 +2606,68 @@ function insideUrl(text: string, offset: number): boolean {
   return depth > 0;
 }
 
-/** Hover markdown for a keyframe definition or `$keyframes.<name>` reference. */
+/**
+ * Keyframe definition target for an `@keyframes <name>` header,
+ * `$keyframes.<name>` reference or exact `animation-name: <name>` value.
+ *
+ * Resolution goes through `analysis.keyframes` exactly like hover and rename:
+ * a use site in a `styles`-imported module jumps into the defining module, a
+ * shadowed name jumps to the local definition, and an ambiguous, unknown or
+ * token-only-imported name produces no target. A later duplicate header is not
+ * addressable, matching rename. The returned range is the rename-addressable
+ * name bytes (`spin`), never the whole keyword or property.
+ */
+export function keyframeDefinitionAt(
+  text: string,
+  offset: number,
+  analysis: AnalyzeResult,
+): DefinitionTarget | undefined {
+  const cursor = keyframeAt(text, offset, analysis);
+  if (cursor === undefined) return undefined;
+  const entry = analysis.keyframes.find((candidate) => candidate.name === cursor.name);
+  if (entry === undefined || entry.kind !== "resolved") return undefined;
+  // The first definition wins: a later duplicate header has the same name but
+  // a different range, exactly the cursor rename refuses.
+  if (cursor.site === "definition" && !sameRange(cursor.nameRange, entry.symbol.declaration)) {
+    return undefined;
+  }
+  return { file: entry.symbol.file, name: entry.symbol.name, range: entry.symbol.declaration };
+}
+
+/**
+ * Keyframe reference cursor for an exact `animation-name: <name>` value under
+ * the cursor in the analyzed document.
+ *
+ * Values are attributed by `collectKeyframeVisibility`, the same ownership
+ * rename edits, so the `animation` shorthand, comma-separated values, strings
+ * and unknown or ambiguous names never produce a cursor even when their text
+ * matches a visible definition. Both ranges are the value bytes, so hover,
+ * prepareRename and rename address the name exactly like `$keyframes.<name>`.
+ */
+function animationNameKeyframeAt(
+  analysis: AnalyzeResult,
+  offset: number,
+): KeyframeCursor | undefined {
+  const file = normalizePath(analysis.path);
+  for (const entry of analysis.keyframes) {
+    // Only a resolved scope attributes an `animation-name` value to a symbol,
+    // so an ambiguous name has no cursor here.
+    if (entry.kind !== "resolved") continue;
+    for (const declaration of entry.symbol.animationNames) {
+      if (normalizePath(declaration.file) !== file) continue;
+      if (!rangeContains(analysis, declaration.value, offset)) continue;
+      return {
+        site: "reference",
+        name: entry.symbol.name,
+        nameRange: declaration.value,
+        keywordRange: declaration.value,
+      };
+    }
+  }
+  return undefined;
+}
+
+/** Hover markdown for a keyframe definition, `$keyframes.<name>` reference or exact `animation-name` value. */
 function keyframeHover(analysis: AnalyzeResult, cursor: KeyframeCursor): HoverContent {
   const range = cursor.keywordRange;
   if (cursor.site === "definition") {
@@ -2638,6 +2793,31 @@ function renameKeyframe(
  */
 const DECLARATION_PROPERTY_PATTERN = /^(--[A-Za-z0-9_-]+|-?[A-Za-z][A-Za-z0-9-]*)$/;
 
+/**
+ * Offset of the `@` that starts a media-alias chain ending at `offset`.
+ *
+ * `+` is not a word character, so the default scan loses `@lg+`. A chain is only
+ * recognised when its first segment names a visible media alias, which keeps
+ * `@group.card+`, `calc(1+2)` and selector combinators out of the media state.
+ * The returned word is the chain without the leading `@` (`lg+`, `lg+dark+`).
+ */
+function mediaChainAt(text: string, offset: number, analysis: AnalyzeResult): string | undefined {
+  let start = offset;
+  while (start > 0 && /[A-Za-z0-9_@.-]/.test(text[start - 1] ?? "")) start -= 1;
+  // Step over `+` separators inside the run, which the class above excludes.
+  while (start > 0 && text[start - 1] === "+") {
+    start -= 1;
+    while (start > 0 && /[A-Za-z0-9_@.-]/.test(text[start - 1] ?? "")) start -= 1;
+  }
+  const run = text.slice(start, offset);
+  if (!run.startsWith("@") || !run.includes("+")) return undefined;
+  const word = run.slice(1);
+  const first = word.split("+")[0] ?? "";
+  if (first === "") return undefined;
+  if (!analysis.mediaAliases.some((alias) => alias.name === first)) return undefined;
+  return word;
+}
+
 /** Detect the completion context at `offset`. */
 export function contextAt(
   text: string,
@@ -2651,6 +2831,14 @@ export function contextAt(
       return { kind: "import-path", typed: text.slice(stringStart + 1, offset) };
     }
     return { kind: "none" };
+  }
+
+  // `@lg+` / `@lg+dark+` is a media alias chain: the `+` is not a word
+  // character, so the ordinary scan would stop after it and lose the context.
+  // The chain keeps the existing `directive` shape with `word` = `lg+…`.
+  const chain = mediaChainAt(text, offset, analysis);
+  if (chain !== undefined) {
+    return { kind: "directive", word: chain, inSelector: braceDepthAt(text, offset) > 0 };
   }
 
   const { word } = scanBackWord(text, offset);
@@ -2801,6 +2989,69 @@ export function contextAt(
 
   if (word.startsWith("@")) return { kind: "directive", word: word.slice(1), inSelector: false };
   return { kind: "none" };
+}
+
+/**
+ * Media type candidates (`all`, `print`, `screen`, `speech`). A query may carry
+ * only one media type, so a chain that already contains one hides the rest.
+ */
+const MEDIA_TYPES: ReadonlySet<string> = new Set(["all", "print", "screen", "speech"]);
+
+/** Whether an alias condition is a `not`/`only`-qualified query. */
+function isQualifiedCondition(condition: string): boolean {
+  return /^(not|only)\b/i.test(condition.trim());
+}
+
+/** Whether an alias condition is a bare media type. */
+function isMediaTypeCondition(condition: string): boolean {
+  return MEDIA_TYPES.has(condition.trim().toLowerCase());
+}
+
+/**
+ * Continuation items for an `@alias+` chain (`@lg+`, `@lg+dark+`).
+ *
+ * Only the typed continuation segment is replaced, never the whole chain, and
+ * the inserted text is bare (`dark`) so accepting `@lg+` + `dark` yields
+ * `@lg+dark` without a second `@`. The label keeps the `@` for readability and
+ * `filterText` mirrors the inserted text. Used aliases are hidden, `not`/`only`
+ * aliases cannot be combined, and a second media type is not offered. A chain
+ * that already carries a `not`/`only` alias has no valid continuation at all.
+ */
+function mediaContinuation(
+  offset: number,
+  word: string,
+  analysis: AnalyzeResult,
+): CompletionResult {
+  const segments = word.split("+");
+  const typed = segments[segments.length - 1] ?? "";
+  const used = segments.slice(0, -1).filter((segment) => segment !== "");
+  const replaceStart = offset - typed.length;
+  const usedAliases = used.map((name) =>
+    analysis.mediaAliases.find((alias) => alias.name === name),
+  );
+  if (usedAliases.some((alias) => alias !== undefined && isQualifiedCondition(alias.condition))) {
+    return { items: [], replaceStart, replaceEnd: offset };
+  }
+  const chainHasMediaType = usedAliases.some(
+    (alias) => alias !== undefined && isMediaTypeCondition(alias.condition),
+  );
+  const items = analysis.mediaAliases
+    .filter((alias) => {
+      if (used.includes(alias.name)) return false;
+      if (typed !== "" && !alias.name.startsWith(typed)) return false;
+      if (isQualifiedCondition(alias.condition)) return false;
+      if (chainHasMediaType && isMediaTypeCondition(alias.condition)) return false;
+      return true;
+    })
+    .map<CompletionSuggestion>((alias) => ({
+      label: `@${alias.name}`,
+      kind: "alias",
+      detail: `${alias.condition} — ${alias.layer}`,
+      insertText: alias.name,
+      filterText: alias.name,
+      replaceStart,
+    }));
+  return { items, replaceStart, replaceEnd: offset };
 }
 
 function aliasItem(alias: {
@@ -3026,10 +3277,12 @@ function classDetail(occurrence: ClassOccurrence): string | undefined {
  * Context-aware completion at one document offset.
  *
  * The registered trigger characters are `@`, `$`, `.`, `:`, `/`, `&`, `(`,
- * `#`, `!` and the digits `0`–`9`; property, value and selector contexts also
- * complete without a trigger. A digit is a trigger because the unit list only
- * exists once a number is typed (`margin: 1` → `1rem`): no other trigger fires
- * at that position and the editor does not reopen the list on its own.
+ * `#`, `!`, `+` and the digits `0`–`9`; property, value and selector contexts
+ * also complete without a trigger. A digit is a trigger because the unit list
+ * only exists once a number is typed (`margin: 1` → `1rem`): no other trigger
+ * fires at that position and the editor does not reopen the list on its own.
+ * `+` continues an `@alias+` media chain (`@lg+` → `@lg+dark`); the adapter
+ * guards that trigger so selectors and arithmetic never open media aliases.
  *
  * Two value states replace text in front of the typed word and say so per item
  * (`replaceStart`): the call opener `(` (A50) and the colour literal `#` (A51).
@@ -3054,6 +3307,11 @@ export function completionsAt(
 
   switch (context.kind) {
     case "directive": {
+      // A `+` after an alias is a media chain (`@lg+`, `@lg+dark+`): suggest the
+      // remaining combinable aliases and replace only the typed segment.
+      if (context.word.includes("+")) {
+        return mediaContinuation(offset, context.word, analysis);
+      }
       const replaceStart = offset - context.word.length - 1;
       const aliases = analysis.mediaAliases
         .filter((alias) => context.word === "" || alias.name.startsWith(context.word))
@@ -3073,6 +3331,8 @@ export function completionsAt(
         : [];
       // A group statement is legal at the top level (definition) and inside a
       // rule body (use site), so it is offered in both directive lists.
+      // Accepting it writes `@group.`; the member list then reopens so the
+      // author can pick a name without retyping the dot.
       const groupDirective =
         context.word === "" || GROUP_DIRECTIVE.name.startsWith(context.word)
           ? [
@@ -3083,6 +3343,7 @@ export function completionsAt(
                 documentation: GROUP_DIRECTIVE.documentation,
                 insertText: `${GROUP_KEYWORD}`,
                 sortText: `0-${GROUP_DIRECTIVE.name}`,
+                retriggerSuggest: true,
               },
             ]
           : [];
@@ -3099,6 +3360,10 @@ export function completionsAt(
     }
     case "group-member": {
       const replaceStart = offset - context.word.length;
+      // Composition is a definition-body statement (ADR-0025). Inside a
+      // use-site block a nested `@group.*` is still XESSA1001, so that position
+      // offers no group names at all.
+      if (findEnclosingGroupUseSite(analysis, offset)) return result([], replaceStart);
       const items: CompletionSuggestion[] = [];
       for (const entry of analysis.groups) {
         const item = groupItem(analysis, entry, context.word);
@@ -3116,6 +3381,8 @@ export function completionsAt(
       }
       // The built-in `keyframes` namespace (SPECIFICATION.md §6.4) completes
       // beside the imported aliases so every namespace is reachable from `$`.
+      // Accepting a namespace writes `<alias>.`; the member list reopens so the
+      // author picks a member without retyping the dot.
       if (KEYFRAMES_NAMESPACE.startsWith(context.word)) {
         items.push({
           label: `$${KEYFRAMES_NAMESPACE}.`,
@@ -3124,6 +3391,7 @@ export function completionsAt(
           documentation:
             "A top-level `@keyframes <name>` block registers `<name>` here; reference it as `$keyframes.<name>` in a declaration value (SPECIFICATION.md §6.4).",
           insertText: `$${KEYFRAMES_NAMESPACE}.`,
+          retriggerSuggest: true,
         });
       }
       for (const imported of analysis.imports) {
@@ -3131,11 +3399,13 @@ export function completionsAt(
         // The label carries the sigil like the `$keyframes.` item beside it:
         // the shared range covers the typed `$`, so an item inserted without it
         // wrote `theme.` (an invalid reference) and deleted the author's `$`.
+        // Accepting the namespace reopens the suggest list for its members.
         items.push({
           label: `$${imported.alias}.`,
           kind: "token",
           detail: `namespace for ${imported.specifier}`,
           insertText: `$${imported.alias}.`,
+          retriggerSuggest: true,
         });
       }
       return result(items, replaceStart);
@@ -3916,18 +4186,105 @@ export function referencesToToken(
   return occurrences;
 }
 
-/** Definition targets for the token under the cursor. */
+/**
+ * Declaration (when requested and authored here) plus every `@group.<name>`
+ * use site authored in this module that resolves to `target`.
+ *
+ * The analyzed document's scope decides inclusion, never a name match: aliases
+ * do not apply to groups, but local shadows, ambiguous style imports and
+ * unreachable definitions are excluded because their resolution names a
+ * different symbol or none at all. The scan runs one file at a time; the
+ * provider feeds every workspace module through it, so a matching definition
+ * still collects its importers.
+ */
+export function referencesToGroup(
+  analysis: AnalyzeResult,
+  target: DefinitionTarget,
+  options: { readonly includeDeclaration?: boolean } = {},
+): readonly TokenOccurrence[] {
+  const entry = analysis.groups.find((candidate) => candidate.name === target.name);
+  if (entry === undefined || entry.kind !== "resolved") return [];
+  const symbol = entry.symbol;
+  if (normalizePath(symbol.file) !== normalizePath(target.file)) return [];
+  if (!sameRange(symbol.declaration, target.range)) return [];
+
+  const occurrences: TokenOccurrence[] = [];
+  const file = normalizePath(analysis.path);
+  if (options.includeDeclaration !== false && file === normalizePath(symbol.file)) {
+    occurrences.push({ file: symbol.file, name: symbol.name, range: symbol.declaration });
+  }
+  // Each file contributes only its own authored use sites; `symbol.references`
+  // spans the whole styles closure, so callers scanning every workspace file
+  // would otherwise add the same importer twice.
+  for (const reference of symbol.references) {
+    if (normalizePath(reference.file) !== file) continue;
+    occurrences.push({ file: reference.file, name: symbol.name, range: reference.name });
+  }
+  return occurrences;
+}
+
+/**
+ * Declaration (when requested and authored here) plus every `$keyframes.<name>`
+ * reference and exact `animation-name: <name>` value authored in this module
+ * that resolves to `target`.
+ *
+ * The analyzed document's scope decides inclusion, never a name match: local
+ * shadows, ambiguous style imports, token-only imports and unreachable
+ * definitions are excluded because their resolution names a different symbol or
+ * none at all. The scan runs one file at a time; the provider feeds every
+ * workspace module through it, so a matching definition still collects its
+ * importers in both directions.
+ */
+export function referencesToKeyframe(
+  analysis: AnalyzeResult,
+  target: DefinitionTarget,
+  options: { readonly includeDeclaration?: boolean } = {},
+): readonly TokenOccurrence[] {
+  const entry = analysis.keyframes.find((candidate) => candidate.name === target.name);
+  if (entry === undefined || entry.kind !== "resolved") return [];
+  const symbol = entry.symbol;
+  if (normalizePath(symbol.file) !== normalizePath(target.file)) return [];
+  if (!sameRange(symbol.declaration, target.range)) return [];
+
+  const occurrences: TokenOccurrence[] = [];
+  const file = normalizePath(analysis.path);
+  if (options.includeDeclaration !== false && file === normalizePath(symbol.file)) {
+    occurrences.push({ file: symbol.file, name: symbol.name, range: symbol.declaration });
+  }
+  // Each file contributes only its own authored use sites; both lists span the
+  // whole styles closure, so callers scanning every workspace file would
+  // otherwise add the same importer twice.
+  for (const reference of symbol.references) {
+    if (normalizePath(reference.file) !== file) continue;
+    occurrences.push({ file: reference.file, name: symbol.name, range: reference.name });
+  }
+  for (const declaration of symbol.animationNames) {
+    if (normalizePath(declaration.file) !== file) continue;
+    occurrences.push({ file: declaration.file, name: symbol.name, range: declaration.value });
+  }
+  return occurrences;
+}
+
+/** Definition targets for the token, group or keyframe under the cursor. */
 export function definitionsAt(
   text: string,
   offset: number,
   options: IntelligenceOptions,
 ): readonly DefinitionTarget[] {
+  // Tokens stay first: a `$token` inside a `@group` body still resolves to its
+  // declaration, then groups, then keyframes. Only a non-token cursor falls
+  // through each narrower resolution.
   const token = tokenAt(text, offset, options.analysis);
-  if (token === undefined) return [];
-  return [{ file: token.symbol.file, name: token.symbol.name, range: token.symbol.declaration }];
+  if (token !== undefined) {
+    return [{ file: token.symbol.file, name: token.symbol.name, range: token.symbol.declaration }];
+  }
+  const group = groupDefinitionAt(options.analysis, offset);
+  if (group !== undefined) return [group];
+  const keyframe = keyframeDefinitionAt(text, offset, options.analysis);
+  return keyframe === undefined ? [] : [keyframe];
 }
 
-/** References (declaration plus usages) for a token; module members stay read-only. */
+/** References (declaration plus usages) for a token, group or keyframe. */
 export function referencesAt(
   text: string,
   offset: number,
@@ -3935,7 +4292,12 @@ export function referencesAt(
 ): readonly DefinitionTarget[] {
   const { analysis } = options;
   const token = tokenAt(text, offset, analysis);
-  if (token === undefined) return [];
+  if (token === undefined) {
+    const group = groupDefinitionAt(analysis, offset);
+    if (group !== undefined) return referencesToGroup(analysis, group);
+    const keyframe = keyframeDefinitionAt(text, offset, analysis);
+    return keyframe === undefined ? [] : referencesToKeyframe(analysis, keyframe);
+  }
   const { symbol } = token;
   const targets: DefinitionTarget[] = [
     { file: symbol.file, name: symbol.name, range: symbol.declaration },

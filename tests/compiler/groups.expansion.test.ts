@@ -4,7 +4,11 @@ import { compile, compileProject } from "../../packages/compiler/src/index.ts";
 import type { RuleIr, StylesheetIr } from "../../packages/compiler/src/ir/index.ts";
 import { expandGroupUseSites, lower } from "../../packages/compiler/src/lowering/index.ts";
 import { buildModuleGraph } from "../../packages/compiler/src/resolver/index.ts";
-import type { ModuleGraph, ModuleRecord } from "../../packages/compiler/src/resolver/index.ts";
+import type {
+  GroupResolution,
+  ModuleGraph,
+  ModuleRecord,
+} from "../../packages/compiler/src/resolver/index.ts";
 import type { Stylesheet } from "../../packages/compiler/src/types/ast.ts";
 import type { Diagnostic } from "../../packages/compiler/src/types/diagnostics.ts";
 import type {
@@ -74,7 +78,13 @@ async function expandSource(
   const host = createHost({ ...files, [file]: source });
   const graph = await buildModuleGraph([file], host, OPTIONS);
   const record = moduleAt(graph, file);
-  const expanded = expandGroupUseSites(record.ast, { module: file, groups: record.groups });
+  const scopes = new Map<string, ReadonlyMap<string, GroupResolution>>();
+  for (const [module, moduleRecord] of graph.modules) scopes.set(module, moduleRecord.groups);
+  const expanded = expandGroupUseSites(record.ast, {
+    module: file,
+    groups: record.groups,
+    scopes,
+  });
   const lowered = lower(expanded.ast, { file });
   for (const diagnostic of lowered.diagnostics) {
     if (diagnostic.code === "XESSA1001" || diagnostic.code === "XESSA3001") {
@@ -663,6 +673,363 @@ describe("groups: authored declaration shapes", () => {
     const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
     expect(result.diagnostics).toEqual([]);
     expect(result.css).toBe(".panel{padding:12px !important;padding:20px;}");
+  });
+});
+
+describe("groups: composition inside definitions (ADR-0025)", () => {
+  test("a local composition expands its overrides in authored order with the cascade intact", async () => {
+    const source = [
+      "@group.base {",
+      "  padding: 12px;",
+      "  color: black;",
+      "}",
+      "@group.card {",
+      "  @group.base {",
+      "    padding: 16px;",
+      "  }",
+      "  margin: 0;",
+      "  @group.base {",
+      "    color: navy;",
+      "  }",
+      "}",
+      ".panel {",
+      "  @group.card {",
+      "    padding: 20px;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    expect(result.diagnostics).toEqual([]);
+    // Every composed line and every override stays in authored order; nothing is
+    // deduplicated even though `base` is composed twice.
+    expect(result.css).toBe(
+      ".panel{padding:12px;color:black;padding:16px;margin:0;padding:12px;color:black;color:navy;padding:20px;}",
+    );
+  });
+
+  test("transitive composition resolves through each definition's own body", async () => {
+    const source = [
+      "@group.a { padding: 1px; }",
+      "@group.b {",
+      "  @group.a { margin: 2px; }",
+      "  color: blue;",
+      "}",
+      "@group.c {",
+      "  @group.b { border: 1px solid; }",
+      "}",
+      ".x {",
+      "  @group.c { gap: 3px; }",
+      "}",
+      "",
+    ].join("\n");
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    expect(result.diagnostics).toEqual([]);
+    expect(result.css).toBe(".x{padding:1px;margin:2px;color:blue;border:1px solid;gap:3px;}");
+  });
+
+  test("a styles-imported base resolves in the defining module, not the consumer's shadow", async () => {
+    const root = `${WORKSPACE}/composition-module`;
+    const entry = `${root}/entry.cssx`;
+    const definer = `${root}/definer.cssx`;
+    const entrySource = [
+      '@use "./definer.cssx" styles;',
+      "@group.base {",
+      "  padding: 99px;",
+      "}",
+      ".panel {",
+      "  @group.card {",
+      "    gap: 1px;",
+      "  }",
+      "}",
+      ".other {",
+      "  @group.base {",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const definerSource = [
+      "@group.base {",
+      "  padding: 8px;",
+      "}",
+      "@group.card {",
+      "  @group.base {",
+      "    color: red;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+
+    const result = await buildProject({ [entry]: entrySource, [definer]: definerSource }, root);
+    expect(result.diagnostics).toEqual([]);
+    // `card` is defined in the imported module, so its composition of `base`
+    // uses that module's scope; the entry's `base` shadow cannot rebind it.
+    expect(result.css).toBe(".panel{padding:8px;color:red;gap:1px;}.other{padding:99px;}");
+  });
+
+  test("a composition cycle is XESSA2001 with the chain and only that statement is omitted", async () => {
+    const source = [
+      "@group.a {",
+      "  @group.b {",
+      "    color: red;",
+      "  }",
+      "  padding: 1px;",
+      "}",
+      "@group.b {",
+      "  @group.a {",
+      "    margin: 2px;",
+      "  }",
+      "}",
+      ".x {",
+      "  @group.a {",
+      "    gap: 3px;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    expect(codes(result.diagnostics)).toEqual(["XESSA2001"]);
+    const diagnostic = result.diagnostics[0];
+    if (diagnostic === undefined) throw new Error("missing cycle diagnostic");
+    expect(diagnostic.message).toContain("Cyclic group composition");
+    expect(diagnostic.message).toContain("@group.a -> @group.b -> @group.a");
+    expect(source.slice(diagnostic.span.start, diagnostic.span.end)).toBe(
+      "@group.a {\n    margin: 2px;\n  }",
+    );
+    // The closing statement is omitted; every other line still expands.
+    expect(result.css).toBe(".x{color:red;padding:1px;gap:3px;}");
+  });
+
+  test("composition depth is capped at 64 without a stack overflow", async () => {
+    const lines: string[] = [];
+    for (let index = 0; index < 65; index += 1) {
+      lines.push(`@group.g${index} {`);
+      if (index === 0) lines.push("  padding: 1px;");
+      lines.push(`  @group.g${index + 1} {`);
+      lines.push("  }");
+      lines.push("}");
+    }
+    lines.push("@group.g65 {");
+    lines.push("  color: red;");
+    lines.push("}");
+    lines.push(".x {");
+    lines.push("  @group.g0 {");
+    lines.push("  }");
+    lines.push("}");
+    const source = `${lines.join("\n")}\n`;
+
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    expect(codes(result.diagnostics)).toEqual(["XESSA2001"]);
+    expect(result.diagnostics[0]?.message).toContain("depth limit of 64");
+    expect(result.css).toBe(".x{padding:1px;}");
+  });
+
+  test("an unknown nested composition is XESSA2001 and only that statement is omitted", async () => {
+    const source = [
+      "@group.card {",
+      "  @group.missing {",
+      "    color: red;",
+      "  }",
+      "  padding: 1px;",
+      "}",
+      ".x {",
+      "  @group.card {",
+      "    gap: 3px;",
+      "  }",
+      "}",
+      ".y {",
+      "  @group.card {",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    // The same broken nested statement reached from two use sites reports once.
+    expect(codes(result.diagnostics)).toEqual(["XESSA2001"]);
+    const diagnostic = result.diagnostics[0];
+    if (diagnostic === undefined) throw new Error("missing unknown diagnostic");
+    expect(diagnostic.message).toContain('Unknown group "@group.missing"');
+    expect(source.slice(diagnostic.span.start, diagnostic.span.end)).toBe(
+      "@group.missing {\n    color: red;\n  }",
+    );
+    expect(result.css).toBe(".x{padding:1px;gap:3px;}.y{padding:1px;}");
+  });
+
+  test("an ambiguous nested composition names both modules and stays inert", async () => {
+    const root = `${WORKSPACE}/composition-ambiguous`;
+    const entry = `${root}/entry.cssx`;
+    const entrySource = [
+      '@use "./a.cssx" styles;',
+      '@use "./b.cssx" styles;',
+      "@group.card {",
+      "  @group.base {",
+      "    color: red;",
+      "  }",
+      "  padding: 1px;",
+      "}",
+      ".x {",
+      "  @group.card {",
+      "    gap: 3px;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+
+    const result = await buildProject(
+      {
+        [entry]: entrySource,
+        [`${root}/a.cssx`]: "@group.base {\n  padding: 8px;\n}\n",
+        [`${root}/b.cssx`]: "@group.base {\n  padding: 12px;\n}\n",
+      },
+      root,
+    );
+
+    expect(codes(result.diagnostics)).toEqual(["XESSA2001"]);
+    const diagnostic = result.diagnostics[0];
+    if (diagnostic === undefined) throw new Error("missing ambiguous diagnostic");
+    expect(diagnostic.message).toContain('Ambiguous group "@group.base"');
+    expect(diagnostic.message).toContain(`${root}/a.cssx`);
+    expect(diagnostic.message).toContain(`${root}/b.cssx`);
+    expect(result.css).toBe(".x{padding:1px;gap:3px;}");
+  });
+
+  test("base defaults and nested overrides keep their defining module's token scope", async () => {
+    const root = `${WORKSPACE}/composition-tokens`;
+    const entry = `${root}/entry.cssx`;
+    const definer = `${root}/definer.cssx`;
+    const entrySource = [
+      '@use "./definer.cssx" styles;',
+      "@variables {",
+      "  pad: 40px;",
+      "}",
+      "@group.card {",
+      "  @group.base {",
+      "    margin: $pad;",
+      "  }",
+      "}",
+      ".x {",
+      "  @group.card {",
+      "    gap: $pad;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const definerSource = [
+      "@variables {",
+      "  pad: 8px;",
+      "}",
+      "@group.base {",
+      "  padding: $pad;",
+      "}",
+      "",
+    ].join("\n");
+
+    const result = await buildProject({ [entry]: entrySource, [definer]: definerSource }, root);
+    expect(result.diagnostics).toEqual([]);
+    // Base default: `definer` scope (8px). Composition override and use site:
+    // the entry's scope (40px). No consumer value leaks into the base.
+    expect(result.css).toBe(".x{padding:8px;margin:40px;gap:40px;}");
+  });
+
+  test("a composition override authored in the defining module resolves there", async () => {
+    const root = `${WORKSPACE}/composition-override-tokens`;
+    const entry = `${root}/entry.cssx`;
+    const definer = `${root}/definer.cssx`;
+    const entrySource = [
+      '@use "./definer.cssx" styles;',
+      "@variables {",
+      "  pad: 40px;",
+      "}",
+      ".x {",
+      "  @group.card {",
+      "    gap: $pad;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const definerSource = [
+      "@variables {",
+      "  pad: 8px;",
+      "}",
+      "@group.base {",
+      "  padding: 12px;",
+      "}",
+      "@group.card {",
+      "  @group.base {",
+      "    margin: $pad;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+
+    const result = await buildProject({ [entry]: entrySource, [definer]: definerSource }, root);
+    expect(result.diagnostics).toEqual([]);
+    // The override was authored inside `definer`, so it resolves to 8px even
+    // though the entry defines an identically named `$pad`.
+    expect(result.css).toBe(".x{padding:12px;margin:8px;gap:40px;}");
+  });
+
+  test("a @runtime reference in a composed default or nested override is XESSA2001", async () => {
+    const source = [
+      "@runtime {",
+      "  space: 4px;",
+      "}",
+      "@group.base {",
+      "  padding: $space;",
+      "  border: 1px solid;",
+      "}",
+      "@group.card {",
+      "  @group.base {",
+      "    margin: $space;",
+      "  }",
+      "  color: black;",
+      "}",
+      ".x {",
+      "  @group.card {",
+      "    gap: 1px;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    // One diagnostic for the composed base default, one for the nested override.
+    expect(codes(result.diagnostics)).toEqual(["XESSA2001", "XESSA2001"]);
+    expect(
+      result.diagnostics.every((diagnostic) =>
+        diagnostic.message.includes("A @runtime token is not allowed"),
+      ),
+    ).toBe(true);
+    // Only the rejected segments are omitted; the rest of the chain and the use
+    // site still expand, and no `var()` is produced for either default.
+    expect(result.css).toBe(":root{--space:4px;}.x{border:1px solid;color:black;gap:1px;}");
+    expect(result.css).not.toContain("var(");
+  });
+
+  test("a nested @group statement in a use-site block is still XESSA1001", async () => {
+    const source = [
+      "@group.card { padding: 1px; }",
+      ".x {",
+      "  @group.card {",
+      "    @group.base {",
+      "      color: red;",
+      "    }",
+      "    gap: 3px;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+    const result = await buildProject({ [`${WORKSPACE}/entry.cssx`]: source }, WORKSPACE);
+
+    expect(codes(result.diagnostics)).toEqual(["XESSA1001"]);
+    expect(result.diagnostics[0]?.message).toContain("@group.card");
+    expect(result.diagnostics[0]?.message).toContain("declarations only");
+    expect(result.css).toBe(".x{padding:1px;gap:3px;}");
   });
 });
 

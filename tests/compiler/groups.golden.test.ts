@@ -37,6 +37,7 @@ const GROUPS = join(FIXTURES, "groups");
 /** §8 single-file matrix: `input.cssx` → `expected/{css,diagnostics.json}`. */
 const SINGLE_FILE_CASES = [
   "alias-group",
+  "composed",
   "conditional-use-site",
   "duplicate-definition",
   "empty-group",
@@ -166,9 +167,9 @@ function diagnosis(id: string, fixture: Case, actual: readonly Diagnostic[]): st
 }
 
 describe("groups: golden fixture catalog (plan §8)", () => {
-  test("discovers exactly the 13 single-file and 7 merged cases", () => {
+  test("discovers exactly the 14 single-file and 7 merged cases", () => {
     expect(discovered).toEqual([...SINGLE_FILE_CASES, ...MERGED_CASES].sort());
-    expect(discovered).toHaveLength(20);
+    expect(discovered).toHaveLength(21);
   });
 
   test("every case owns an entry source and both expected artifacts", () => {

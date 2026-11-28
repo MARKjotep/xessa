@@ -16,15 +16,23 @@ import {
   type Range,
   type SourceText,
   analyzeDocument,
+  positionAt,
   tokenNameConflict,
 } from "../../packages/vscode/src/analysis.ts";
+import { groupHints } from "../../packages/vscode/src/group-hints.ts";
 import {
   classAt,
   collectIdOccurrences,
   collectIdSelectors,
+  completionsAt,
+  contextAt,
   definitionsAt,
+  groupDefinitionAt,
   idAt,
+  keyframeAt,
   referencesAt,
+  referencesToGroup,
+  referencesToKeyframe,
   referencesToToken,
   renameAt,
   tokenAt,
@@ -356,6 +364,792 @@ describe("reverse references", () => {
           occurrence.range.start.character === 2,
       ),
     ).toBe(false);
+  });
+});
+
+const GROUP_ROOT = "/virtual-xessa-groups";
+const GROUP_FILES: Readonly<Record<string, string>> = Object.freeze({
+  [`${GROUP_ROOT}/chrome.cssx`]: [
+    "@group.card {",
+    "  padding: 4px;",
+    "}",
+    ".chrome {",
+    "  @group.card { padding: 6px; }",
+    "}",
+  ].join("\n"),
+  [`${GROUP_ROOT}/entry.cssx`]: [
+    '@use "./chrome.cssx" styles;',
+    ".entry {",
+    "  @group.card { padding: 8px; }",
+    "}",
+  ].join("\n"),
+  [`${GROUP_ROOT}/shadow.cssx`]: [
+    '@use "./chrome.cssx" styles;',
+    "@group.card { padding: 99px; }",
+    ".shadow { @group.card { padding: 1px; } }",
+  ].join("\n"),
+  [`${GROUP_ROOT}/other.cssx`]: "@group.card { padding: 88px; }",
+  [`${GROUP_ROOT}/ambiguous.cssx`]: [
+    '@use "./chrome.cssx" styles;',
+    '@use "./other.cssx" styles;',
+    ".clash { @group.card { padding: 2px; } }",
+  ].join("\n"),
+});
+
+function readGroupModule(path: string): string | undefined {
+  return GROUP_FILES[path];
+}
+
+async function groupAnalyses(): Promise<readonly ReferenceAnalysis[]> {
+  const files: ReferenceAnalysis[] = [];
+  for (const [path, text] of Object.entries(GROUP_FILES)) {
+    const source: SourceText = { text, path, version: 1 };
+    const state = await analyzeDocument(source, {
+      workspaceRoot: GROUP_ROOT,
+      readModule: readGroupModule,
+      compile: false,
+    });
+    files.push({
+      name: path.slice(path.lastIndexOf("/") + 1),
+      path,
+      text,
+      analysis: state.analysis,
+    });
+  }
+  return files;
+}
+
+function byFileThenOffset(
+  left: { file: string; start: number },
+  right: { file: string; start: number },
+): number {
+  return left.file === right.file ? left.start - right.start : left.file.localeCompare(right.file);
+}
+
+describe("group definition and references", () => {
+  test("a local use site jumps to its own definition name", async () => {
+    const text = ["@group.card { padding: 4px; }", ".local { @group.card { padding: 8px; } }"].join(
+      "\n",
+    );
+    const { state } = await analyze(text);
+    const targets = definitionsAt(text, groupNameOffset(text, "card", 10), {
+      analysis: state.analysis,
+    });
+    expect(targets).toHaveLength(1);
+    const target = targets[0];
+    if (target === undefined) throw new Error("expected a local group definition");
+    expect(target.name).toBe("card");
+    const start = text.indexOf("@group.card") + "@group.".length;
+    expect(rangeToOffsets(state.analysis, target.range)).toEqual({
+      start,
+      end: start + "card".length,
+    });
+  });
+
+  test("a styles-imported use site jumps into the defining module", async () => {
+    const files = await groupAnalyses();
+    const chrome = files.find((entry) => entry.name === "chrome.cssx");
+    const entry = files.find((entry) => entry.name === "entry.cssx");
+    if (chrome === undefined || entry === undefined) throw new Error("missing group analysis");
+
+    const targets = definitionsAt(entry.text, groupNameOffset(entry.text, "card"), {
+      analysis: entry.analysis,
+    });
+    expect(targets).toHaveLength(1);
+    const target = targets[0];
+    if (target === undefined) throw new Error("expected an imported group definition");
+    expect(target.file).toBe(`${GROUP_ROOT}/chrome.cssx`);
+    expect(target.name).toBe("card");
+    const start = chrome.text.indexOf("@group.card") + "@group.".length;
+    expect(rangeToOffsets(chrome.analysis, target.range)).toEqual({
+      start,
+      end: start + "card".length,
+    });
+
+    // The definition header resolves to the same name bytes as the use site.
+    expect(
+      definitionsAt(chrome.text, groupNameOffset(chrome.text, "card"), {
+        analysis: chrome.analysis,
+      }),
+    ).toEqual(targets);
+  });
+
+  test("the definition returns its declaration and every local/imported use site", async () => {
+    const files = await groupAnalyses();
+    const chrome = files.find((entry) => entry.name === "chrome.cssx");
+    const entry = files.find((entry) => entry.name === "entry.cssx");
+    if (chrome === undefined || entry === undefined) throw new Error("missing group analysis");
+    const target = groupDefinitionAt(chrome.analysis, groupNameOffset(chrome.text, "card"));
+    if (target === undefined) throw new Error("expected a group definition");
+
+    const occurrences = files.flatMap((file) => referencesToGroup(file.analysis, target));
+    const definitionStart = chrome.text.indexOf("@group.card") + "@group.".length;
+    const localUseStart = chrome.text.lastIndexOf("@group.card") + "@group.".length;
+    const importedUseStart = entry.text.indexOf("@group.card") + "@group.".length;
+    expect(occurrenceShapes(occurrences, files)).toEqual(
+      [
+        {
+          file: "chrome.cssx",
+          start: definitionStart,
+          end: definitionStart + "card".length,
+        },
+        {
+          file: "chrome.cssx",
+          start: localUseStart,
+          end: localUseStart + "card".length,
+        },
+        {
+          file: "entry.cssx",
+          start: importedUseStart,
+          end: importedUseStart + "card".length,
+        },
+      ].sort(byFileThenOffset),
+    );
+    expect(
+      referencesAt(chrome.text, groupNameOffset(chrome.text, "card"), {
+        analysis: chrome.analysis,
+      }),
+    ).toEqual(referencesToGroup(chrome.analysis, target));
+  });
+
+  test("a use site returns the same bidirectional set", async () => {
+    const files = await groupAnalyses();
+    const chrome = files.find((entry) => entry.name === "chrome.cssx");
+    const entry = files.find((entry) => entry.name === "entry.cssx");
+    if (chrome === undefined || entry === undefined) throw new Error("missing group analysis");
+    const definitionTarget = groupDefinitionAt(
+      chrome.analysis,
+      groupNameOffset(chrome.text, "card"),
+    );
+    const useTarget = groupDefinitionAt(entry.analysis, groupNameOffset(entry.text, "card"));
+    if (definitionTarget === undefined || useTarget === undefined) {
+      throw new Error("expected the same group definition from both files");
+    }
+    expect(useTarget).toEqual(definitionTarget);
+
+    const fromDefinition = files.flatMap((file) =>
+      referencesToGroup(file.analysis, definitionTarget),
+    );
+    const fromUseSite = files.flatMap((file) => referencesToGroup(file.analysis, useTarget));
+    expect(occurrenceShapes(fromUseSite, files)).toEqual(occurrenceShapes(fromDefinition, files));
+    expect(fromUseSite).toHaveLength(3);
+  });
+
+  test("includeDeclaration false drops only the definition", async () => {
+    const files = await groupAnalyses();
+    const chrome = files.find((entry) => entry.name === "chrome.cssx");
+    if (chrome === undefined) throw new Error("missing group analysis");
+    const target = groupDefinitionAt(chrome.analysis, groupNameOffset(chrome.text, "card"));
+    if (target === undefined) throw new Error("expected a group definition");
+
+    const withoutDeclaration = files.flatMap((file) =>
+      referencesToGroup(file.analysis, target, { includeDeclaration: false }),
+    );
+    expect(withoutDeclaration).toHaveLength(2);
+    expect(
+      withoutDeclaration.some(
+        (occurrence) =>
+          occurrence.file === target.file &&
+          occurrence.range.start.line === 0 &&
+          occurrence.range.start.character === "@group.".length,
+      ),
+    ).toBe(false);
+  });
+
+  test("shadowed and ambiguous groups contribute no references to the shadowed target", async () => {
+    const files = await groupAnalyses();
+    const chrome = files.find((entry) => entry.name === "chrome.cssx");
+    const shadow = files.find((entry) => entry.name === "shadow.cssx");
+    const ambiguous = files.find((entry) => entry.name === "ambiguous.cssx");
+    if (chrome === undefined || shadow === undefined || ambiguous === undefined) {
+      throw new Error("missing group analysis");
+    }
+    const target = groupDefinitionAt(chrome.analysis, groupNameOffset(chrome.text, "card"));
+    if (target === undefined) throw new Error("expected a group definition");
+
+    expect(referencesToGroup(shadow.analysis, target)).toEqual([]);
+    expect(referencesToGroup(ambiguous.analysis, target)).toEqual([]);
+
+    // The shadowing document resolves its use site to its own definition, and
+    // the ambiguous document resolves to nothing (XESSA2001).
+    const shadowUse = shadow.text.lastIndexOf("@group.card") + "@group.".length;
+    const shadowTargets = definitionsAt(shadow.text, shadowUse + 1, {
+      analysis: shadow.analysis,
+    });
+    expect(shadowTargets).toHaveLength(1);
+    expect(shadowTargets[0]?.file).toBe(`${GROUP_ROOT}/shadow.cssx`);
+    expect(
+      definitionsAt(ambiguous.text, groupNameOffset(ambiguous.text, "card"), {
+        analysis: ambiguous.analysis,
+      }),
+    ).toEqual([]);
+
+    // An unknown group has no visible definition and no references either.
+    const unknown = ".a { @group.nope { padding: 1px; } }";
+    const { state: unknownState } = await analyze(unknown);
+    expect(
+      definitionsAt(unknown, groupNameOffset(unknown, "nope"), {
+        analysis: unknownState.analysis,
+      }),
+    ).toEqual([]);
+    expect(referencesToGroup(unknownState.analysis, target)).toEqual([]);
+  });
+
+  test("tokens inside a group body still resolve through the token path", async () => {
+    const text = [
+      "@variables { gap: 8px; }",
+      "@group.card { padding: $gap; }",
+      ".a { @group.card { margin: $gap; } }",
+    ].join("\n");
+    const { state } = await analyze(text);
+    const offset = text.indexOf("padding: $gap") + "padding: $".length;
+    const targets = definitionsAt(text, offset, { analysis: state.analysis });
+    expect(targets).toHaveLength(1);
+    expect(targets[0]?.name).toBe("gap");
+    const declarationStart = text.indexOf("gap: 8px");
+    expect(
+      targets[0] === undefined ? undefined : rangeToOffsets(state.analysis, targets[0].range),
+    ).toEqual({ start: declarationStart, end: declarationStart + "gap".length });
+  });
+});
+
+const COMPOSITION_LOCAL = [
+  "@group.base {",
+  "  padding: 4px;",
+  "  color: black;",
+  "}",
+  "@group.derived {",
+  "  margin: 1px;",
+  "  @group.base { padding: 8px; }",
+  "  border: 1px solid red;",
+  "}",
+  ".use { @group.base { padding: 1px; } }",
+  ".derived-use { @group.derived { color: red; } }",
+].join("\n");
+
+const COMPOSITION_SCOPE_ROOT = "/virtual-xessa-composition-scope";
+const COMPOSITION_SCOPE_FILES: Readonly<Record<string, string>> = Object.freeze({
+  [`${COMPOSITION_SCOPE_ROOT}/base.cssx`]: [
+    "@group.token { padding: 1px; }",
+    "@group.derived { @group.token { color: red; } }",
+    "@group.shared { border: 1px solid black; }",
+  ].join("\n"),
+  [`${COMPOSITION_SCOPE_ROOT}/entry.cssx`]: [
+    '@use "./base.cssx" styles;',
+    "@group.token { padding: 99px; }",
+    "@group.local-derived {",
+    "  @group.shared { border-color: red; }",
+    "}",
+    ".a { @group.derived { margin: 0; } }",
+    ".b { @group.shared { margin: 1px; } }",
+  ].join("\n"),
+});
+
+/** Offset of the `@group.<name>` inside a definition body (composition site). */
+function compositionOffset(text: string, needle: string): number {
+  const index = text.indexOf(needle);
+  if (index < 0) throw new Error(`missing composition ${JSON.stringify(needle)}`);
+  return index + "@group.".length + 1;
+}
+
+describe("group composition navigation", () => {
+  test("effective defaults follow base, nested overrides and own declarations in authored order", async () => {
+    const { state } = await analyze(COMPOSITION_LOCAL);
+    const derived = state.analysis.groups.find((entry) => entry.name === "derived");
+    if (derived === undefined || derived.kind !== "resolved") {
+      throw new Error("expected a resolved derived group");
+    }
+    expect(derived.symbol.defaults.map((entry) => `${entry.property}:${entry.value}`)).toEqual([
+      "margin:1px",
+      "padding:4px",
+      "color:black",
+      "padding:8px",
+      "border:1px solid red",
+    ]);
+    // Direct declarations stay available and exclude the composition expansion.
+    expect(derived.symbol.declarations.map((entry) => entry.property)).toEqual([
+      "margin",
+      "border",
+    ]);
+  });
+
+  test("override ghosts of a composed group compare against the effective defaults", async () => {
+    const { state } = await analyze(COMPOSITION_LOCAL);
+    const hints = groupHints({
+      text: COMPOSITION_LOCAL,
+      ast: state.analysis.ast,
+      lineStarts: state.analysis.lineStarts,
+      groups: state.analysis.groups,
+    });
+    // `.derived-use` overrides `color`, which it inherits from the base through
+    // the composition, so the ghost shows the effective base value. The nested
+    // composition block inside the definition is not a use site and adds none.
+    expect(hints.map((hint) => `${hint.property}:${hint.value}`)).toEqual([
+      "padding:4px",
+      "color:black",
+    ]);
+  });
+
+  test("a composition site resolves to the base and is a reference of it", async () => {
+    const { state } = await analyze(COMPOSITION_LOCAL);
+    const base = groupDefinitionAt(state.analysis, groupNameOffset(COMPOSITION_LOCAL, "base"));
+    if (base === undefined) throw new Error("expected the base definition");
+    const composition = compositionOffset(COMPOSITION_LOCAL, "@group.base { padding");
+
+    expect(groupDefinitionAt(state.analysis, composition)).toEqual(base);
+    expect(definitionsAt(COMPOSITION_LOCAL, composition, { analysis: state.analysis })).toEqual([
+      base,
+    ]);
+
+    const occurrences = referencesToGroup(state.analysis, base);
+    const starts = occurrences
+      .map((occurrence) => rangeToOffsets(state.analysis, occurrence.range).start)
+      .sort((left, right) => left - right);
+    const definitionStart = COMPOSITION_LOCAL.indexOf("@group.base") + "@group.".length;
+    const useStart = COMPOSITION_LOCAL.lastIndexOf("@group.base") + "@group.".length;
+    expect(starts).toEqual([definitionStart, composition - 1, useStart]);
+    expect(referencesAt(COMPOSITION_LOCAL, composition, { analysis: state.analysis })).toEqual(
+      occurrences,
+    );
+  });
+
+  test("renaming the base edits the definition, the composition site and the use site", async () => {
+    const { state } = await analyze(COMPOSITION_LOCAL);
+    const composition = compositionOffset(COMPOSITION_LOCAL, "@group.base { padding");
+    const plan = renameAt(COMPOSITION_LOCAL, composition, "spacing", {
+      analysis: state.analysis,
+    });
+    expect(plan.ok).toBe(true);
+    if (!plan.ok) return;
+    expect(plan.placeholder).toBe("base");
+    const starts = plan.edits
+      .map((edit) => rangeToOffsets(state.analysis, edit.range).start)
+      .sort((left, right) => left - right);
+    const definitionStart = COMPOSITION_LOCAL.indexOf("@group.base") + "@group.".length;
+    const useStart = COMPOSITION_LOCAL.lastIndexOf("@group.base") + "@group.".length;
+    expect(starts).toEqual([definitionStart, composition - 1, useStart]);
+    expect(plan.edits.every((edit) => edit.newText === "spacing")).toBe(true);
+  });
+
+  test("a styles-imported base composes in its own module's scope, not the consumer's", async () => {
+    const entryText = COMPOSITION_SCOPE_FILES[`${COMPOSITION_SCOPE_ROOT}/entry.cssx`];
+    if (entryText === undefined) throw new Error("missing entry module");
+    const source: SourceText = {
+      text: entryText,
+      path: `${COMPOSITION_SCOPE_ROOT}/entry.cssx`,
+      version: 1,
+    };
+    const state = await analyzeDocument(source, {
+      workspaceRoot: COMPOSITION_SCOPE_ROOT,
+      readModule: (path) => COMPOSITION_SCOPE_FILES[path],
+      compile: false,
+    });
+    const derived = state.analysis.groups.find((group) => group.name === "derived");
+    if (derived === undefined || derived.kind !== "resolved") {
+      throw new Error("expected the imported derived group");
+    }
+    // The consumer shadows `token`, but the composition resolves in base.cssx.
+    expect(derived.symbol.defaults.map((value) => `${value.property}:${value.value}`)).toEqual([
+      "padding:1px",
+      "color:red",
+    ]);
+    const token = state.analysis.groups.find((group) => group.name === "token");
+    expect(token?.kind === "resolved" ? token.symbol.file : undefined).toBe(
+      `${COMPOSITION_SCOPE_ROOT}/entry.cssx`,
+    );
+  });
+
+  test("a composition site in an importer references and renames the imported base", async () => {
+    const entryPath = `${COMPOSITION_SCOPE_ROOT}/entry.cssx`;
+    const basePath = `${COMPOSITION_SCOPE_ROOT}/base.cssx`;
+    const entryText = COMPOSITION_SCOPE_FILES[entryPath];
+    if (entryText === undefined) throw new Error("missing entry module");
+    const state = await analyzeDocument(
+      { text: entryText, path: entryPath, version: 1 },
+      {
+        workspaceRoot: COMPOSITION_SCOPE_ROOT,
+        readModule: (path) => COMPOSITION_SCOPE_FILES[path],
+        compile: false,
+      },
+    );
+    const composition = entryText.indexOf("@group.shared { border-color") + "@group.".length + 1;
+    const target = groupDefinitionAt(state.analysis, composition);
+    if (target === undefined) throw new Error("expected the imported base definition");
+    expect(target.file).toBe(basePath);
+
+    const occurrences = referencesToGroup(state.analysis, target);
+    // The declaration lives in base.cssx; this module authored the composition
+    // site and the selector use site.
+    expect(occurrences).toHaveLength(2);
+    expect(occurrences.every((occurrence) => occurrence.file === entryPath)).toBe(true);
+
+    const plan = renameAt(entryText, composition, "common", { analysis: state.analysis });
+    expect(plan.ok).toBe(true);
+    if (!plan.ok) return;
+    expect(plan.edits).toHaveLength(3);
+    expect(plan.edits.filter((edit) => edit.file === basePath)).toHaveLength(1);
+    expect(plan.edits.filter((edit) => edit.file === entryPath)).toHaveLength(2);
+  });
+
+  test("a nested @group in a use-site block stays a compiler error and offers no names", async () => {
+    const text = [".a {", "  @group.card {", "    @group.", "  }", "}"].join("\n");
+    const { state } = await analyze(text);
+    expect(state.analysis.problems.some((problem) => problem.code === "XESSA1001")).toBe(true);
+    const offset = text.lastIndexOf("@group.") + "@group.".length;
+    expect(contextAt(text, offset, state.analysis)).toEqual({ kind: "group-member", word: "" });
+    expect(completionsAt(text, offset, { analysis: state.analysis }).items).toEqual([]);
+  });
+});
+
+const KEYFRAME_ROOT = "/virtual-xessa-keyframes";
+const KEYFRAME_FILES: Readonly<Record<string, string>> = Object.freeze({
+  [`${KEYFRAME_ROOT}/motion.cssx`]: [
+    "@keyframes spin {",
+    "  from { opacity: 0; }",
+    "  to { opacity: 1; }",
+    "}",
+    ".spinner { animation-name: spin; }",
+    ".shorthand { animation: spin 1s linear infinite; }",
+  ].join("\n"),
+  [`${KEYFRAME_ROOT}/entry.cssx`]: [
+    '@use "./motion.cssx" styles;',
+    ".entry {",
+    "  animation-name: $keyframes.spin;",
+    "}",
+    ".literal { animation-name: spin; }",
+  ].join("\n"),
+  [`${KEYFRAME_ROOT}/shadow.cssx`]: [
+    '@use "./motion.cssx" styles;',
+    "@keyframes spin { from { opacity: 0.5; } }",
+    ".shadow { animation-name: $keyframes.spin; }",
+  ].join("\n"),
+  [`${KEYFRAME_ROOT}/other.cssx`]: "@keyframes spin { from { opacity: 0.25; } }",
+  [`${KEYFRAME_ROOT}/ambiguous.cssx`]: [
+    '@use "./motion.cssx" styles;',
+    '@use "./other.cssx" styles;',
+    ".clash { animation-name: $keyframes.spin; }",
+    ".clash-literal { animation-name: spin; }",
+  ].join("\n"),
+  [`${KEYFRAME_ROOT}/token-only.cssx`]: [
+    '@use "./motion.cssx";',
+    ".plain { animation-name: $keyframes.spin; }",
+  ].join("\n"),
+});
+
+function readKeyframeModule(path: string): string | undefined {
+  return KEYFRAME_FILES[path];
+}
+
+async function keyframeAnalyses(): Promise<readonly ReferenceAnalysis[]> {
+  const files: ReferenceAnalysis[] = [];
+  for (const [path, text] of Object.entries(KEYFRAME_FILES)) {
+    const source: SourceText = { text, path, version: 1 };
+    const state = await analyzeDocument(source, {
+      workspaceRoot: KEYFRAME_ROOT,
+      readModule: readKeyframeModule,
+      compile: false,
+    });
+    files.push({
+      name: path.slice(path.lastIndexOf("/") + 1),
+      path,
+      text,
+      analysis: state.analysis,
+    });
+  }
+  return files;
+}
+
+describe("keyframe definition and references", () => {
+  /** Offset of the name in an exact `animation-name: <name>` value. */
+  function animationNameOffset(text: string, name: string, from = 0): number {
+    const index = text.indexOf(`animation-name: ${name}`, from);
+    if (index < 0) throw new Error(`missing animation-name: ${name}`);
+    return index + "animation-name: ".length;
+  }
+
+  function keyframeShape(file: ReferenceAnalysis, needle: string, delta: number, length: number) {
+    return {
+      file: file.name,
+      start: referenceOffset(file.text, needle, delta),
+      end: referenceOffset(file.text, needle, delta) + length,
+    };
+  }
+
+  test("the header, $keyframes reference and exact animation-name value share one target", async () => {
+    const text = [
+      "@keyframes spin { from { opacity: 0; } to { opacity: 1; } }",
+      "@keyframes fade { from { opacity: 0; } }",
+      ".a { animation-name: $keyframes.spin; }",
+      ".b { animation-name: spin; }",
+      ".c { animation: spin 1s linear infinite; }",
+      ".d { animation-name: spin, fade; }",
+    ].join("\n");
+    const { state } = await analyze(text);
+    const declarationStart = keyframeDefinitionOffset(text, "spin");
+    const expected = { file: join(ROOT, "rename.cssx"), name: "spin" };
+
+    for (const offset of [
+      keyframeDefinitionOffset(text, "spin"),
+      keyframeReferenceOffset(text, "spin"),
+      animationNameOffset(text, "spin"),
+    ]) {
+      const targets = definitionsAt(text, offset, { analysis: state.analysis });
+      expect(targets).toHaveLength(1);
+      expect(targets[0]?.name).toBe(expected.name);
+      expect(targets[0]?.file).toBe(expected.file);
+      expect(
+        targets[0] === undefined ? undefined : rangeToOffsets(state.analysis, targets[0].range),
+      ).toEqual({ start: declarationStart, end: declarationStart + "spin".length });
+    }
+
+    // The `animation` shorthand, comma lists and unknown names are not values.
+    expect(
+      definitionsAt(text, text.indexOf("animation: spin") + "animation: ".length, {
+        analysis: state.analysis,
+      }),
+    ).toEqual([]);
+    expect(
+      definitionsAt(text, text.indexOf("animation-name: spin,") + "animation-name: ".length, {
+        analysis: state.analysis,
+      }),
+    ).toEqual([]);
+  });
+
+  test("a styles-imported reference or value jumps into the defining module", async () => {
+    const files = await keyframeAnalyses();
+    const motion = files.find((entry) => entry.name === "motion.cssx");
+    const entry = files.find((entry) => entry.name === "entry.cssx");
+    if (motion === undefined || entry === undefined) throw new Error("missing keyframe analysis");
+
+    const fromDefinition = definitionsAt(
+      motion.text,
+      keyframeDefinitionOffset(motion.text, "spin"),
+      {
+        analysis: motion.analysis,
+      },
+    );
+    expect(fromDefinition).toHaveLength(1);
+    const target = fromDefinition[0];
+    if (target === undefined) throw new Error("expected a keyframe definition");
+    expect(target.file).toBe(`${KEYFRAME_ROOT}/motion.cssx`);
+    expect(target.name).toBe("spin");
+    const start = motion.text.indexOf("@keyframes spin") + "@keyframes ".length;
+    expect(rangeToOffsets(motion.analysis, target.range)).toEqual({
+      start,
+      end: start + "spin".length,
+    });
+
+    // Both the `$keyframes` reference and the exact animation-name value in the
+    // importer resolve to the same definition bytes.
+    for (const offset of [
+      keyframeReferenceOffset(entry.text, "spin"),
+      animationNameOffset(entry.text, "spin"),
+    ]) {
+      expect(definitionsAt(entry.text, offset, { analysis: entry.analysis })).toEqual(
+        fromDefinition,
+      );
+    }
+  });
+
+  test("definition and use sites return the same declaration + $keyframes + animation-name set", async () => {
+    const files = await keyframeAnalyses();
+    const motion = files.find((entry) => entry.name === "motion.cssx");
+    const entry = files.find((entry) => entry.name === "entry.cssx");
+    if (motion === undefined || entry === undefined) throw new Error("missing keyframe analysis");
+    const target = definitionsAt(motion.text, keyframeDefinitionOffset(motion.text, "spin"), {
+      analysis: motion.analysis,
+    })[0];
+    if (target === undefined) throw new Error("expected a keyframe definition");
+
+    const expected = [
+      keyframeShape(motion, "@keyframes spin", "@keyframes ".length, "spin".length),
+      keyframeShape(motion, "animation-name: spin", "animation-name: ".length, "spin".length),
+      keyframeShape(entry, "$keyframes.spin", "$keyframes.".length, "spin".length),
+      keyframeShape(entry, "animation-name: spin", "animation-name: ".length, "spin".length),
+    ].sort(byFileThenOffset);
+
+    const fromDefinition = files.flatMap((file) => referencesToKeyframe(file.analysis, target));
+    expect(occurrenceShapes(fromDefinition, files)).toEqual(expected);
+
+    // The `animation` shorthand is never a reference, so no occurrence starts
+    // on its name bytes.
+    const shorthandStart = referenceOffset(motion.text, "animation: spin", "animation: ".length);
+    expect(
+      fromDefinition.some(
+        (occurrence) =>
+          occurrence.file === `${KEYFRAME_ROOT}/motion.cssx` &&
+          rangeToOffsets(motion.analysis, occurrence.range).start === shorthandStart,
+      ),
+    ).toBe(false);
+
+    // A `$keyframes` use site and an animation-name value yield the same set.
+    for (const offset of [
+      keyframeReferenceOffset(entry.text, "spin"),
+      animationNameOffset(entry.text, "spin"),
+    ]) {
+      const useTarget = definitionsAt(entry.text, offset, { analysis: entry.analysis })[0];
+      if (useTarget === undefined) throw new Error("expected a use-site target");
+      expect(useTarget).toEqual(target);
+      const fromUse = files.flatMap((file) => referencesToKeyframe(file.analysis, useTarget));
+      expect(occurrenceShapes(fromUse, files)).toEqual(expected);
+    }
+
+    // `referencesAt` mirrors the per-module resolver, like the group contract.
+    expect(
+      referencesAt(motion.text, keyframeDefinitionOffset(motion.text, "spin"), {
+        analysis: motion.analysis,
+      }),
+    ).toEqual(referencesToKeyframe(motion.analysis, target));
+  });
+
+  test("includeDeclaration false drops only the definition", async () => {
+    const files = await keyframeAnalyses();
+    const motion = files.find((entry) => entry.name === "motion.cssx");
+    if (motion === undefined) throw new Error("missing keyframe analysis");
+    const target = definitionsAt(motion.text, keyframeDefinitionOffset(motion.text, "spin"), {
+      analysis: motion.analysis,
+    })[0];
+    if (target === undefined) throw new Error("expected a keyframe definition");
+
+    const withoutDeclaration = files.flatMap((file) =>
+      referencesToKeyframe(file.analysis, target, { includeDeclaration: false }),
+    );
+    expect(withoutDeclaration).toHaveLength(3);
+    expect(
+      withoutDeclaration.some(
+        (occurrence) =>
+          occurrence.file === target.file &&
+          occurrence.range.start.line === 0 &&
+          occurrence.range.start.character === "@keyframes ".length,
+      ),
+    ).toBe(false);
+  });
+
+  test("unknown, ambiguous, token-only and later-duplicate definitions have no target", async () => {
+    const unknown = [
+      ".a { animation-name: $keyframes.nope; }",
+      ".b { animation-name: nope; }",
+    ].join("\n");
+    const { state: unknownState } = await analyze(unknown);
+    for (const offset of [
+      keyframeReferenceOffset(unknown, "nope"),
+      animationNameOffset(unknown, "nope"),
+    ]) {
+      expect(definitionsAt(unknown, offset, { analysis: unknownState.analysis })).toEqual([]);
+      expect(referencesAt(unknown, offset, { analysis: unknownState.analysis })).toEqual([]);
+    }
+
+    const files = await keyframeAnalyses();
+    const motion = files.find((entry) => entry.name === "motion.cssx");
+    const ambiguous = files.find((entry) => entry.name === "ambiguous.cssx");
+    const shadow = files.find((entry) => entry.name === "shadow.cssx");
+    const tokenOnly = files.find((entry) => entry.name === "token-only.cssx");
+    if (
+      motion === undefined ||
+      ambiguous === undefined ||
+      shadow === undefined ||
+      tokenOnly === undefined
+    ) {
+      throw new Error("missing keyframe analysis");
+    }
+    const target = definitionsAt(motion.text, keyframeDefinitionOffset(motion.text, "spin"), {
+      analysis: motion.analysis,
+    })[0];
+    if (target === undefined) throw new Error("expected a keyframe definition");
+
+    // Two styles imports of the same name: neither use site resolves.
+    for (const offset of [
+      keyframeReferenceOffset(ambiguous.text, "spin"),
+      animationNameOffset(ambiguous.text, "spin"),
+    ]) {
+      expect(definitionsAt(ambiguous.text, offset, { analysis: ambiguous.analysis })).toEqual([]);
+    }
+    expect(referencesToKeyframe(ambiguous.analysis, target)).toEqual([]);
+
+    // A local definition shadows the import; the importer's target is local.
+    const shadowTargets = definitionsAt(shadow.text, keyframeReferenceOffset(shadow.text, "spin"), {
+      analysis: shadow.analysis,
+    });
+    expect(shadowTargets).toHaveLength(1);
+    expect(shadowTargets[0]?.file).toBe(`${KEYFRAME_ROOT}/shadow.cssx`);
+    expect(referencesToKeyframe(shadow.analysis, target)).toEqual([]);
+
+    // A token-only import exposes no keyframe names at all.
+    expect(
+      definitionsAt(tokenOnly.text, keyframeReferenceOffset(tokenOnly.text, "spin"), {
+        analysis: tokenOnly.analysis,
+      }),
+    ).toEqual([]);
+    expect(referencesToKeyframe(tokenOnly.analysis, target)).toEqual([]);
+
+    // The first duplicate header wins; the later header is not addressable.
+    const duplicate = [
+      "@keyframes spin { from { opacity: 0; } }",
+      "@keyframes spin { from { opacity: 1; } }",
+      ".a { animation-name: $keyframes.spin; }",
+      ".b { animation-name: spin; }",
+    ].join("\n");
+    const { state: duplicateState } = await analyze(duplicate);
+    expect(
+      definitionsAt(duplicate, keyframeDefinitionOffset(duplicate, "spin", 10), {
+        analysis: duplicateState.analysis,
+      }),
+    ).toEqual([]);
+    const first = definitionsAt(duplicate, keyframeDefinitionOffset(duplicate, "spin"), {
+      analysis: duplicateState.analysis,
+    });
+    expect(first).toHaveLength(1);
+    for (const offset of [
+      keyframeReferenceOffset(duplicate, "spin"),
+      animationNameOffset(duplicate, "spin"),
+    ]) {
+      expect(definitionsAt(duplicate, offset, { analysis: duplicateState.analysis })).toEqual(
+        first,
+      );
+    }
+  });
+
+  test("token and group navigation still resolve in a document with keyframes", async () => {
+    const text = [
+      "@variables { gap: 8px; }",
+      "@keyframes spin { from { opacity: 0; } }",
+      "@group.card { padding: 8px; }",
+      ".a { @group.card { padding: 4px; } animation-name: $keyframes.spin; color: $gap; }",
+    ].join("\n");
+    const { state } = await analyze(text);
+
+    const token = definitionsAt(text, text.indexOf("$gap") + 1, { analysis: state.analysis });
+    expect(token).toHaveLength(1);
+    expect(token[0]?.name).toBe("gap");
+
+    const group = definitionsAt(text, text.indexOf("@group.card") + "@group.".length, {
+      analysis: state.analysis,
+    });
+    expect(group).toHaveLength(1);
+    expect(group[0]?.name).toBe("card");
+
+    const keyframe = definitionsAt(
+      text,
+      text.lastIndexOf("$keyframes.spin") + "$keyframes.".length,
+      { analysis: state.analysis },
+    );
+    expect(keyframe).toHaveLength(1);
+    expect(keyframe[0]?.name).toBe("spin");
+
+    // The same three cursors keep their reference sets.
+    expect(
+      referencesAt(text, text.indexOf("$gap") + 1, { analysis: state.analysis }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      referencesAt(text, text.indexOf("@group.card") + "@group.".length, {
+        analysis: state.analysis,
+      }),
+    ).toHaveLength(2);
+    expect(
+      referencesAt(text, text.lastIndexOf("$keyframes.spin") + "$keyframes.".length, {
+        analysis: state.analysis,
+      }),
+    ).toHaveLength(2);
   });
 });
 
@@ -1028,6 +1822,39 @@ describe("keyframe rename", () => {
     if (!plan.ok) return;
     expect(plan.placeholder).toBe("spin");
     expect(plan.edits).toHaveLength(3);
+  });
+
+  test("the same plan and cursor are produced from an exact animation-name value", async () => {
+    const { state } = await analyze(KEYFRAME_RENAME_DOCUMENT);
+    const valueOffset =
+      KEYFRAME_RENAME_DOCUMENT.indexOf("animation-name: spin") + "animation-name: ".length;
+    const fromDefinition = renameAt(
+      KEYFRAME_RENAME_DOCUMENT,
+      keyframeDefinitionOffset(KEYFRAME_RENAME_DOCUMENT, "spin"),
+      "turn",
+      { analysis: state.analysis },
+    );
+    const fromValue = renameAt(KEYFRAME_RENAME_DOCUMENT, valueOffset, "turn", {
+      analysis: state.analysis,
+    });
+    expect(fromValue).toEqual(fromDefinition);
+    expect(fromValue.ok).toBe(true);
+    if (!fromValue.ok) return;
+    expect(fromValue.placeholder).toBe("spin");
+    expect(fromValue.edits).toHaveLength(3);
+
+    // prepareRename (and hover) read the same cursor: the reference shape over
+    // the value bytes, never the property or the whole declaration.
+    const valueRange = {
+      start: positionAt(state.analysis.lineStarts, valueOffset),
+      end: positionAt(state.analysis.lineStarts, valueOffset + "spin".length),
+    };
+    expect(keyframeAt(KEYFRAME_RENAME_DOCUMENT, valueOffset + 1, state.analysis)).toEqual({
+      site: "reference",
+      name: "spin",
+      nameRange: valueRange,
+      keywordRange: valueRange,
+    });
   });
 
   test("renames a styles-imported definition and reference across modules", async () => {

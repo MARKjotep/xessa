@@ -123,7 +123,8 @@ rule          = selector "{" { declaration | rule | conditionalBlock | nativeAtR
 declaration   = property ":" cssValue { modifier cssValue } ";" ;
 modifier      = "@" alias { "+" alias } ;
 conditionalBlock = modifier "{" { declaration | rule | conditionalBlock } "}" ;
-groupDefinition = "@group" "." groupName "{" { declaration } "}" ;
+groupDefinition = "@group" "." groupName "{" { declaration | groupComposition } "}" ;
+groupComposition = "@group" "." groupName "{" { declaration } "}" ;
 groupUseSite    = "@group" "." groupName "{" { declaration } "}" ;
 ```
 
@@ -139,7 +140,9 @@ Each item is a scalar path that resolves exactly like the single-value form; emp
 items are `XESSA2001` errors. `map-dir`, `map-name`, `css-name`, `prefix` and the boolean keys remain
 single-valued.
 
-`@group` definitions and use sites are specified in §3.7 (ADR-0017, owner decision of 2026-11-25).
+`@group` definitions and use sites are specified in §3.7 (ADR-0017, owner decision of 2026-11-25;
+definition-body composition is ADR-0025, owner decision of 2026-11-28). Only a definition body may
+contain a `groupComposition`; a use-site block accepts declarations only.
 
 The optional `styles` clause of `@use` (ADR-0014) marks a rule-merge import: the target's
 stylesheet rules are merged into the importing build in addition to its tokens (§6.3). Without the
@@ -218,28 +221,49 @@ A group is a named, non-parametric set of declarations, defined once and spliced
 with per-use-site overrides (ADR-0017, owner decision of 2026-11-25):
 
 ```ebnf
-groupDefinition = "@group" "." groupName "{" { declaration } "}" ;
+groupDefinition = "@group" "." groupName "{" { declaration | groupComposition } "}" ;
+groupComposition = "@group" "." groupName "{" { declaration } "}" ;
 groupUseSite    = "@group" "." groupName "{" { declaration } "}" ;
 ```
 
-**Definition.** `@group.<name> { … }` accepts declarations only. A definition exists only at the top
-level: the identical syntax inside a rule body is a use site, never a definition, because position
-decides (§3.2). XESSA1001 recovery therefore covers malformed group statements inside rules — a bad
-dotted form, a bare `@group`, or a non-declaration statement in the block — with statement-scoped
-recovery. Nested rules, conditional blocks, native at-rules and further `@group.` statements inside a
-definition are XESSA1001-family syntax errors: one diagnostic per offending statement, the statement
-is omitted and the rest of the definition survives. `@group` is not a mixin: there are no parameters,
-arguments or interpolation. A definition emits no CSS; unused definitions are inert, and empty
-definitions are legal, inert and produce no diagnostic. Group names are plain CSS identifiers,
-matched exactly and case-sensitively, in their own `group` symbol kind. The three parts of
-`@group.<name>` are contiguous; whitespace inside the dotted form, or a missing name, is XESSA1001.
+**Definition.** `@group.<name> { … }` accepts declarations and nested composition statements
+(`groupComposition`, ADR-0025). A definition exists only at the top level: the identical syntax inside
+a rule body is a use site, never a definition, because position decides (§3.2). XESSA1001 recovery
+therefore covers malformed group statements inside rules — a bad dotted form, a bare `@group`, or a
+non-declaration statement in the block — with statement-scoped recovery. Nested rules, conditional
+blocks and native at-rules inside a definition are XESSA1001-family syntax errors: one diagnostic per
+offending statement, the statement is omitted and the rest of the definition survives. `@group` is
+not a mixin: there are no parameters, arguments or interpolation. A definition emits no CSS; unused
+definitions are inert, and empty definitions are legal, inert and produce no diagnostic. Group names
+are plain CSS identifiers, matched exactly and case-sensitively, in their own `group` symbol kind. The
+three parts of `@group.<name>` are contiguous; whitespace inside the dotted form, or a missing name,
+is XESSA1001.
+
+**Composition.** A definition body may contain a nested `@group.<base> { <overrides> }` statement. The
+target resolves in the **defining module's** visible group scope — the same scope a use site in that
+module would see — not in the consumer's scope. Expansion walks the body in authored order: a
+declaration is spliced in place; a nested composition expands the base's effective declarations, then
+the nested block's overrides, then continues. Composition may repeat and may form diamonds (`a`
+composes `b` and `c`, both compose `d`): `d` expands textually on each path and declarations and group
+identities are never deduplicated. A composition block's overrides are declarations only, like a
+use-site block; a `@group.` statement nested inside a use-site block (including a composition block) is
+XESSA1001, not composition. Unused definitions stay inert: a cycle or unknown target inside a
+definition that is never expanded produces no diagnostic and no output.
+
+**Cycles and depth.** A cycle is a chain of composition targets currently being expanded. A nested
+composition that closes a cycle is XESSA2001 at that statement, with the chain in the message
+(`@group.a -> @group.b -> @group.a`); only that statement is omitted and the rest of the chain and the
+use site continue. Composition depth is capped at 64 nested edges; exceeding the cap is XESSA2001 at
+the offending statement and does not recurse. Unknown and ambiguous nested targets reuse the use-site
+messages and recovery.
 
 **Use site.** `@group.<name> { <overrides> }` is valid inside any rule body at any nesting depth and
 accepts declarations only. The block is required in v0.1: a bare `@group.<name>;` is XESSA1001; so is
 a nested rule or a conditional block inside the use-site block.
 
-**Expansion.** The group's defaults are spliced at the authored position in definition order,
-followed by the use-site block's declarations in authored order, as one declaration run:
+**Expansion.** The group's effective declarations — its body expanded in the composition order above
+— are spliced at the authored position, followed by the use-site block's declarations in authored
+order, as one declaration run:
 
 ```scss
 @group.card {
@@ -281,7 +305,8 @@ lowers to the equivalent authored CSS:
 }
 ```
 
-The compiler MUST NOT filter, reorder, merge, deduplicate or rewrite the group's lines. Overrides win
+The compiler MUST NOT filter, reorder, merge, deduplicate or rewrite the group's lines, including
+lines contributed by composition. Overrides win
 by the ordinary cascade: the use-site declaration is later at equal specificity (§5.2), including
 against a group default authored as an inline variant, at every width. `!important` binds per value
 segment (§3.3, §5.4), so a group default carrying `!important` is not beaten by a plain use-site
@@ -301,21 +326,25 @@ value reference: it is the existing unknown-token-namespace case, XESSA2001 with
 segment omitted (§6.1, §12). `@group.keyframes` is legal and does not interact with `$keyframes` (§6.4).
 
 **Tokens and spans.** Defaults resolve against the defining module's tokens; use-site declarations
-resolve against the consuming module (§6.1). A `@runtime` reference in a group default is XESSA2001
-with the declaration omitted (§6.1, §12); runtime customization is authored at the use site.
-Expanded declarations keep their authored spans and files — defaults from the definition, overrides
-from the use site — so diagnostics and source maps point at the authored text (ADR-0005).
+resolve against the consuming module (§6.1). Composition does not change attribution: a composed base
+declaration and a composition block's overrides both keep the `span.file` of the module that authored
+them, so each resolves in its own module. A `@runtime` reference in a group default or a nested
+composition override is XESSA2001 with the declaration omitted (§6.1, §12); runtime customization is
+authored at the use site. Expanded declarations keep their authored spans and files — defaults and
+composition overrides from the definition, use-site overrides from the use site — so diagnostics and
+source maps point at the authored text (ADR-0005).
 
-**Diagnostics.** Unknown, ambiguous, duplicate, alias and `$group.` failures reuse XESSA2001; syntax
-misuse is XESSA1001; no new diagnostic code exists for this feature. Messages name the group, and an
-ambiguity message names the two defining modules. Recovery omits exactly the offending statement or
-the use-site block, and a rule emptied by the omission is dropped like any other (§12).
+**Diagnostics.** Unknown, ambiguous, duplicate, alias, cycle, depth and `$group.` failures reuse
+XESSA2001; syntax misuse is XESSA1001; no new diagnostic code exists for this feature. Messages name
+the group, an ambiguity message names the defining modules, and a cycle message names the chain.
+Recovery omits exactly the offending statement or the use-site block, and a rule emptied by the
+omission is dropped like any other (§12).
 
 **Out of scope for v0.1.** Conditional or variant use-site blocks and conditional definitions; nested
-rules or native at-rules inside either block; `@apply`; parameters, interpolation or argument lists;
-group chaining; cross-module renaming and re-export of groups; the bare include form;
-`$group.<name>` value references; and editor support (completion, hover, outline, rename,
-highlighting), which is a follow-up release.
+rules or native at-rules inside either block; composition in a use-site block or inside a composition
+block's overrides; `@apply`; parameters, interpolation or argument lists; cross-module renaming and
+re-export of groups; the bare include form; `$group.<name>` value references; and editor support
+(completion, hover, outline, rename, highlighting), which is a follow-up release.
 
 ## 4. Media conditions
 

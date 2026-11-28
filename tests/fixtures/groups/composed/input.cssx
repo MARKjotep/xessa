@@ -1,0 +1,17 @@
+@group.base {
+  padding: 12px;
+  color: black;
+}
+
+@group.card {
+  @group.base {
+    padding: 16px;
+  }
+  border-radius: 8px;
+}
+
+.panel {
+  @group.card {
+    color: navy;
+  }
+}

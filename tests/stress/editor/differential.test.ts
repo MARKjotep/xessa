@@ -237,8 +237,8 @@ describe("fixture corpus — editor matches the compiler resolver", () => {
 
   test("the corpus is the full groups + keyframes fixture set", () => {
     // Guards against a silently shrinking differential (e.g. a renamed entry).
-    expect(corpus.length).toBe(26);
-    expect(corpus.filter((entry) => entry.name.startsWith("groups/")).length).toBe(20);
+    expect(corpus.length).toBe(27);
+    expect(corpus.filter((entry) => entry.name.startsWith("groups/")).length).toBe(21);
     expect(corpus.filter((entry) => entry.name.startsWith("keyframes/")).length).toBe(6);
   });
 

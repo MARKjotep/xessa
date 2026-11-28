@@ -7,7 +7,12 @@ import { compile, parse } from "../../packages/compiler/src/index.ts";
 import { groupRuns, lower } from "../../packages/compiler/src/lowering/index.ts";
 import { renameClasses } from "../../packages/compiler/src/naming/index.ts";
 import { flattenIr } from "../../packages/compiler/src/selectors/index.ts";
-import type { BlockItem, Declaration, Stylesheet } from "../../packages/compiler/src/types/ast.ts";
+import type {
+  BlockItem,
+  Declaration,
+  GroupDefinition,
+  Stylesheet,
+} from "../../packages/compiler/src/types/ast.ts";
 
 /**
  * Canonical formatter contract: idempotence on every fixture, deterministic
@@ -136,8 +141,8 @@ const fixtures = collectFixtures(fixturesRoot)
 
 describe("formatter idempotence", () => {
   test("format(format(x)) equals format(x) for every fixture input", () => {
-    // 54 pre-existing fixtures + the 13 single-file `groups/` fixtures (G4a).
-    expect(fixtures).toHaveLength(67);
+    // 54 pre-existing fixtures + the 14 single-file `groups/` fixtures (G4a).
+    expect(fixtures).toHaveLength(68);
     for (const fixture of fixtures) {
       const file = `${fixture.id}/input.cssx`;
       const once = format(fixture.source, file);
@@ -518,6 +523,76 @@ describe("@group formatting (ADR-0017)", () => {
     expect(after[1]?.declarations.map((declaration) => declaration.raw)).toEqual([
       "padding: 20px !important",
       "color: navy",
+    ]);
+  });
+
+  test("nested composition blocks round-trip, keep comments and are idempotent", () => {
+    const composed = [
+      "@group.base {",
+      "  padding: 12px;",
+      "}",
+      "",
+      "@group.card {",
+      "  color: black;",
+      "  /* composed */",
+      "  @group.base {",
+      "    padding: 16px;",
+      "  }",
+      "  margin: 0;",
+      "}",
+      "",
+      ".panel {",
+      "  @group.card {",
+      "    gap: 1px;",
+      "  }",
+      "}",
+      "",
+    ].join("\n");
+
+    const result = format(composed, file);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.formatted).toBe(
+      [
+        "@group.base {",
+        "  padding: 12px;",
+        "}",
+        "",
+        "@group.card {",
+        "  color: black;",
+        "",
+        "  /* composed */",
+        "  @group.base {",
+        "    padding: 16px;",
+        "  }",
+        "",
+        "  margin: 0;",
+        "}",
+        "",
+        ".panel {",
+        "  @group.card {",
+        "    gap: 1px;",
+        "  }",
+        "}",
+        "",
+      ].join("\n"),
+    );
+    expect(format(result.formatted, file).formatted).toBe(result.formatted);
+    // No authored statement vanished on format-on-save.
+    expect(result.formatted.match(/@group\./g)).toHaveLength(4);
+
+    const reparsed = parse(result.formatted, { file }).ast;
+    const card = reparsed.items.find(
+      (item): item is GroupDefinition => item.kind === "group-definition" && item.name === "card",
+    );
+    if (card === undefined) throw new Error("missing reparsed @group.card");
+    expect(card.body.map((entry) => entry.kind)).toEqual([
+      "declaration",
+      "group-use-site",
+      "declaration",
+    ]);
+    expect(card.declarations.map((declaration) => declaration.property)).toEqual([
+      "color",
+      "margin",
     ]);
   });
 

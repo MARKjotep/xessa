@@ -9,7 +9,13 @@
  * `$namespace.member` and escaped dots.
  */
 
-import type { BlockItem, Declaration, Stylesheet, TokenDeclaration } from "../types/ast.js";
+import type {
+  BlockItem,
+  Declaration,
+  GroupDefinition,
+  Stylesheet,
+  TokenDeclaration,
+} from "../types/ast.js";
 import type { Token } from "../types/token.js";
 
 /** Every bare `$name` referenced anywhere in the module's authored values. */
@@ -32,6 +38,18 @@ export function unqualifiedReferenceNames(ast: Stylesheet): Set<string> {
 
   const collectTokenDeclaration = (token: TokenDeclaration): void => {
     collect(token.tokens);
+  };
+
+  /**
+   * Definition bodies carry direct defaults and nested composition overrides
+   * (ADR-0025); both are authored `$refs` that runtime merge resolution must
+   * see even though the definition emits nothing on its own.
+   */
+  const collectDefinition = (definition: GroupDefinition): void => {
+    for (const item of definition.body) {
+      if (item.kind === "declaration") collectDeclaration(item);
+      else for (const declaration of item.declarations) collectDeclaration(declaration);
+    }
   };
 
   const visitBody = (items: readonly BlockItem[]): void => {
@@ -65,7 +83,7 @@ export function unqualifiedReferenceNames(ast: Stylesheet): Set<string> {
         for (const declaration of item.declarations) collectDeclaration(declaration);
         break;
       case "group-definition":
-        for (const declaration of item.declarations) collectDeclaration(declaration);
+        collectDefinition(item);
         break;
       case "rule":
         visitBody(item.body);
